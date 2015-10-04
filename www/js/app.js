@@ -1,17 +1,34 @@
-/* global HomeView, Handlebars, DeviceView, StatusBar, FastClick */
+/* global HomeView, Handlebars, DeviceView, StatusBar, FastClick, router */
 
 (function () {
-    
+
     HomeView.prototype.template = Handlebars.compile($("#menu-tpl").html());
     DeviceView.prototype.template = Handlebars.compile($("#device-tpl").html());
 
     var menuService = new MenuService();
-
-    menuService.initialize().done(function () {
-        console.log("MenuService :: initialized");
-    });
+    var slider = new PageSlider($('.page-content'));
     
-   $('body').html(new HomeView(menuService).render().$el);
+    menuService.initialize().done(function () {
+        router.addRoute('', function () {
+            console.log('empty');
+            slider.slidePage(new HomeView(service).render().$el);
+        });
+        router.addRoute('jump/ServiceMenuView', function(){
+            console.log('Called Service Menu View');
+        });
+        
+        router.addRoute('jump/:view', function(view) {
+            console.log('detailed view: '+view);
+//            service.findById(parseInt(id)).done(function(employee) {
+//                slider.slidePage(new EmployeeView(employee).render().$el);
+//            });
+        });
+        console.log("MenuService :: initialized");
+        router.start();
+    });
+
+    $('body').html(new HomeView(menuService).render().$el);
+
 
     document.addEventListener('deviceready', function () {
         StatusBar.overlaysWebView(false);
