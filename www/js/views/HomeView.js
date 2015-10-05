@@ -1,6 +1,6 @@
 var HomeView = function (menuService) {
 
-    var deviceView;
+    //var deviceView;
     var menus;
 
     this.initialize = function () {
@@ -17,7 +17,7 @@ var HomeView = function (menuService) {
     this.render = function () {
         console.log('HomeView :: rendering');
         this.$el.html(this.template(menus));
-        $('.page-content', this.$el).html(deviceView.$el);
+        //$('.page-content', this.$el).html(deviceView.$el);
         return this;
     };
 

@@ -4,21 +4,25 @@
 
     HomeView.prototype.template = Handlebars.compile($("#menu-tpl").html());
     DeviceView.prototype.template = Handlebars.compile($("#device-tpl").html());
-
+    
     var menuService = new MenuService();
-    var slider = new PageSlider($('.page-content'));
+    var deviceService = new DeviceService();
+    //var slider = new PageSlider($('.page-content'));
+    var slider = new PageSlider($('body'));
     
     menuService.initialize().done(function () {
         router.addRoute('', function () {
-            console.log('empty');
-            slider.slidePage(new HomeView(service).render().$el);
+            console.log('View :: HomeView');
+            slider.slidePage(new HomeView(menuService).render().$el);
         });
         router.addRoute('jump/ServiceMenuView', function(){
             console.log('Called Service Menu View');
+            //slider.slidePage(new HomeView(menuService).render().$el);
+            $('.page-content').html(new DeviceView(deviceService).render().$el);
         });
         
         router.addRoute('jump/:view', function(view) {
-            console.log('detailed view: '+view);
+            console.log('View :: '+view);
 //            service.findById(parseInt(id)).done(function(employee) {
 //                slider.slidePage(new EmployeeView(employee).render().$el);
 //            });
@@ -27,7 +31,7 @@
         router.start();
     });
 
-    $('body').html(new HomeView(menuService).render().$el);
+    //$('body').html(new HomeView(menuService).render().$el);
 
 
     document.addEventListener('deviceready', function () {

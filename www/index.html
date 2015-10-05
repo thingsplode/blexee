@@ -53,14 +53,14 @@
                 <span class="mdl-layout-title">blexee</span>
                 <nav class="mdl-navigation">
                     {{#each this}}
-                        <a class="mdl-navigation__link" href="#jump/{{view}}">{{menu_name}}</a>
+                        <a class="mdl-navigation__link" href="#jump/{{view}}" onClick="toggle_drawer()">{{menu_name}}</a>
                     {{/each}}
                 </nav>
             </div>
             <main class="mdl-layout__content">
                 <div class="page-content">
                     <!-- Your content goes here -->
-                    Content
+                    <div style="color:red; text-align: center;">Undefined Content</div>
                 </div>
             </main>
         </div>
@@ -85,12 +85,20 @@
             </ul>
         </script>
 
+        <script>
+        function toggle_drawer() {
+            var drawer = document.getElementsByClassName('mdl-layout__drawer')[0];
+            drawer.classList.toggle("is-visible");
+        }
+        </script>
+
         <!--        <script type="text/javascript" src="cordova.js"></script>-->
         <script type="text/javascript" src="js/libs/handlebars.js/handlebars.min.js"></script>
         <script type="text/javascript" src="js/libs/jquery/jquery.js"></script>
         <script type="text/javascript" src="js/libs/PageSlider.js"></script>
         <script type="text/javascript" src="js/libs/Router.js"></script>
         <script type="text/javascript" src="js/services/MenuService.js"></script>
+        <script type="text/javascript" src="js/services/DeviceService.js"></script>
         <script type="text/javascript" src="js/views/HomeView.js"></script>
         <script type="text/javascript" src="js/views/DeviceView.js"></script>
         <script type="text/javascript" src="js/app.js"></script>
