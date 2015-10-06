@@ -11,20 +11,37 @@
         };
     }
 
-    HomeView.prototype.template = Handlebars.compile($("#menu-tpl").html());
-    DeviceView.prototype.template = Handlebars.compile($("#device-tpl").html());
-
     var menuService = new MenuService();
     var deviceService = new DeviceService();
-    //var slider = new PageSlider($('.page-content'));
-    var slider = new PageSlider($('body'));
-    $('body').html(new HomeView(menuService).render().$el);
+    
+    homeView = new GenericView('HomeView', Handlebars.compile($("#menu-tpl").html()), function (view) {
+        var menus;
+        menuService.findAll().done(function (menuList) {
+            menus = menuList;
+        });
+        return menus;
+    });
 
+    deviceView = new GenericView('DeviceView', Handlebars.compile($("#device-tpl").html()), function (view) {
+        var devices;
+        deviceService.findAll().done(function (deviceList) {
+            devices = deviceList;
+            view.resetData(deviceList);
+            view.render();
+        });
+        return devices;
+    });
+
+
+    //var slider = new PageSlider($('.page-content'));
+    //var slider = new PageSlider($('body'));
+    $('body').html(homeView.render().$el);
+    
     menuService.initialize().done(function () {
         router.addRoute('', function () {
             console.log('View :: HomeView');
             //slider.slidePage(new HomeView(menuService).render().$el);
-            $('.page-content').html(new DeviceView(deviceService).render().$el);
+            $('.page-content').html(deviceView.render().$el);
         });
         router.addRoute('jump/ServiceMenuView', function () {
             console.log('Called Service Menu View');
