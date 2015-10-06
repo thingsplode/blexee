@@ -25,3 +25,39 @@ body {
     margin-right: 0.2em;
     margin-left: 1em;
 }
+
+.right {
+    float: right;
+    margin-top: 0.4em;
+    margin-bottom: 1em;
+    margin-right: 1em;
+    margin-left: 1em;
+    
+}
+/*
+The device card styles, which are used when devices are listed
+*/
+.device-card.mdl-card {
+    width: 200px;
+    height: 165px;
+    background: #46B6AC;
+}
+.device-card > .mdl-card__actions {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+.device-card > .mdl-card__title {
+    align-items: flex-start;
+}
+.device-card > .mdl-card__title > h4 {
+    margin-top: 0;
+}
+.device-card > .mdl-card__actions {
+    display: flex;
+    box-sizing:border-box;
+    align-items: center;
+}
+.device-card > .mdl-card__title,
+.device-card > .mdl-card__actions,
+.device-card > .mdl-card__actions > .mdl-button {
+    color: #fff;
+}

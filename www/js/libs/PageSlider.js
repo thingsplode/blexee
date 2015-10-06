@@ -49,6 +49,7 @@ function PageSlider(container) {
         });
 
         // Force reflow. More information here: http://www.phpied.com/rendering-repaint-reflowrelayout-restyle/
+        //console.log('container -> '+JSON.stringify(container));
         container[0].offsetWidth;
 
         // Position the new page and the current page at the ending position of their animation with a transition class indicating the duration of the animation

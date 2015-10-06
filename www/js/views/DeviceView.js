@@ -1,20 +1,23 @@
-var DeviceView = function () {
+var DeviceView = function (deviceService) {
 
-//    var employees;
+    var devices, view;
 
     this.initialize = function() {
+        console.log('DeviceView :: initialzing');
         this.$el = $('<div/>');
+        view = this;
+        deviceService.findAll().done(function (deviceList) {
+            console.log('Device View :: re-render/updated');
+            devices = deviceList;
+            view.render();
+        });
         this.render();
+        console.log('DeviceView :: initialized');
     };
 
-//    this.setEmployees = function(list) {
-//        employees = list;
-//        this.render();
-//    }
-
     this.render = function() {
-        //this.$el.html(this.template(empl1oyees));
-        this.$el.html(this.template());
+        console.log('DeviceView :: rendering');
+        this.$el.html(this.template(devices));
         return this;
     };
 

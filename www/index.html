@@ -67,30 +67,38 @@
         </script>
 
         <script id="device-tpl" type="text/template">
+            {{#unless this}}
             <!-- Simple MDL Progress Bar -->
             <div id="p2" class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>
             <div class="title">Searching</div>
-            <ul class="table-view">
-                {{#each this}}
-                <li class="table-view-cell media">
-                    <a href="#employees/{{ id }}">
-                        <img class="media-object pull-left" src="assets/pics/{{pic}}">
-                        <div class="media-body">
-                            {{firstName}} {{lastName}}
-                            <p>{{title}}</p>
-                        </div>
-                    </a>
-                </li>
-                {{/each}}
-            </ul>
+            {{/unless}}
+   
+        {{#each this}}
+        <div class="device-card mdl-card mdl-shadow--2dp right">
+            <div class="mdl-card__title mdl-card--expand">
+                <h4>
+                    {{name}}<br>
+                    {{advertising.kCBAdvDataLocalName}}<br>
+                </h4>
+            </div>
+            <div class="mdl-card__actions mdl-card--border">
+                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" href="#connect/{{ id }}">
+                    Connect
+                </a>
+                <div class="mdl-layout-spacer"></div>
+                <i class="material-icons">event</i>
+            </div>
+        </div>
+        {{/each}}
         </script>
 
         <script>
-        function toggle_drawer() {
-            var drawer = document.getElementsByClassName('mdl-layout__drawer')[0];
-            drawer.classList.toggle("is-visible");
-        }
+function toggle_drawer() {
+    var drawer = document.getElementsByClassName('mdl-layout__drawer')[0];
+    drawer.classList.toggle("is-visible");
+}
         </script>
+
 
         <!--        <script type="text/javascript" src="cordova.js"></script>-->
         <script type="text/javascript" src="js/libs/handlebars.js/handlebars.min.js"></script>
