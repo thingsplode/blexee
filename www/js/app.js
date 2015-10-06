@@ -13,7 +13,7 @@
 
     var menuService = new MenuService();
     var deviceService = new DeviceService();
-    
+
     homeView = new GenericView('HomeView', Handlebars.compile($("#menu-tpl").html()), function (view) {
         var menus;
         menuService.findAll().done(function (menuList) {
@@ -32,27 +32,43 @@
         return devices;
     });
 
+    firstMileView = new GenericView('DeviceView', Handlebars.compile($("#not-implemented-tpl").html()), function (view) {
+        return '';
+    });
+
+    lastMileView = new GenericView('FirstMileView', Handlebars.compile($('#not-implemented-tpl').html()), function (view) {
+        return '';
+    });
+
+    settingsView = new GenericView('FirstMileView', Handlebars.compile($('#not-implemented-tpl').html()), function (view) {
+        return '';
+    });
+
+    serviceMenuView = new GenericView('FirstMileView', Handlebars.compile($('#not-implemented-tpl').html()), function (view) {
+        return '';
+    });
+
+    var viewArray = {
+        "DeviceView": deviceView,
+        "FirstMileView": firstMileView,
+        "LastMileView": lastMileView,
+        "SettingsView": settingsView,
+        "ServiceMenuView": serviceMenuView};
 
     //var slider = new PageSlider($('.page-content'));
     //var slider = new PageSlider($('body'));
     $('body').html(homeView.render().$el);
-    
+
     menuService.initialize().done(function () {
         router.addRoute('', function () {
-            console.log('View :: HomeView');
+            console.log('View :: DeviceView');
             //slider.slidePage(new HomeView(menuService).render().$el);
             $('.page-content').html(deviceView.render().$el);
         });
-        router.addRoute('jump/ServiceMenuView', function () {
-            console.log('Called Service Menu View');
-            //slider.slidePage(new HomeView(menuService).render().$el);
-        });
 
         router.addRoute('jump/:view', function (view) {
-            console.log('View :: ' + view);
-//            service.findById(parseInt(id)).done(function(employee) {
-//                slider.slidePage(new EmployeeView(employee).render().$el);
-//            });
+            console.log('Routing View :: ' + view);
+            $('.page-content').html(viewArray[view].render().$el);
         });
 
         router.addRoute('connect/:deviceId', function (deviceId) {
