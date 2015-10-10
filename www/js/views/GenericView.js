@@ -9,8 +9,6 @@ var GenericView = function (viewName, template, dataProvider) {
     };
 
     this.registerModelControl = function (modelControl) {
-        //modelCtrl = modelControl;
-        //todo: unregister model control http://api.jquery.com/off/
         var view = this;
         modelControl.on('modup', function (e, data) {
             console.log(viewName + ' :: Model updated ->' + JSON.stringify(e));
@@ -19,11 +17,15 @@ var GenericView = function (viewName, template, dataProvider) {
         });
     };
 
+    this.unregisterModelControl = function (modelControl) {
+        modelControl.off();
+    };
+
     this.setModel = function (model) {
         mdl = model;
     };
 
-    this.getViewName = function (){
+    this.getViewName = function () {
         return viewName;
     };
 

@@ -21,6 +21,14 @@ body {
     font-style: normal;
     text-align: right;
     margin-top: 0.4em;
+    margin-bottom: 0.4em;
+    margin-right: 0.3em;
+    margin-left: 1em;
+}
+
+p {
+    text-align: right;
+    margin-top: 0.4em;
     margin-bottom: 1em;
     margin-right: 0.3em;
     margin-left: 1em;
@@ -87,17 +95,17 @@ The device card styles, which are used when devices are listed
 }
 
 .pie-chart {
-  align-items: center;
+    align-items: center;
 }
 .pie-chart:nth-child(1) {
-  color: #ACEC00;
+    color: #ACEC00;
 }
 .pie-chart:nth-child(2) {
-  color: #00BBD6;
+    color: #00BBD6;
 }
 .pie-chart:nth-child(3) {
-  color: #BA65C9;
+    color: #BA65C9;
 }
 .pie-chart:nth-child(4) {
-  color: #EF3C79;
+    color: #EF3C79;
 }

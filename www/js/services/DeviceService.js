@@ -47,7 +47,7 @@ var DeviceService = function () {
         return deferred.promise();
     };
 
-    this.selectAndApproximateDevice = function (deviceID, success, failure) {
+    this.approximateAndConnectDevice = function (deviceID, success, failure) {
         deviceModel.searching = false;
         deviceModel.connected = false;
         deviceModel.connecting = false;
@@ -70,7 +70,9 @@ var DeviceService = function () {
             if (deviceModel.selectedDevice !== null && deviceModel.connecting) {
                 if (SIMULATION) {
                     approximationSimuLoop(-100, deviceModel, modelControl, function () {
-                        console.log('====> [APPROXIMATE DEVICE] SUCCESS');
+                        deviceModel.connecting = false;
+                        deviceModel.connected = true;
+                        deviceModel.searching = false;
                         success();
                     });
                 } else {
@@ -152,7 +154,7 @@ var DeviceService = function () {
             if (i < 0) {
                 approximationSimuLoop(i, deviceModel, modelControl, finished);
             } else {
-                console.log(" ---> "+JSON.stringify(finished));
+                console.log(" ---> " + JSON.stringify(finished));
                 finished();
             }
         }, 100);

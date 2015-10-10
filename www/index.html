@@ -129,19 +129,20 @@
         
         <script id="connect-tpl" type="text/template">
         {{#if selectedDevice}}
-        <div class="title">Please approach</div>
+        <div class="title">{{selectedDevice.name}}</div>
+        <p>Please approach the device.</p>
             <!-- lilla: #BA65C9 green: #ACEC00 nice blue: #69aff4-->
             <!-- http://www.smashingmagazine.com/2015/07/designing-simple-pie-charts-with-css/ -->
             
             <style>
                 .pie_circle {
                     fill: none;
-                    stroke: #ACEC00;
+                    stroke: #8C9EFF;
                     stroke-width: 20;
                     stroke-dasharray: {{absolut_from_percentage selectedDevice.proximity 384}} 376; /* stroke-dasharray: 10 {max}; 2π × circle_radius ≈ max */
                 }
                 .pie_back{fill: none;
-                    stroke: #ACEC00;
+                    stroke: #8C9EFF;
                     opacity: 0.15;
                     stroke-width: 20;
                 }

@@ -40,11 +40,7 @@ var simuData = {
     connectView = new GenericView('ConnectView', Handlebars.compile($("#connect-tpl").html()), function (view) {
         return '';
     });
-
-//    deviceView = new GenericView('DeviceView', Handlebars.compile($("#device-tpl").html()), function (view) {
-//        return '';
-//    });
-
+    
     customerDemoView = new GenericView('CustomerDemoView', Handlebars.compile($("#not-implemented-tpl").html()), function (view) {
         return '';
     });
@@ -88,8 +84,10 @@ var simuData = {
             console.log('Trying to connect-> ' + deviceId);
             $('.page-content').html(connectView.render().$el);
             connectView.registerModelControl(deviceService.getModelControl());
-            deviceService.selectAndApproximateDevice(deviceId, function () {
+            deviceService.approximateAndConnectDevice(deviceId, function () {
                 console.log("Successfully connected to device");
+                connectView.unregisterModelControl(deviceService.getModelControl());
+                window.location.href = '#connected/'+deviceId;
             }, function () {
                 console.log("!!!!! FAILED to connect to device");
             });
