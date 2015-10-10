@@ -23,4 +23,4 @@ var DeviceView = function (deviceService) {
 
     this.initialize();
 
-}
+};

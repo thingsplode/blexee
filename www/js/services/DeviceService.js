@@ -1,6 +1,6 @@
-var DeviceService = function () {
+/* global SIMULATION, simuData */
 
-    var SIMULATION = true;
+var DeviceService = function () {
 
     var modelControl = $.extend($({}), (function (o) {
         o.update = function () {
@@ -12,6 +12,11 @@ var DeviceService = function () {
     this.initialize = function () {
         // No Initialization required
         var deferred = $.Deferred();
+        if (SIMULATION) {
+            $.getScript("device_simulation.js", function () {
+                alert("Script loaded but not necessarily executed.");
+            });
+        }
         deferred.resolve();
         return deferred.promise();
     };
@@ -19,13 +24,21 @@ var DeviceService = function () {
         console.log('deviceService :: findAll');
         var deferred = $.Deferred();
         if (this.bluetoothEnabled()) {
-            setTimeout(function () {
-                console.log('--> device service timeout simulation triggered');
-                deviceModel.devices = devices;
-                deviceModel.bluetooth = true;
-                deviceModel.searching = false;
-                deferred.resolve(deviceModel);
-            }, 2000);
+            if (SIMULATION) {
+                //simulation
+                setTimeout(function () {
+                    console.log('--> device service timeout simulation triggered');
+                    console.log("SIMU --> devices: " + simuData.devices_available);
+                    if (simuData.devices_available) {
+                        deviceModel.devices = devices;
+                    }
+                    deviceModel.bluetooth = true;
+                    deviceModel.searching = false;
+                    deferred.resolve(deviceModel);
+                }, 2000);
+            } else {
+                //real use case
+            }
         } else {
             deviceModel.searching = false;
             deviceModel.bluetooth = false;
@@ -34,11 +47,24 @@ var DeviceService = function () {
         return deferred.promise();
     };
 
-    this.connectDevice = function (deviceID){
+    this.selectAndApproximateDevice = function (deviceID, success, failure) {
         deviceModel.searching = false;
-        deviceModel.connected = true;
+        deviceModel.connected = false;
+        deviceModel.connecting = false;
+        if (deviceModel.devices) {
+            deviceModel.devices.forEach(function (thisDevice) {
+                console.log(thisDevice);
+                if (thisDevice.id === deviceID){
+                    deviceModel.connecting = false;
+                    deviceModel.selectedDevice = thisDevice;
+                }
+            });
+        }
+        if (deviceModel.connecting){
+            
+        }
     };
-    
+
     this.getModelControl = function () {
         return modelControl;
     };
@@ -51,11 +77,19 @@ var DeviceService = function () {
         'bluetooth': true,
         'searching': true,
         'connected': false,
+        'connecting': false,
+        'selectedDevice': '',
         devices: []
     };
 
     this.bluetoothEnabled = function () {
-        return true;
+        if (SIMULATION) {
+            console.log("SIMU --> bluetooth: " + simuData.bluetooth_enabled);
+            return simuData.bluetooth_enabled;
+        } else {
+            return false;
+        }
+
     };
 
     var devices = [{"name": "TI SensorTag", "id": "BD922605-1B07-4D55-8D09-B66653E51BBA", "rssi": -79, "advertising": {

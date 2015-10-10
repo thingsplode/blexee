@@ -16,6 +16,9 @@
      KIND, either express or implied.  See the License for the
     specific language governing permissions and limitations
     under the License.
+
+    Google Icons
+    https://www.google.com/design/icons/
 -->
 <html>
     <head>
@@ -53,7 +56,7 @@
                 <span class="mdl-layout-title">blexee</span>
                 <nav class="mdl-navigation">
                     {{#each this}}
-                        <a class="mdl-navigation__link" href="#jump/{{view}}" onClick="toggle_drawer()">{{menu_name}}</a>
+                        <a class="mdl-navigation__link" href="#jump/{{view_name}}" onClick="toggle_drawer()">{{menu_name}}</a>
                     {{/each}}
                 </nav>
             </div>
@@ -66,9 +69,39 @@
         </div>
         </script>
 
+        <script id="options-tpl" type="text/template">
+            {{#each}}
+            <!-- Square card -->
+            <style>
+                .demo-card-square.mdl-card {
+                    width: 320px;
+                    height: 320px;
+                }
+                .demo-card-square > .mdl-card__title {
+                    color: #fff;
+                    background:
+                    url('../assets/demos/dog.png') bottom right 15% no-repeat #46B6AC;
+                }
+            </style>
+
+            <div class="demo-card-square mdl-card mdl-shadow--2dp">
+                <div class="mdl-card__title mdl-card--expand">
+                    <h2 class="mdl-card__title-text">Update</h2>
+                </div>
+                <div class="mdl-card__supporting-text">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                Aenan convallis.
+                </div>
+                <div class="mdl-card__actions mdl-card--border">
+                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
+                    View Updates
+                    </a>
+                </div>
+            </div>
+            {{each}}
+        </script>
         <script id="device-tpl" type="text/template">
         {{#unless this}}{{search}}{{/unless}}
-   
         {{#if this}}
             {{#if bluetooth}}
                 {{#unless connected}}
@@ -78,7 +111,10 @@
                         {{#each devices}}
                         {{device_list}}
                         {{else}}
-                                <span class="right" style="color:red">No device was found.</span>
+                                <span class="right" style="color:red">No device was found, please rescan.</span>
+                                <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored ctrlbutton">
+                                    <i class="material-icons">settings_remote</i>
+                                </button>
                         {{/each}}
                     {{/if}}
                 {{/unless}}
@@ -89,6 +125,29 @@
                 {{bluetooth_required}}
             {{/if}}
         {{/if}}
+        </script>
+        
+        <script id="connect-tpl" type="text/template">
+        <div class="title">Please approach</div>
+        <div class = "center">
+            <!-- lilla: #BA65C9 green: #ACEC00 -->
+            <svg fill="#ACEC00" width="200px" height="200px" viewBox="0 0 1 1" class="demo-chart mdl-cell mdl-cell--4-col mdl-cell--3-col-desktop">
+            <use xlink:href="#piechart" mask="url(#piemask)" />
+              <text x="0.5" y="0.5" font-family="Roboto" font-size="0.3" fill="#888" text-anchor="middle" dy="0.1">82<tspan font-size="0.2" dy="-0.07">%</tspan></text>
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" style="position: fixed; left: -1000px; height: -1000px;">
+                <defs>
+                    <mask id="piemask" maskContentUnits="objectBoundingBox">
+                        <circle cx="0.5" cy="0.5" r="0.49" fill="white"></circle>
+                        <circle cx="0.5" cy="0.5" r="0.40" fill="black"></circle>
+                    </mask>
+                        <g id="piechart">
+                            <circle cx="0.5" cy="0.5" r="0.5"></circle>
+                            <path d="M 0.5 0.5 0.5 0 A 0.5 0.5 0 0 1 0.95 0.28 z" stroke="none" fill="rgba(255, 255, 255, 0.75)"></path>
+                        </g>
+                </defs>
+            </svg>
+        </div>
         </script>
 
         <script id="not-implemented-tpl" type="text/template">
@@ -113,8 +172,6 @@ function toggle_drawer() {
         <script type="text/javascript" src="js/services/DeviceService.js"></script>
         <script type="text/javascript" src="js/views/Helpers.js"></script>
         <script type="text/javascript" src="js/views/GenericView.js"></script>
-        <script type="text/javascript" src="js/views/HomeView.js"></script>
-        <script type="text/javascript" src="js/views/DeviceView.js"></script>
         <script type="text/javascript" src="js/app.js"></script>
     </body>
 </html>

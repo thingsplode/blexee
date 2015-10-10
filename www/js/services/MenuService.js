@@ -1,4 +1,6 @@
 var MenuService = function () {
+    
+    var menus = [];
 
     var modelControl = $.extend($({}), (function (o) {
         o.update = function () {
@@ -20,12 +22,22 @@ var MenuService = function () {
         deferred.resolve(menus);
         return deferred.promise();
     };
-
-    var menus = [
-        {"id": 1, "menu_name": "BLE Device", "view": "DeviceView"},
-        {"id": 2, "menu_name": "First Mile", "view": "FirstMileView"},
-        {"id": 3, "menu_name": "Last Mile", "view": "LastMileView"},
-        {"id": 4, "menu_name": "Settings", "view": "SettingsView"},
-        {"id": 5, "menu_name": "Service Menu", "view": "ServiceMenuView"}
-    ];
+    
+    this.addMenu = function (menuName, description, menuView){
+        menu = {'id': '', 'menu_name': '', 'view': '', 'view_name':'', 'description':''};
+        menu.id = menus.length;
+        menu.menu_name = menuName;
+        menu.view = menuView;
+        menu.view_name = menuView.getViewName();
+        menu.description = description;
+        menus.push(menu);
+    };
+    
+    this.getView = function (viewName){
+        for (i = 0; i < menus.length; i++) {
+            if (menus[i].view_name === viewName) { 
+                return menus[i].view;
+            }    
+        }
+    };
 }; 

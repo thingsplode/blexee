@@ -30,7 +30,7 @@ Handlebars.registerHelper('device_list', function () {
             "Connect" +
             "</a>" +
             "<div class=\"mdl-layout-spacer\"></div>" +
-            "<i class=\"material-icons\">event</i>" +
+            "<i class=\"material-icons\">flight_takeoff</i>" +
             "</div>" +
             "</div>"
             );

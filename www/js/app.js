@@ -1,8 +1,13 @@
 /* global HomeView, Handlebars, DeviceView, StatusBar, FastClick, router, DEBUG_MODE */
 
-(function () {
-
     DEBUG_MODE = true;
+    var SIMULATION = true;
+    var simuData = {
+        'bluetooth_enabled': true,
+        'devices_available': true
+    };
+
+(function () {
 
     if (!DEBUG_MODE) {
         console = console || {};
@@ -21,7 +26,7 @@
         return menus;
     });
 
-    deviceView = new GenericView('DeviceView', Handlebars.compile($("#device-tpl").html()), function (view) {
+    deviceDemoView = new GenericView('DeviceView', Handlebars.compile($("#device-tpl").html()), function (view) {
         var devices;
         deviceService.searchDevices().done(function (deviceModel) {
             devices = deviceModel;
@@ -30,17 +35,21 @@
         });
         return devices;
     });
-    deviceView.registerModelControl(deviceService.getModelControl());
+    deviceDemoView.registerModelControl(deviceService.getModelControl());
+
+    connectView = new GenericView('ConnectView', Handlebars.compile($("#connect-tpl").html()), function (view) {
+        return '';
+    });
 
 //    deviceView = new GenericView('DeviceView', Handlebars.compile($("#device-tpl").html()), function (view) {
 //        return '';
 //    });
     
-    firstMileView = new GenericView('FirstMileView', Handlebars.compile($("#not-implemented-tpl").html()), function (view) {
+    customerDemoView = new GenericView('CustomerDemoView', Handlebars.compile($("#not-implemented-tpl").html()), function (view) {
         return '';
     });
 
-    lastMileView = new GenericView('LastMileView', Handlebars.compile($('#not-implemented-tpl').html()), function (view) {
+    logisticianDemoView = new GenericView('LogisticianDemoView', Handlebars.compile($('#not-implemented-tpl').html()), function (view) {
         return '';
     });
 
@@ -52,12 +61,11 @@
         return '';
     });
 
-    var viewStructure = {
-        "DeviceView": deviceView,
-        "FirstMileView": firstMileView,
-        "LastMileView": lastMileView,
-        "SettingsView": settingsView,
-        "ServiceMenuView": serviceMenuView};
+    menuService.addMenu('Device Demo','',deviceDemoView);
+    menuService.addMenu('Customer Demo','',customerDemoView);
+    menuService.addMenu('Logistician Demo','',logisticianDemoView);
+    menuService.addMenu('Service Menu','',serviceMenuView);
+    menuService.addMenu('Settings','',settingsView);
 
     //var slider = new PageSlider($('.page-content'));
     //var slider = new PageSlider($('body'));
@@ -67,17 +75,20 @@
         router.addRoute('', function () {
             console.log('View :: DeviceView');
             //slider.slidePage(new HomeView(menuService).render().$el);
-            deviceView.setModel(deviceService.getModel());
-            $('.page-content').html(deviceView.render().$el);
+            deviceDemoView.setModel(deviceService.getModel());
+            $('.page-content').html(deviceDemoView.render().$el);
         });
 
         router.addRoute('jump/:view', function (view) {
             console.log('Routing View :: ' + view);
-            $('.page-content').html(viewStructure[view].render().$el);
+            $('.page-content').html(menuService.getView(view).render().$el);
         });
 
         router.addRoute('connect/:deviceId', function (deviceId) {
             console.log('Trying to connect-> ' + deviceId);
+            $('.page-content').html(connectView.render().$el);
+            connectView.registerModelControl(deviceService.getModelControl());
+            deviceService.selectAndApproximateDevice(deviceId, function (){},function (){});
         });
         console.log("MenuService :: initialized");
         router.start();
