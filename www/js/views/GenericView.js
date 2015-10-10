@@ -1,6 +1,6 @@
 var GenericView = function (viewName, template, dataProvider) {
 
-    var mdl, modelCtrl;
+    var mdl;
     this.initialize = function () {
         this.$el = $('<div/>');
         mdl = dataProvider(this);
@@ -11,10 +11,11 @@ var GenericView = function (viewName, template, dataProvider) {
     this.registerModelControl = function (modelControl) {
         //modelCtrl = modelControl;
         //todo: unregister model control http://api.jquery.com/off/
+        var view = this;
         modelControl.on('modup', function (e, data) {
-            console.log(viewName + ' :: Model updated ->' + e);
-            this.resetData(data);
-            this.render();
+            console.log(viewName + ' :: Model updated ->' + JSON.stringify(e));
+            view.setModel(data);
+            view.render();
         });
     };
 

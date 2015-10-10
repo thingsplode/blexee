@@ -85,3 +85,19 @@ The device card styles, which are used when devices are listed
 .device-card > .mdl-card__actions > .mdl-button {
     color: #fff;
 }
+
+.pie-chart {
+  align-items: center;
+}
+.pie-chart:nth-child(1) {
+  color: #ACEC00;
+}
+.pie-chart:nth-child(2) {
+  color: #00BBD6;
+}
+.pie-chart:nth-child(3) {
+  color: #BA65C9;
+}
+.pie-chart:nth-child(4) {
+  color: #EF3C79;
+}

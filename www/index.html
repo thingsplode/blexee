@@ -128,26 +128,30 @@
         </script>
         
         <script id="connect-tpl" type="text/template">
+        {{#if selectedDevice}}
         <div class="title">Please approach</div>
-        <div class = "center">
-            <!-- lilla: #BA65C9 green: #ACEC00 -->
-            <svg fill="#ACEC00" width="200px" height="200px" viewBox="0 0 1 1" class="demo-chart mdl-cell mdl-cell--4-col mdl-cell--3-col-desktop">
-            <use xlink:href="#piechart" mask="url(#piemask)" />
-              <text x="0.5" y="0.5" font-family="Roboto" font-size="0.3" fill="#888" text-anchor="middle" dy="0.1">82<tspan font-size="0.2" dy="-0.07">%</tspan></text>
+            <!-- lilla: #BA65C9 green: #ACEC00 nice blue: #69aff4-->
+            <!-- http://www.smashingmagazine.com/2015/07/designing-simple-pie-charts-with-css/ -->
+            
+            <style>
+                .pie_circle {
+                    fill: none;
+                    stroke: #ACEC00;
+                    stroke-width: 20;
+                    stroke-dasharray: {{absolut_from_percentage selectedDevice.proximity 384}} 376; /* stroke-dasharray: 10 {max}; 2π × circle_radius ≈ max */
+                }
+                .pie_back{fill: none;
+                    stroke: #ACEC00;
+                    opacity: 0.15;
+                    stroke-width: 20;
+                }
+            </style>
+            <svg viewBox="0 0 200 200" >
+                <text x="100" y="105" font-family="Roboto" font-size="32" fill="#888" text-anchor="middle" dy="5">{{selectedDevice.proximity}}<tspan font-size="12" dy="-12">%</tspan></text>
+                <circle class="pie_back" r="60" cx="100" cy="100"></circle>
+                <circle class="pie_circle" r="60" cx="100" cy="100" /></circle>
             </svg>
-            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" style="position: fixed; left: -1000px; height: -1000px;">
-                <defs>
-                    <mask id="piemask" maskContentUnits="objectBoundingBox">
-                        <circle cx="0.5" cy="0.5" r="0.49" fill="white"></circle>
-                        <circle cx="0.5" cy="0.5" r="0.40" fill="black"></circle>
-                    </mask>
-                        <g id="piechart">
-                            <circle cx="0.5" cy="0.5" r="0.5"></circle>
-                            <path d="M 0.5 0.5 0.5 0 A 0.5 0.5 0 0 1 0.95 0.28 z" stroke="none" fill="rgba(255, 255, 255, 0.75)"></path>
-                        </g>
-                </defs>
-            </svg>
-        </div>
+        {{/if}}
         </script>
 
         <script id="not-implemented-tpl" type="text/template">

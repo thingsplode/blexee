@@ -1,11 +1,11 @@
 /* global HomeView, Handlebars, DeviceView, StatusBar, FastClick, router, DEBUG_MODE */
 
-    DEBUG_MODE = true;
-    var SIMULATION = true;
-    var simuData = {
-        'bluetooth_enabled': true,
-        'devices_available': true
-    };
+DEBUG_MODE = true;
+var SIMULATION = true;
+var simuData = {
+    'bluetooth_enabled': true,
+    'devices_available': true
+};
 
 (function () {
 
@@ -44,7 +44,7 @@
 //    deviceView = new GenericView('DeviceView', Handlebars.compile($("#device-tpl").html()), function (view) {
 //        return '';
 //    });
-    
+
     customerDemoView = new GenericView('CustomerDemoView', Handlebars.compile($("#not-implemented-tpl").html()), function (view) {
         return '';
     });
@@ -61,11 +61,11 @@
         return '';
     });
 
-    menuService.addMenu('Device Demo','',deviceDemoView);
-    menuService.addMenu('Customer Demo','',customerDemoView);
-    menuService.addMenu('Logistician Demo','',logisticianDemoView);
-    menuService.addMenu('Service Menu','',serviceMenuView);
-    menuService.addMenu('Settings','',settingsView);
+    menuService.addMenu('Device Demo', '', deviceDemoView);
+    menuService.addMenu('Customer Demo', '', customerDemoView);
+    menuService.addMenu('Logistician Demo', '', logisticianDemoView);
+    menuService.addMenu('Service Menu', '', serviceMenuView);
+    menuService.addMenu('Settings', '', settingsView);
 
     //var slider = new PageSlider($('.page-content'));
     //var slider = new PageSlider($('body'));
@@ -88,7 +88,11 @@
             console.log('Trying to connect-> ' + deviceId);
             $('.page-content').html(connectView.render().$el);
             connectView.registerModelControl(deviceService.getModelControl());
-            deviceService.selectAndApproximateDevice(deviceId, function (){},function (){});
+            deviceService.selectAndApproximateDevice(deviceId, function () {
+                console.log("Successfully connected to device");
+            }, function () {
+                console.log("!!!!! FAILED to connect to device");
+            });
         });
         console.log("MenuService :: initialized");
         router.start();

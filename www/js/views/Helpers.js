@@ -36,3 +36,8 @@ Handlebars.registerHelper('device_list', function () {
             );
 });
 
+Handlebars.registerHelper('absolut_from_percentage', function (percentage, max) {
+    var absolut = percentage*max/100;
+    return new Handlebars.SafeString(absolut);
+});
+

@@ -51,18 +51,36 @@ var DeviceService = function () {
         deviceModel.searching = false;
         deviceModel.connected = false;
         deviceModel.connecting = false;
+        //todo: make a prescan
+        if (SIMULATION) {
+            deviceModel.devices = devices;
+        } else {
+            failure();
+        }
+
         if (deviceModel.devices) {
-            deviceModel.devices.forEach(function (thisDevice) {
-                console.log(thisDevice);
-                if (thisDevice.id === deviceID){
-                    deviceModel.connecting = false;
-                    deviceModel.selectedDevice = thisDevice;
+            for (i = 0; i < deviceModel.devices.length; i++) {
+                if (deviceModel.devices[i].id === deviceID) {
+                    deviceModel.connecting = true;
+                    deviceModel.selectedDevice = deviceModel.devices[i];
+                    console.log("--> found device to connect to: " + JSON.stringify(deviceModel.selectedDevice));
+                    break;
                 }
-            });
+            }
+            if (deviceModel.selectedDevice !== null && deviceModel.connecting) {
+                if (SIMULATION) {
+                    approximationSimuLoop(-100, deviceModel, modelControl, function () {
+                        console.log('====> [APPROXIMATE DEVICE] SUCCESS');
+                        success();
+                    });
+                } else {
+                    failure();
+                }
+            } else {
+                failure();
+            }
         }
-        if (deviceModel.connecting){
-            
-        }
+
     };
 
     this.getModelControl = function () {
@@ -123,4 +141,20 @@ var DeviceService = function () {
                 "kCBAdvDataIsConnectable": true
             }}
     ];
+
+    function approximationSimuLoop(i, deviceModel, modelControl, finished) {
+        setTimeout(function () {
+            var x = 100 - (i * -1);
+            console.log("SIMU --> proximity value: " + x + " [at rssi: ]" + i);
+            deviceModel.selectedDevice.proximity = x;
+            modelControl.update(i);
+            i++;
+            if (i < 0) {
+                approximationSimuLoop(i, deviceModel, modelControl, finished);
+            } else {
+                console.log(" ---> "+JSON.stringify(finished));
+                finished();
+            }
+        }, 100);
+    }
 };
