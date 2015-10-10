@@ -5,10 +5,10 @@ var SIMULATION = true;
 var simuData = {
     'bluetooth_enabled': true,
     'devices_available': true,
-    'can_connect':false
+    'can_connect': true
 };
 
-function ErrorMessage (title, message) {
+function ErrorMessage(title, message) {
     this.title = title;
     this.message = message;
 }
@@ -24,7 +24,15 @@ function ErrorMessage (title, message) {
     var menuService = new MenuService();
     var deviceService = new DeviceService();
 
-    appContainerView = new GenericView('HomeView', Handlebars.compile($("#app-container-tpl").html()), function (view) {
+    appContainerView = new GenericView('ContainerView', Handlebars.compile($("#app-container-tpl").html()), function (view) {
+        var menus;
+        menuService.findAll().done(function (menuList) {
+            menus = menuList;
+        });
+        return menus;
+    });
+
+    optionsView = new GenericView('OptionsView', Handlebars.compile($("#options-tpl").html()), function (view) {
         var menus;
         menuService.findAll().done(function (menuList) {
             menus = menuList;
@@ -41,12 +49,12 @@ function ErrorMessage (title, message) {
         });
         return devices;
     });
-    deviceDemoView.registerModelControl(deviceService.getModelControl());
+    //deviceDemoView.registerModelControl(deviceService.getModelControl());
 
     connectView = new GenericView('ConnectView', Handlebars.compile($("#connect-tpl").html()), function (view) {
         return '';
     });
-    
+
     customerDemoView = new GenericView('CustomerDemoView', Handlebars.compile($("#not-implemented-tpl").html()), function (view) {
         return '';
     });
@@ -62,16 +70,16 @@ function ErrorMessage (title, message) {
     serviceMenuView = new GenericView('ServiceMenuView', Handlebars.compile($('#not-implemented-tpl').html()), function (view) {
         return '';
     });
-    
+
     errView = new GenericView('ErrorView', Handlebars.compile($('#err-tpl').html()), function (view) {
         return '';
     });
 
-    menuService.addMenu('Device Demo', '', deviceDemoView);
-    menuService.addMenu('Customer Demo', '', customerDemoView);
-    menuService.addMenu('Logistician Demo', '', logisticianDemoView);
-    menuService.addMenu('Service Menu', '', serviceMenuView);
-    menuService.addMenu('Settings', '', settingsView);
+    menuService.addMenu('Device Demo', 'A tool, which provides an insight to the technical details and enables interaction with the technology.', deviceDemoView);
+    menuService.addMenu('Customer Demo', 'Demonstrates the interaction of a customer with the system.', customerDemoView);
+    menuService.addMenu('Logistician Demo', 'Demonstrates the interaction of logistician with the system.', logisticianDemoView);
+    menuService.addMenu('Service Menu', 'Provides a possible service menu example.', serviceMenuView);
+    menuService.addMenu('Settings', 'Various settings', settingsView);
 
     //var slider = new PageSlider($('.page-content'));
     //var slider = new PageSlider($('body'));
@@ -79,10 +87,9 @@ function ErrorMessage (title, message) {
 
     menuService.initialize().done(function () {
         router.addRoute('', function () {
-            console.log('View :: DeviceView');
+            console.log('View :: OptionsView');
             //slider.slidePage(new HomeView(menuService).render().$el);
-            deviceDemoView.setModel(deviceService.getModel());
-            $('.page-content').html(deviceDemoView.render().$el);
+            $('.page-content').html(optionsView.render().$el);
         });
 
         router.addRoute('jump/:view', function (view) {
@@ -97,7 +104,7 @@ function ErrorMessage (title, message) {
             deviceService.approximateAndConnectDevice(deviceId, function () {
                 console.log("Successfully connected to device");
                 connectView.unregisterModelControl(deviceService.getModelControl());
-                window.location.href = '#connected/'+deviceId;
+                window.location.href = '#connected/' + deviceId;
             }, function (error) {
                 errView.setModel(error);
                 $('.page-content').html(errView.render().$el);

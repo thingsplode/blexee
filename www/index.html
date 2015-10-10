@@ -70,63 +70,52 @@
         </script>
 
         <script id="options-tpl" type="text/template">
-            {{#each}}
-            <!-- Square card -->
-            <style>
-                .demo-card-square.mdl-card {
-                    width: 320px;
-                    height: 320px;
-                }
-                .demo-card-square > .mdl-card__title {
-                    color: #fff;
-                    background:
-                    url('../assets/demos/dog.png') bottom right 15% no-repeat #46B6AC;
-                }
-            </style>
-
-            <div class="demo-card-square mdl-card mdl-shadow--2dp">
-                <div class="mdl-card__title mdl-card--expand">
-                    <h2 class="mdl-card__title-text">Update</h2>
+            {{#if this}}
+            {{#each this}}
+                <div class="device-card-square mdl-card mdl-shadow--2dp right">
+                    <div class="mdl-card__title mdl-card--expand">
+                        <h2 class="mdl-card__title-text">{{this.menu_name}}</h2>
+                    </div>
+                    <div class="mdl-card__supporting-text">
+                        {{this.description}}
+                    </div>
+                    <div class="mdl-card__actions mdl-card--border">
+                        <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" href="#jump/{{view_name}}">
+                        BEGIN
+                        </a>
+                    </div>
                 </div>
-                <div class="mdl-card__supporting-text">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                Aenan convallis.
-                </div>
-                <div class="mdl-card__actions mdl-card--border">
-                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
-                    View Updates
-                    </a>
-                </div>
-            </div>
-            {{each}}
+            {{/each}}
+            {{/if}}
         </script>
         <script id="device-demo-tpl" type="text/template">
-        {{#unless this}}{{search}}{{/unless}}
-        {{#if this}}
-            {{#if bluetooth}}
-                {{#unless connected}}
-                    {{#if searching}}
-                        {{#unless devices}}{{search}}{{/unless}}
-                    {{else}}
-                        {{#each devices}}
-                        {{device_list}}
+            {{#unless this}}{{search}}{{/unless}}
+            {{#if this}}
+                {{#if bluetooth}}
+                    {{#unless connected}}
+                        {{#if searching}}
+                            {{#unless devices}}{{search}}{{/unless}}
                         {{else}}
+                            {{#each devices}}
+                                {{device_list}}
+                            {{else}}
                                 <span class="right" style="color:red">No device was found, please rescan.</span>
                                 <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored ctrlbutton">
                                     <i class="material-icons">settings_remote</i>
-                                </button>
-                        {{/each}}
+                                    </button>
+                            {{/each}}
+                        {{/if}}
+                    {{/unless}}
+                
+                    {{#if connected}}
+                        <span class="right" style="color:red">device is already connected</span>
                     {{/if}}
-                {{/unless}}
-                {{#if connected}}
-                    <span class="right" style="color:red">device is already connected</span>
+                {{else}}
+                    {{bluetooth_required}}
                 {{/if}}
-            {{else}}
-                {{bluetooth_required}}
             {{/if}}
-        {{/if}}
         </script>
-        
+
         <script id="connect-tpl" type="text/template">
         {{#if selectedDevice}}
         <div class="title">{{selectedDevice.name}}</div>
@@ -168,7 +157,7 @@
             <div class="title">{{title}}</div>
             <span class="right" style="color:red">{{message}}</span>
         </script>
-        
+
         <script>
 function toggle_drawer() {
     var drawer = document.getElementsByClassName('mdl-layout__drawer')[0];
