@@ -101,7 +101,7 @@ The device card styles, which are used when devices are listed
 .device-card-square > .mdl-card__title {
     color: #fff;
     background:
-        url('../assets/demos/dog.png') bottom right 15% no-repeat #46B6AC;
+        url('../img/box_sm.png') bottom right 0% no-repeat #46B6AC;
 }
 
 .pie-chart {

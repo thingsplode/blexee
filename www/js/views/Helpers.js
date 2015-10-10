@@ -2,7 +2,7 @@
 
 Handlebars.registerHelper('search', function () {
     return new Handlebars.SafeString(
-            "<div id=\"p2\" class=\"mdl-progress mdl-js-progress mdl-progress__indeterminate\"></div><div class=\"title\">Searching</div>"
+            "<div id=\"p2\" class=\"mdl-progress mdl-js-progress mdl-progress__indeterminate\"></div><div class=\"title\">Searching...</div>"
             );
 });
 

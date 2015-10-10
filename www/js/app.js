@@ -21,93 +21,47 @@ function ErrorMessage(title, message) {
         };
     }
 
-    var menuService = new MenuService();
     var deviceService = new DeviceService();
-
-    appContainerView = new GenericView('ContainerView', Handlebars.compile($("#app-container-tpl").html()), function (view) {
-        var menus;
-        menuService.findAll().done(function (menuList) {
-            menus = menuList;
-        });
-        return menus;
-    });
-
-    optionsView = new GenericView('OptionsView', Handlebars.compile($("#options-tpl").html()), function (view) {
-        var menus;
-        menuService.findAll().done(function (menuList) {
-            menus = menuList;
-        });
-        return menus;
-    });
-
-    deviceDemoView = new GenericView('DeviceView', Handlebars.compile($("#device-demo-tpl").html()), function (view) {
-        var devices;
-        deviceService.searchDevices().done(function (deviceModel) {
-            devices = deviceModel;
-            view.setModel(deviceModel);
-            view.render();
-        });
-        return devices;
-    });
-    //deviceDemoView.registerModelControl(deviceService.getModelControl());
-
-    connectView = new GenericView('ConnectView', Handlebars.compile($("#connect-tpl").html()), function (view) {
-        return '';
-    });
-
-    customerDemoView = new GenericView('CustomerDemoView', Handlebars.compile($("#not-implemented-tpl").html()), function (view) {
-        return '';
-    });
-
-    logisticianDemoView = new GenericView('LogisticianDemoView', Handlebars.compile($('#not-implemented-tpl').html()), function (view) {
-        return '';
-    });
-
-    settingsView = new GenericView('SettingsView', Handlebars.compile($('#not-implemented-tpl').html()), function (view) {
-        return '';
-    });
-
-    serviceMenuView = new GenericView('ServiceMenuView', Handlebars.compile($('#not-implemented-tpl').html()), function (view) {
-        return '';
-    });
-
-    errView = new GenericView('ErrorView', Handlebars.compile($('#err-tpl').html()), function (view) {
-        return '';
-    });
-
-    menuService.addMenu('Device Demo', 'A tool, which provides an insight to the technical details and enables interaction with the technology.', deviceDemoView);
-    menuService.addMenu('Customer Demo', 'Demonstrates the interaction of a customer with the system.', customerDemoView);
-    menuService.addMenu('Logistician Demo', 'Demonstrates the interaction of logistician with the system.', logisticianDemoView);
-    menuService.addMenu('Service Menu', 'Provides a possible service menu example.', serviceMenuView);
-    menuService.addMenu('Settings', 'Various settings', settingsView);
+    var menuService = new MenuService(deviceService);
 
     //var slider = new PageSlider($('.page-content'));
     //var slider = new PageSlider($('body'));
-    $('body').html(appContainerView.render().$el);
 
     menuService.initialize().done(function () {
+        $('body').html(menuService.appContainerView.render().$el);
         router.addRoute('', function () {
             console.log('View :: OptionsView');
             //slider.slidePage(new HomeView(menuService).render().$el);
-            $('.page-content').html(optionsView.render().$el);
+            $('.page-content').html(menuService.optionsView.render().$el);
         });
 
         router.addRoute('jump/:view', function (view) {
             console.log('Routing View :: ' + view);
-            $('.page-content').html(menuService.getView(view).render().$el);
+            if (view === 'DeviceView') {
+                menuService.getView(view).setModel(deviceService.getModel());
+                $('.page-content').html(menuService.getView(view).render().$el);
+                
+                deviceService.searchDevices().done(function (deviceModel) {
+                    devices = deviceModel;
+                    menuService.getView(view).setModel(deviceModel);
+                    menuService.getView(view).render();
+                });
+            } else {
+                $('.page-content').html(menuService.getView(view).render().$el);
+            }
         });
 
         router.addRoute('connect/:deviceId', function (deviceId) {
             console.log('Trying to connect-> ' + deviceId);
-            $('.page-content').html(connectView.render().$el);
-            connectView.registerModelControl(deviceService.getModelControl());
+            $('.page-content').html(menuService.connectView.render().$el);
+            menuService.connectView.registerModelControl(deviceService.getModelControl());
             deviceService.approximateAndConnectDevice(deviceId, function () {
                 console.log("Successfully connected to device");
-                connectView.unregisterModelControl(deviceService.getModelControl());
+                menuService.connectView.unregisterModelControl(deviceService.getModelControl());
                 window.location.href = '#connected/' + deviceId;
             }, function (error) {
-                errView.setModel(error);
-                $('.page-content').html(errView.render().$el);
+                menuService.errView.setModel(error);
+                $('.page-content').html(menuService.errView.render().$el);
             });
         });
         console.log("MenuService :: initialized");
