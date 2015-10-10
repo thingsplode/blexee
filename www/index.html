@@ -160,6 +160,15 @@
             <span class="right" style="color:red">Not implemented yet</span>
         </script>
 
+        <script id="err-tpl" type="text/template">
+            {{#unless this}}
+                <div class="title">General Error</div>
+                <span class="right" style="color:red">Unhanled Error Caught</span>
+            {{/unless}}
+            <div class="title">{{title}}</div>
+            <span class="right" style="color:red">{{message}}</span>
+        </script>
+        
         <script>
 function toggle_drawer() {
     var drawer = document.getElementsByClassName('mdl-layout__drawer')[0];

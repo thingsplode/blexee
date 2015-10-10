@@ -4,8 +4,14 @@ DEBUG_MODE = true;
 var SIMULATION = true;
 var simuData = {
     'bluetooth_enabled': true,
-    'devices_available': true
+    'devices_available': true,
+    'can_connect':false
 };
+
+function ErrorMessage (title, message) {
+    this.title = title;
+    this.message = message;
+}
 
 (function () {
 
@@ -56,6 +62,10 @@ var simuData = {
     serviceMenuView = new GenericView('ServiceMenuView', Handlebars.compile($('#not-implemented-tpl').html()), function (view) {
         return '';
     });
+    
+    errView = new GenericView('ErrorView', Handlebars.compile($('#err-tpl').html()), function (view) {
+        return '';
+    });
 
     menuService.addMenu('Device Demo', '', deviceDemoView);
     menuService.addMenu('Customer Demo', '', customerDemoView);
@@ -88,8 +98,9 @@ var simuData = {
                 console.log("Successfully connected to device");
                 connectView.unregisterModelControl(deviceService.getModelControl());
                 window.location.href = '#connected/'+deviceId;
-            }, function () {
-                console.log("!!!!! FAILED to connect to device");
+            }, function (error) {
+                errView.setModel(error);
+                $('.page-content').html(errView.render().$el);
             });
         });
         console.log("MenuService :: initialized");

@@ -69,17 +69,21 @@ var DeviceService = function () {
             }
             if (deviceModel.selectedDevice !== null && deviceModel.connecting) {
                 if (SIMULATION) {
-                    approximationSimuLoop(-100, deviceModel, modelControl, function () {
-                        deviceModel.connecting = false;
-                        deviceModel.connected = true;
-                        deviceModel.searching = false;
-                        success();
-                    });
+                    if (simuData.can_connect) {
+                        approximationSimuLoop(-100, deviceModel, modelControl, function () {
+                            deviceModel.connecting = false;
+                            deviceModel.connected = true;
+                            deviceModel.searching = false;
+                            success();
+                        });
+                    } else {
+                        failure(new ErrorMessage("Cannot Connect","Connection currently is in simulation mode and is not allowed. Please re-set the can_connect value in the simuData object."));
+                    }
                 } else {
-                    failure();
+                    failure("Cannot Connect","Simulation is not enabled, but the real hardware is not implemented yet.");
                 }
             } else {
-                failure();
+                failure("Cannot connect","No device was selected and it is not in connecting mode.");
             }
         }
 
