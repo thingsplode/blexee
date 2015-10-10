@@ -18,7 +18,7 @@
     var menuService = new MenuService();
     var deviceService = new DeviceService();
 
-    homeView = new GenericView('HomeView', Handlebars.compile($("#menu-tpl").html()), function (view) {
+    appContainerView = new GenericView('HomeView', Handlebars.compile($("#app-container-tpl").html()), function (view) {
         var menus;
         menuService.findAll().done(function (menuList) {
             menus = menuList;
@@ -26,7 +26,7 @@
         return menus;
     });
 
-    deviceDemoView = new GenericView('DeviceView', Handlebars.compile($("#device-tpl").html()), function (view) {
+    deviceDemoView = new GenericView('DeviceView', Handlebars.compile($("#device-demo-tpl").html()), function (view) {
         var devices;
         deviceService.searchDevices().done(function (deviceModel) {
             devices = deviceModel;
@@ -69,7 +69,7 @@
 
     //var slider = new PageSlider($('.page-content'));
     //var slider = new PageSlider($('body'));
-    $('body').html(homeView.render().$el);
+    $('body').html(appContainerView.render().$el);
 
     menuService.initialize().done(function () {
         router.addRoute('', function () {

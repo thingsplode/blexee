@@ -41,7 +41,7 @@
         <title>blexee control</title>
     </head>
     <body>
-        <script id="menu-tpl" type="text/template">
+        <script id="app-container-tpl" type="text/template">
         <!-- Always shows a header, even in smaller screens. -->
         <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
             <header class="mdl-layout__header">
@@ -100,7 +100,7 @@
             </div>
             {{each}}
         </script>
-        <script id="device-tpl" type="text/template">
+        <script id="device-demo-tpl" type="text/template">
         {{#unless this}}{{search}}{{/unless}}
         {{#if this}}
             {{#if bluetooth}}
