@@ -67,42 +67,32 @@
         </script>
 
         <script id="device-tpl" type="text/template">
-            {{#unless this}}
-            <!-- Simple MDL Progress Bar -->
-            <div id="p2" class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>
-            <div class="title">Searching</div>
-            {{/unless}}
+        {{#unless this}}{{search}}{{/unless}}
    
         {{#if this}}
-        {{#unless connected}}
-        {{#each devices}}
-        <div class="device-card mdl-card mdl-shadow--2dp right">
-            <div class="mdl-card__title mdl-card--expand">
-                <h4>
-                    {{name}}<br>
-                    {{devices.advertising.kCBAdvDataLocalName}}<br>
-                </h4>
-            </div>
-            <div class="mdl-card__actions mdl-card--border">
-                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" href="#connect/{{ id }}">
-                    Connect
-                </a>
-                <div class="mdl-layout-spacer"></div>
-                <i class="material-icons">event</i>
-            </div>
-        </div>
-        {{else}}
-            <span class="right" style="color:red">No devices are found</span>
-        {{/each}}
-        {{/unless}}
-        {{#if connected}}
-            <span class="right" style="color:red">already connected</span>
-        {{/if}}
+            {{#if bluetooth}}
+                {{#unless connected}}
+                    {{#if searching}}
+                        {{#unless devices}}{{search}}{{/unless}}
+                    {{else}}
+                        {{#each devices}}
+                        {{device_list}}
+                        {{else}}
+                                <span class="right" style="color:red">No device was found.</span>
+                        {{/each}}
+                    {{/if}}
+                {{/unless}}
+                {{#if connected}}
+                    <span class="right" style="color:red">device is already connected</span>
+                {{/if}}
+            {{else}}
+                {{bluetooth_required}}
+            {{/if}}
         {{/if}}
         </script>
 
         <script id="not-implemented-tpl" type="text/template">
-            <div class="title">First Mile</div>
+            <div class="title">Empty</div>
             <span class="right" style="color:red">Not implemented yet</span>
         </script>
 
@@ -121,6 +111,7 @@ function toggle_drawer() {
         <script type="text/javascript" src="js/libs/Router.js"></script>
         <script type="text/javascript" src="js/services/MenuService.js"></script>
         <script type="text/javascript" src="js/services/DeviceService.js"></script>
+        <script type="text/javascript" src="js/views/Helpers.js"></script>
         <script type="text/javascript" src="js/views/GenericView.js"></script>
         <script type="text/javascript" src="js/views/HomeView.js"></script>
         <script type="text/javascript" src="js/views/DeviceView.js"></script>

@@ -3,7 +3,6 @@
 (function () {
 
     DEBUG_MODE = true;
-    connected = false;
 
     if (!DEBUG_MODE) {
         console = console || {};
@@ -24,31 +23,36 @@
 
     deviceView = new GenericView('DeviceView', Handlebars.compile($("#device-tpl").html()), function (view) {
         var devices;
-        deviceService.findAll().done(function (deviceList) {
-            devices = deviceList;
-            view.resetData(deviceList);
+        deviceService.searchDevices().done(function (deviceModel) {
+            devices = deviceModel;
+            view.setModel(deviceModel);
             view.render();
         });
         return devices;
     });
+    deviceView.registerModelControl(deviceService.getModelControl());
 
-    firstMileView = new GenericView('DeviceView', Handlebars.compile($("#not-implemented-tpl").html()), function (view) {
+//    deviceView = new GenericView('DeviceView', Handlebars.compile($("#device-tpl").html()), function (view) {
+//        return '';
+//    });
+    
+    firstMileView = new GenericView('FirstMileView', Handlebars.compile($("#not-implemented-tpl").html()), function (view) {
         return '';
     });
 
-    lastMileView = new GenericView('FirstMileView', Handlebars.compile($('#not-implemented-tpl').html()), function (view) {
+    lastMileView = new GenericView('LastMileView', Handlebars.compile($('#not-implemented-tpl').html()), function (view) {
         return '';
     });
 
-    settingsView = new GenericView('FirstMileView', Handlebars.compile($('#not-implemented-tpl').html()), function (view) {
+    settingsView = new GenericView('SettingsView', Handlebars.compile($('#not-implemented-tpl').html()), function (view) {
         return '';
     });
 
-    serviceMenuView = new GenericView('FirstMileView', Handlebars.compile($('#not-implemented-tpl').html()), function (view) {
+    serviceMenuView = new GenericView('ServiceMenuView', Handlebars.compile($('#not-implemented-tpl').html()), function (view) {
         return '';
     });
 
-    var viewArray = {
+    var viewStructure = {
         "DeviceView": deviceView,
         "FirstMileView": firstMileView,
         "LastMileView": lastMileView,
@@ -63,12 +67,13 @@
         router.addRoute('', function () {
             console.log('View :: DeviceView');
             //slider.slidePage(new HomeView(menuService).render().$el);
+            deviceView.setModel(deviceService.getModel());
             $('.page-content').html(deviceView.render().$el);
         });
 
         router.addRoute('jump/:view', function (view) {
             console.log('Routing View :: ' + view);
-            $('.page-content').html(viewArray[view].render().$el);
+            $('.page-content').html(viewStructure[view].render().$el);
         });
 
         router.addRoute('connect/:deviceId', function (deviceId) {
