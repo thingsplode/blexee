@@ -21,7 +21,7 @@ var DeviceService = function () {
         return deferred.promise();
     };
     this.scanForDevices = function () {
-        console.log('deviceService :: searchDevices');
+        console.log('deviceService :: scan for devices');
         deviceModel.searching = true;
         var deferred = $.Deferred();
         if (this.bluetoothEnabled()) {
@@ -39,16 +39,43 @@ var DeviceService = function () {
                 }, 2000);
             } else {
                 //real use case
+                deferred.resolve(deviceModel);
             }
         } else {
             deviceModel.searching = false;
             deviceModel.bluetooth = false;
             modelControl.update();
+            deferred.resolve(deviceModel);
         }
         return deferred.promise();
     };
-    
-    //this.fin
+
+    this.requestServices = function (failure) {
+        console.log('deviceService :: requesting available services');
+        if (!deviceModel.connected) {
+            failure(new ErrorMessage('Device is not connected', 'Before requesting device-services, please connect first a bluetooth low energy device'));
+        } else if (!this.bluetoothEnabled()) {
+            failure(new ErrorMessage('Bluetooth is not enabled', 'Before requesting device-services, please enable your bluetooth and connect a bluetooth low energy device'));
+        } else {
+            deviceModel.requestingServices = true;
+            var deferred = $.Deferred();
+            if (!SIMULATION) {
+                //real use case
+                failure(new ErrorMessage('Simulation is disabled', 'Real hardware support is not enabled yet'));
+            } else {
+                setTimeout(function () {
+                    if (simuData.services_available) {
+                        deviceModel.services = gattServices;
+                    }
+                    deviceModel.requestingServices = false;
+                    modelControl.update();
+                    console.log('SIMU --> triggered service retrieval simuation');
+                }, 2000);
+            }
+        }
+        deferred.resolve(deviceModel);
+        return deferred.promise();
+    };
 
     this.approximateAndConnectDevice = function (deviceID, success, failure) {
         deviceModel.searching = false;
@@ -108,12 +135,14 @@ var DeviceService = function () {
     };
 
     var deviceModel = {
-        'bluetooth': true,
-        'searching': false,
-        'connected': false,
-        'connecting': false,
-        'selectedDevice': '',
-        devices: []
+        bluetooth: true,
+        searching: false,
+        connecting: false,
+        requestingServices: false,
+        connected: false,
+        selectedDevice: '',
+        devices: [],
+        services: []
     };
 
     this.bluetoothEnabled = function () {
@@ -159,9 +188,9 @@ var DeviceService = function () {
     ];
 
     var gattServices = [
-        {"id": 1, "uuid": "123456", "primary": "true", "Characteristics": [
-                {"uuid": "1234", "flags": "read", "User Descriptor": "Some Description"},
-                {"uuid": "2334", "flags": "write", "User Descriptor": "Some Other Description"},
+            {"id": 1, "uuid": "0x1800", "primary": "true", "Characteristics": [
+                {"uuid": "0x2A00", "flags": "read,write", "User Descriptor": "device_name"},
+                {"uuid": "0x2A01", "flags": "read", "User Descriptor": "appearance"},
                 {"uuid": "3334", "flags": "notify", "User Descriptor": "Yet Another Description"},
             ]},
         {"id": 2, "uuid": "223456", "primary": "true", "Characteristics": [{"uuid": "2345", "flags": "read", "User Descriptor": "A Description"}]},
@@ -183,6 +212,6 @@ var DeviceService = function () {
                 console.log(" ---> " + JSON.stringify(finished));
                 finished();
             }
-        }, 100);
+        }, 20);
     }
 };

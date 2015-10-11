@@ -5,7 +5,8 @@ var SIMULATION = true;
 var simuData = {
     'bluetooth_enabled': true,
     'devices_available': true,
-    'can_connect': true
+    'can_connect': true,
+    'services_available': true
 };
 
 function ErrorMessage(title, message) {
@@ -60,7 +61,7 @@ function ErrorMessage(title, message) {
                 $('.page-content').html(menuService.getMenuView(view).render().$el);
             }
         } else {
-            $('.page-content').html(menuService.getMenuView()(view).render().$el);
+            $('.page-content').html(menuService.getMenuView(view).render().$el);
         }
     });
 
@@ -70,17 +71,28 @@ function ErrorMessage(title, message) {
         menuService.connectView.registerModelControl(deviceService.getModelControl());
         deviceService.approximateAndConnectDevice(deviceId, function () {
             console.log("Successfully connected to device");
-            menuService.connectView.unregisterModelControl(deviceService.getModelControl());
+            menuService.connectView.unregisterModelControl();
             window.location.href = '#connected/' + deviceId;
         }, function (error) {
             menuService.errView.setModel(error);
             $('.page-content').html(menuService.errView.render().$el);
         });
+    }, function () {
+        menuService.connectView.unregisterModelControl();
     });
 
     router.addRoute('connected/:deviceId', function (deviceId) {
-        menuService.deviceServicesView.setModel(deviceService.findAll());
-        $('.page-content').html(menuService.deviceServicesView.render().$el);
+        deviceService.requestServices(function (err) {
+            menuService.errView.setModel(err);
+            $('.page-content').html(menuService.errView.render().$el);
+            menuService.deviceServicesView.unregisterModelControl();
+        }).done(function (deviceModel) {
+            menuService.deviceServicesView.setModel(deviceModel);
+            $('.page-content').html(menuService.deviceServicesView.render().$el);
+            menuService.deviceServicesView.registerModelControl(deviceService.getModelControl());
+        });
+    }, function () {
+        menuService.deviceServicesView.unregisterModelControl();
     });
 
     router.addRoute('reload/:view', function (view) {

@@ -3,9 +3,10 @@ var router = (function () {
     "use strict";
 
     var routes = [];
+    var currentRoute;
 
-    function addRoute(route, handler) {
-        routes.push({parts: route.split('/'), handler: handler});
+    function addRoute(route, entryHandler, exitHandler) {
+        routes.push({parts: route.split('/'), entryHandler: entryHandler, exitHandler: exitHandler});
     }
 
     function load(route) {
@@ -13,24 +14,26 @@ var router = (function () {
     }
 
     function start() {
-
+        if (currentRoute && currentRoute.exitHandler) {
+            currentRoute.exitHandler();
+        }
         var path = window.location.hash.substr(1),
-            parts = path.split('/'),
-            partsLength = parts.length;
+                parts = path.split('/'),
+                partsLength = parts.length;
 
         for (var i = 0; i < routes.length; i++) {
-            var route = routes[i];
-            if (route.parts.length === partsLength) {
+            currentRoute = routes[i];
+            if (currentRoute.parts.length === partsLength) {
                 var params = [];
                 for (var j = 0; j < partsLength; j++) {
-                    if (route.parts[j].substr(0, 1) === ':') {
+                    if (currentRoute.parts[j].substr(0, 1) === ':') {
                         params.push(parts[j]);
-                    } else if (route.parts[j] !== parts[j]) {
+                    } else if (currentRoute.parts[j] !== parts[j]) {
                         break;
                     }
                 }
                 if (j === partsLength) {
-                    route.handler.apply(undefined, params);
+                    currentRoute.entryHandler.apply(undefined, params);
                     return;
                 }
             }

@@ -106,7 +106,7 @@
                         {{/if}}
                     {{/unless}}
                     {{#if connected}}
-                        <span class="right" style="color:red">Device is already connected. It seems to be a routing mistake.</span>
+                        <span class="right" style="color:red">Program error: device is already connected and not routed correctly.</span>
                     {{/if}}
             {{/if}}
         </script>
@@ -140,7 +140,60 @@
         </script>
 
         <script id="device-services-tpl" type="text/template">
-                                                                                                    
+            {{#unless this}}{{search}}{{/unless}}
+            {{#if this}}
+                {{#if requestingServices}}
+                    {{search}}
+                {{else}}
+                    {{#each services}}
+                    <div class="service-card-wide mdl-card mdl-shadow--2dp">
+                        <div class="mdl-card__title">
+                            <h2 class="mdl-card__title-text">Service {{uuid}}</h2>
+                        </div>
+                        <div class="mdl-card__supporting-text">
+                            {{#if Characteristics}}
+                                <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp box">
+                                <thead>
+                                    <th class="mdl-data-table__cell--non-numeric">
+                                        <i class="material-icons">memory</i>
+                                        <span style="vertical-align: middle;display: inline-block;">Characteristics</span>
+                                    </th>
+                                </thead>
+                                {{#each Characteristics}}
+                                    <tr>
+                                        <td class="mdl-data-table__cell--non-numeric">
+                                            <b>{{uuid}}</b><br>
+                                            <button class="mdl-button mdl-js-button mdl-button--icon right">
+                                                <i class="material-icons">more_vert</i>
+                                            </button>
+                                            {{flags}}<br>
+                                            {{[User Descriptor]}}
+                                        </td>
+                                    </tr>
+                                {{/each}}
+                                
+                                </table>
+                            {{/if}}
+                        </div>
+                        {{#if Characteristics}}
+                        <div class="mdl-card__menu">
+                            <button id="demo-menu-lower-right" class="mdl-button mdl-js-button mdl-button--icon">
+                                <i class="material-icons">more_vert</i>
+                            </button>
+                            <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="demo-menu-lower-right">
+                            {{#each Characteristics}}
+                                <li class="mdl-menu__item">{{[User Descriptor]}}</li>
+                            {{/each}}
+                            </ul>
+                        </div>
+                        {{/if}}
+                    </div>
+                    {{else}}
+                        <span class="right" style="color:red">Program Error: no services are found.</span>
+                    {{/each}}
+                {{/if}}
+            {{/if}}
+                    
         </script>
         <script id="not-implemented-tpl" type="text/template">
             <div class="title">Empty</div>
