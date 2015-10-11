@@ -3,7 +3,7 @@
 var MenuService = function (deviceService) {
 
     var menus = [];
-    var appContainerView, optionsView, deviceDemoView, connectView, customerDemoView, logisticianDemoView, settingsView, serviceMenuView, errView;
+    var appContainerView, optionsView, deviceDemoView, deviceServicesView, connectView, customerDemoView, logisticianDemoView, settingsView, serviceMenuView, errView;
 
     var modelControl = $.extend($({}), (function (o) {
         o.update = function () {
@@ -35,6 +35,10 @@ var MenuService = function (deviceService) {
             return '';
         });
         //deviceDemoView.registerModelControl(deviceService.getModelControl());
+        
+        this.deviceServicesView = new GenericView('DeviceServicesView', Handlebars.compile($("#device-demo-tpl").html()), function (view) {
+            return '';
+        });
 
         this.connectView = new GenericView('ConnectView', Handlebars.compile($("#connect-tpl").html()), function (view) {
             return '';

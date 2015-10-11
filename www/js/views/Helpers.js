@@ -6,12 +6,6 @@ Handlebars.registerHelper('search', function () {
             );
 });
 
-Handlebars.registerHelper('bluetooth_required', function () {
-    return new Handlebars.SafeString(
-            "<span class=\"right\" style=\"color:red\">Please enable the bluetooth connection of your device.</span>"
-            );
-});
-
 Handlebars.registerHelper('device_list', function () {
     deviceId = Handlebars.Utils.escapeExpression(this.id);
     name = Handlebars.Utils.escapeExpression(this.name);

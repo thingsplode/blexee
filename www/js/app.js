@@ -29,46 +29,65 @@ function ErrorMessage(title, message) {
 
     menuService.initialize().done(function () {
         $('body').html(menuService.appContainerView.render().$el);
-        router.addRoute('', function () {
-            console.log('View :: OptionsView');
-            //slider.slidePage(new HomeView(menuService).render().$el);
-            $('.page-content').html(menuService.optionsView.render().$el);
-        });
+    });
 
-        router.addRoute('jump/:view', function (view) {
-            console.log('Routing View :: ' + view);
-            if (view === 'DeviceView') {
-                menuService.getView(view).setModel(deviceService.getModel());
-                $('.page-content').html(menuService.getView(view).render().$el);
-                
+    router.addRoute('', function () {
+        console.log('View :: OptionsView');
+        //slider.slidePage(new HomeView(menuService).render().$el);
+        $('.page-content').html(menuService.optionsView.render().$el);
+    });
+
+    router.addRoute('jump/:view', function (view) {
+        console.log('Routing View :: ' + view);
+        if (view === 'DeviceView') {
+            //special handling required
+            console.log("DeviceView :: start decisions");
+            var deviceModel = deviceService.getModel();
+            if (!deviceService.bluetoothEnabled()) {
+                menuService.errView.setModel(new ErrorMessage('Please enable your bluetooth device', 'Use the device settings to enable the bluetooth connection a retry the app functions.'));
+                $('.page-content').html(menuService.errView.render().$el);
+            } else if (deviceModel.connected) {
+                //redirect to: #connected/device_id
+                window.location.href = '#connected/' + deviceModel.selectedDevice.id;
+            } else {
+                //if not connected yet -> searcg for devices
+                console.log("DeviceView :: start searching");
                 deviceService.searchDevices().done(function (deviceModel) {
-                    devices = deviceModel;
                     menuService.getView(view).setModel(deviceModel);
                     menuService.getView(view).render();
                 });
-            } else {
+                menuService.getView(view).setModel(deviceModel);
                 $('.page-content').html(menuService.getView(view).render().$el);
             }
-        });
-
-        router.addRoute('connect/:deviceId', function (deviceId) {
-            console.log('Trying to connect-> ' + deviceId);
-            $('.page-content').html(menuService.connectView.render().$el);
-            menuService.connectView.registerModelControl(deviceService.getModelControl());
-            deviceService.approximateAndConnectDevice(deviceId, function () {
-                console.log("Successfully connected to device");
-                menuService.connectView.unregisterModelControl(deviceService.getModelControl());
-                window.location.href = '#connected/' + deviceId;
-            }, function (error) {
-                menuService.errView.setModel(error);
-                $('.page-content').html(menuService.errView.render().$el);
-            });
-        });
-        console.log("MenuService :: initialized");
-        router.start();
+        } else {
+            $('.page-content').html(menuService.getView(view).render().$el);
+        }
     });
 
+    router.addRoute('connect/:deviceId', function (deviceId) {
+        console.log('Trying to connect-> ' + deviceId);
+        $('.page-content').html(menuService.connectView.render().$el);
+        menuService.connectView.registerModelControl(deviceService.getModelControl());
+        deviceService.approximateAndConnectDevice(deviceId, function () {
+            console.log("Successfully connected to device");
+            menuService.connectView.unregisterModelControl(deviceService.getModelControl());
+            window.location.href = '#connected/' + deviceId;
+        }, function (error) {
+            menuService.errView.setModel(error);
+            $('.page-content').html(menuService.errView.render().$el);
+        });
+    });
 
+    router.addRoute('connected/:deviceId', function (deviceId) {
+
+    });
+
+    router.addRoute('reload/:view', function (view) {
+        window.location.href = '#jump/' + view;
+    });
+
+    console.log("Router :: initialized");
+    router.start();
 
     document.addEventListener('deviceready', function () {
         StatusBar.overlaysWebView(false);

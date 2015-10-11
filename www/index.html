@@ -91,7 +91,6 @@
         <script id="device-demo-tpl" type="text/template">
             {{#unless this}}{{search}}{{/unless}}
             {{#if this}}
-                {{#if bluetooth}}
                     {{#unless connected}}
                         {{#if searching}}
                             {{#unless devices}}{{search}}{{/unless}}
@@ -100,19 +99,15 @@
                                 {{device_list}}
                             {{else}}
                                 <span class="right" style="color:red">No device was found, please rescan.</span>
-                                <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored ctrlbutton">
-                                    <i class="material-icons">settings_remote</i>
-                                    </button>
+                                <a class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored ctrlbutton" href="#reload/DeviceView">
+                                <i class="material-icons">settings_remote</i>
+                                </a>
                             {{/each}}
                         {{/if}}
                     {{/unless}}
-                
                     {{#if connected}}
-                        <span class="right" style="color:red">device is already connected</span>
+                        <span class="right" style="color:red">Device is already connected. It seems to be a routing mistake.</span>
                     {{/if}}
-                {{else}}
-                    {{bluetooth_required}}
-                {{/if}}
             {{/if}}
         </script>
 
@@ -156,6 +151,10 @@
             {{/unless}}
             <div class="title">{{title}}</div>
             <span class="right" style="color:red">{{message}}</span>
+            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-button--raised ctrlbutton" href="">
+            <i class="material-icons">cached</i>
+            Return
+            </a>
         </script>
 
         <script>

@@ -22,6 +22,7 @@ var DeviceService = function () {
     };
     this.searchDevices = function () {
         console.log('deviceService :: findAll');
+        deviceModel.searching = true;
         var deferred = $.Deferred();
         if (this.bluetoothEnabled()) {
             if (SIMULATION) {
@@ -77,17 +78,24 @@ var DeviceService = function () {
                             success();
                         });
                     } else {
-                        failure(new ErrorMessage("Cannot Connect","Connection currently is in simulation mode and is not allowed. Please re-set the can_connect value in the simuData object."));
+                        failure(new ErrorMessage("Cannot Connect", "Connection currently is in simulation mode and is not allowed. Please re-set the can_connect value in the simuData object."));
                     }
                 } else {
-                    failure("Cannot Connect","Simulation is not enabled, but the real hardware is not implemented yet.");
+                    failure("Cannot Connect", "Simulation is not enabled, but the real hardware is not implemented yet.");
                 }
             } else {
-                failure("Cannot connect","No device was selected and it is not in connecting mode.");
+                failure("Cannot connect", "No device was selected and it is not in connecting mode.");
             }
         }
-
     };
+
+    this.getGattServices = function () {
+        console.log('DeviceService :: getGattServices');
+        var deferred = $.Deferred();
+        deferred.resolve(gattServices);
+        return deferred.promise();
+    };
+
 
     this.getModelControl = function () {
         return modelControl;
@@ -99,7 +107,7 @@ var DeviceService = function () {
 
     var deviceModel = {
         'bluetooth': true,
-        'searching': true,
+        'searching': false,
         'connected': false,
         'connecting': false,
         'selectedDevice': '',
@@ -146,6 +154,18 @@ var DeviceService = function () {
                 "kCBAdvDataTxPowerLevel": 32,
                 "kCBAdvDataIsConnectable": true
             }}
+    ];
+
+    var gattServices = [
+        {"id": 1, "uuid": "123456", "primary": "true", "Characteristics": [
+                {"uuid": "1234", "flags": "read", "User Descriptor": "Some Description"},
+                {"uuid": "2334", "flags": "write", "User Descriptor": "Some Other Description"},
+                {"uuid": "3334", "flags": "notify", "User Descriptor": "Yet Another Description"},
+            ]},
+        {"id": 2, "uuid": "223456", "primary": "true", "Characteristics": [{"uuid": "2345", "flags": "read", "User Descriptor": "A Description"}]},
+        {"id": 3, "uuid": "323456", "primary": "true", "Characteristics": [{"uuid": "2346", "flags": "write", "User Descriptor": "Another Description"}]},
+        {"id": 4, "uuid": "423456", "primary": "true", "Characteristics": [{"uuid": "1345", "flags": "read", "User Descriptor": "So more Description"}]},
+        {"id": 5, "uuid": "523456", "primary": "true", "Characteristics": [{"uuid": "989p", "flags": "read", "User Descriptor": "Some Description"}]},
     ];
 
     function approximationSimuLoop(i, deviceModel, modelControl, finished) {
