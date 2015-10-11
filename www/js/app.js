@@ -42,7 +42,7 @@ function ErrorMessage(title, message) {
         if (view === 'DeviceView') {
             //special handling required
             console.log("DeviceView :: start decisions");
-            var deviceModel = deviceService.getModel();
+            var deviceModel = deviceService.getDeviceModel();
             if (!deviceService.bluetoothEnabled()) {
                 menuService.errView.setModel(new ErrorMessage('Please enable your bluetooth device', 'Use the device settings to enable the bluetooth connection a retry the app functions.'));
                 $('.page-content').html(menuService.errView.render().$el);
@@ -52,15 +52,15 @@ function ErrorMessage(title, message) {
             } else {
                 //if not connected yet -> searcg for devices
                 console.log("DeviceView :: start searching");
-                deviceService.searchDevices().done(function (deviceModel) {
-                    menuService.getView(view).setModel(deviceModel);
-                    menuService.getView(view).render();
+                deviceService.scanForDevices().done(function (deviceModel) {
+                    menuService.getMenuView(view).setModel(deviceModel);
+                    menuService.getMenuView(view).render();
                 });
-                menuService.getView(view).setModel(deviceModel);
-                $('.page-content').html(menuService.getView(view).render().$el);
+                menuService.getMenuView(view).setModel(deviceModel);
+                $('.page-content').html(menuService.getMenuView(view).render().$el);
             }
         } else {
-            $('.page-content').html(menuService.getView(view).render().$el);
+            $('.page-content').html(menuService.getMenuView()(view).render().$el);
         }
     });
 
@@ -79,10 +79,12 @@ function ErrorMessage(title, message) {
     });
 
     router.addRoute('connected/:deviceId', function (deviceId) {
-
+        menuService.deviceServicesView.setModel(deviceService.findAll());
+        $('.page-content').html(menuService.deviceServicesView.render().$el);
     });
 
     router.addRoute('reload/:view', function (view) {
+        //little trick to be able to reload parts of the page with the same url. without reloading the complete page (which causes flickering)
         window.location.href = '#jump/' + view;
     });
 

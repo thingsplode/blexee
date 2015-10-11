@@ -20,8 +20,8 @@ var DeviceService = function () {
         deferred.resolve();
         return deferred.promise();
     };
-    this.searchDevices = function () {
-        console.log('deviceService :: findAll');
+    this.scanForDevices = function () {
+        console.log('deviceService :: searchDevices');
         deviceModel.searching = true;
         var deferred = $.Deferred();
         if (this.bluetoothEnabled()) {
@@ -47,6 +47,8 @@ var DeviceService = function () {
         }
         return deferred.promise();
     };
+    
+    //this.fin
 
     this.approximateAndConnectDevice = function (deviceID, success, failure) {
         deviceModel.searching = false;
@@ -101,7 +103,7 @@ var DeviceService = function () {
         return modelControl;
     };
 
-    this.getModel = function () {
+    this.getDeviceModel = function () {
         return deviceModel;
     };
 

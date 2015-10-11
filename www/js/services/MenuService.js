@@ -36,7 +36,7 @@ var MenuService = function (deviceService) {
         });
         //deviceDemoView.registerModelControl(deviceService.getModelControl());
         
-        this.deviceServicesView = new GenericView('DeviceServicesView', Handlebars.compile($("#device-demo-tpl").html()), function (view) {
+        this.deviceServicesView = new GenericView('DeviceServicesView', Handlebars.compile($("#device-services-tpl").html()), function (view) {
             return '';
         });
 
@@ -90,7 +90,7 @@ var MenuService = function (deviceService) {
         menus.push(menu);
     };
 
-    this.getView = function (viewName) {
+    this.getMenuView = function (viewName) {
         for (i = 0; i < menus.length; i++) {
             if (menus[i].view_name === viewName) {
                 return menus[i].view;
