@@ -26,15 +26,14 @@ function ErrorMessage(title, message) {
     var menuService = new MenuService(deviceService);
 
     //var slider = new PageSlider($('.page-content'));
-    //var slider = new PageSlider($('body'));
-
+    var slider = new PageSlider($('body'));
     menuService.initialize().done(function () {
-        $('body').html(menuService.appContainerView.render().$el);
+       //$('body').html(menuService.appContainerView.render().$el);
+        slider.slidePage(menuService.appContainerView.render().$el);
     });
 
     router.addRoute('', function () {
         console.log('View :: OptionsView');
-        //slider.slidePage(new HomeView(menuService).render().$el);
         $('.page-content').html(menuService.optionsView.render().$el);
     });
 
@@ -88,7 +87,8 @@ function ErrorMessage(title, message) {
             menuService.deviceServicesView.unregisterModelControl();
         }).done(function (deviceModel) {
             menuService.deviceServicesView.setModel(deviceModel);
-            $('.page-content').html(menuService.deviceServicesView.render().$el);
+            //$('.page-content').html(menuService.deviceServicesView.render().$el);
+            slider.slidePage(menuService.deviceServicesView.render().$el);
             menuService.deviceServicesView.registerModelControl(deviceService.getModelControl());
         });
     }, function () {

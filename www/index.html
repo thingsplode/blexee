@@ -35,7 +35,8 @@
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
         <link rel="stylesheet" type="text/css" href="css/mdl/material.css">
         <link rel="stylesheet" type="text/css" href="css/blexee.css">
-        <script src="css/mdl/material.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="css/pageslider.css">
+        <script src="css/mdl/material.js"></script>
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
         <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css">
         <title>blexee control</title>
@@ -43,7 +44,7 @@
     <body>
         <script id="app-container-tpl" type="text/template">
         <!-- Always shows a header, even in smaller screens. -->
-        <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+        <div id="main_page" class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
             <header class="mdl-layout__header">
                 <div class="mdl-layout__header-row">
                     <!-- Title -->
@@ -140,64 +141,85 @@
         </script>
 
         <script id="device-services-tpl" type="text/template">
-            {{#unless this}}{{search}}{{/unless}}
-            {{#if this}}
-                {{#if requestingServices}}
-                    {{search}}
-                {{else}}
-                    {{#each services}}
-                    <div class="service-card-wide mdl-card mdl-shadow--2dp">
-                        <div class="mdl-card__title">
-                            <h2 class="mdl-card__title-text">Service {{uuid}}</h2>
-                        </div>
-                        <div class="mdl-card__supporting-text">
-                            {{#if Characteristics}}
-                                <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp box">
-                                <thead>
-                                    <th class="mdl-data-table__cell--non-numeric">
-                                        <i class="material-icons">memory</i>
-                                        <span style="vertical-align: middle;display: inline-block;">Characteristics</span>
-                                    </th>
-                                </thead>
-                                {{#each Characteristics}}
-                                    <tr>
-                                        <td class="mdl-data-table__cell--non-numeric">
-                                            <b>{{uuid}}</b><br>
-                                            <button class="mdl-button mdl-js-button mdl-button--icon right">
-                                                <i class="material-icons">more_vert</i>
-                                            </button>
-                                            {{flags}}<br>
-                                            {{[User Descriptor]}}
-                                        </td>
-                                    </tr>
-                                {{/each}}
-                                
-                                </table>
-                            {{/if}}
-                        </div>
-                        {{#if Characteristics}}
-                        <div class="mdl-card__menu">
-                            <button id="demo-menu-lower-right" class="mdl-button mdl-js-button mdl-button--icon">
-                                <i class="material-icons">more_vert</i>
-                            </button>
-                            <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="demo-menu-lower-right">
-                            {{#each Characteristics}}
-                                <li class="mdl-menu__item">{{[User Descriptor]}}</li>
-                            {{/each}}
-                            </ul>
-                        </div>
+            <div id="device_page" class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+            <header class="mdl-layout__header">
+                <button id="device_pane_control" class="mdl-button mdl-js-button mdl-button--icon left">
+                        <i class="material-icons">more_vert</i>
+                </button>
+                <div class="mdl-layout__header-row">
+                    <!-- Title -->
+                    <span class="mdl-layout-title">Services</span>
+                    <!-- Add spacer, to align navigation to the right -->
+                    <div class="mdl-layout-spacer"></div>
+                </div>
+            </header>
+            <main class="mdl-layout__content">
+                <div class="page-content">
+                    <!-- Your content goes here -->
+                    {{#unless this}}
+                        {{search}}
+                    {{/unless}}
+                    {{#if this}}
+                        {{#if requestingServices}}
+                            {{search}}
+                        {{else}}
+                            {{#each services}}
+                            <div class="service-card-wide mdl-card mdl-shadow--2dp">
+                                <div class="mdl-card__title">
+                                    <h2 class="mdl-card__title-text">Service {{uuid}}</h2>
+                                </div>
+                                <div class="mdl-card__supporting-text">
+                                    {{#if Characteristics}}
+                                        <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp box">
+                                        <thead>
+                                            <th class="mdl-data-table__cell--non-numeric">
+                                                <i class="material-icons">memory</i>
+                                                <span style="vertical-align: middle;display: inline-block;">Characteristics</span>
+                                            </th>
+                                            <th>
+                                                Action
+                                            </th>
+                                        </thead>
+                                        {{#each Characteristics}}
+                                            <tr>
+                                                <td class="mdl-data-table__cell--non-numeric">
+                                                    <b>{{uuid}}</b><br>
+                                                    {{flags}}<br>
+                                                    {{[User Descriptor]}}
+                                                </td>
+                                                <td align="right">
+                                                    <button id="btn_{{uuid}}" class="mdl-button mdl-js-button mdl-button--icon">
+                                                        <i class="material-icons">crop_free</i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        {{/each}}
+                                        </table>
+                                    {{/if}}
+                                </div>
+                                {{#if Characteristics}}
+                                <div class="mdl-card__menu">
+                                    <button id="demo-menu-lower-right" class="mdl-button mdl-js-button mdl-button--icon right">
+                                        <i class="material-icons">more_vert</i>
+                                    </button>
+                                    <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="demo-menu-lower-right">
+                                    {{#each Characteristics}}
+                                        <li class="mdl-menu__item">{{[User Descriptor]}}</li>
+                                    {{/each}}
+                                    </ul>
+                                </div>
+                                {{/if}}
+                            </div>
+                            {{else}}
+                                <span class="right" style="color:red">Program Error: no services are found.</span>
+                            {{/each}}            
+                            <a class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-color--accent mdl-color-text--accent-contrast ctrlbutton" href="#disconnect">
+                            <i class="material-icons">bluetooth_disabled</i>disconnect
+                            </a>
                         {{/if}}
-                    </div>
-                    {{else}}
-                        <span class="right" style="color:red">Program Error: no services are found.</span>
-                    {{/each}}
-                
-                    <a class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-button--colored ctrlbutton" href="#disconnect">
-                    <i class="material-icons">bluetooth_disabled</i>
-                    </a>
-                {{/if}}
-            {{/if}}
-                    
+                    {{/if}}
+                </div>
+            </main>                
         </script>
         <script id="not-implemented-tpl" type="text/template">
             <div class="title">Empty</div>
