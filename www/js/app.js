@@ -96,6 +96,7 @@ function ErrorMessage(title, message) {
     router.addRoute('connected', function () {
         //http://stackoverflow.com/questions/31492069/material-design-lite-inputs-in-ember-js-app-loses-it-design-after-route-transiti
         //https://github.com/google/material-design-lite/tree/master/src/layout/snippets
+        //http://stackoverflow.com/questions/32957407/material-design-lite-how-to-programatically-reset-a-floating-label-input-text
         $('body').html(menuService.deviceServicesView.render().$el);
         deviceService.requestServices(function (err) {
             menuService.errView.setModel(err);
@@ -124,12 +125,12 @@ function ErrorMessage(title, message) {
     $(document).ready(function () {
         $(document).on('click', '.ble-characteristic-button', function () {
             var charData = $.parseJSON($(this).attr('data-characteristic'));
-            var classText = '#dsc-' + charData.id;
+            var descriptionElmName = '#dsc-' + charData.id;
             var flags = charData.flags.split(',');
-            console.log('button clicked at [' + classText + '] -> flags: [' + flags + ']');
+            console.log('button clicked at [' + descriptionElmName + '] -> flags: [' + flags + ']');
             if (flags.indexOf('write') > -1) {
                 //has write flag
-                $(classText).html('<form class="characteristic-writer" data-service=\"' + charData.serviceUuid + '\" data-characteristic=\"' + charData.charUuid + '\" action=\"\">' +
+                $(descriptionElmName).html('<form class="characteristic-writer" data-service=\"' + charData.serviceUuid + '\" data-characteristic=\"' + charData.charUuid + '\" action=\"\">' +
                         '<div class=\"mdl-textfield mdl-js-textfield mdl-textfield--floating-label short\">' +
                         '<input name="write-data" class=\"mdl-textfield__input\" type=\"text\" pattern=\"-?[A-Fa-f0-9]*(\.[A-Fa-f0-9]+)?\" size=\"30\" id=\"inp-' + charData.id + '\"/>' +
                         '<label class=\"mdl-textfield__label\" for=\"inp-' + charData.id + '\" >' + charData.descriptor + '</label>' +
@@ -152,12 +153,16 @@ function ErrorMessage(title, message) {
                     target.remove();
                 });
                 if (flags.indexOf('read') > -1) {
-                    //has read, write flag
+                    //has read AND write flag
                 }
             } else if (flags.indexOf('notify') > -1) {
                 //has notify
             } else {
                 //only read
+                var cellElementName = '#td-' + charData.id;
+                if (SIMULATION) {
+                    $(descriptionElmName).append('<br>Test');
+                }
             }
         });
 //        $(document).on('click', function () {
