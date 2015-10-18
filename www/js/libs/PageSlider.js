@@ -15,6 +15,9 @@ function PageSlider(container) {
         var l = stateHistory.length,
                 state = window.location.hash;
 
+                //the hash function returns nothing for window location '' 
+                //todo: create a pseudo hash for such situation.
+
         if (l === 0) {
             stateHistory.push(state);
             this.slidePageFrom(page);

@@ -34,12 +34,12 @@
         -->
         <meta name="format-detection" content="telephone=no">
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
-        <link rel="stylesheet" type="text/css" href="css/mdl/material.css">
+        <link rel="stylesheet" type="text/css" href="css/mdl/material.min.css">
         <link rel="stylesheet" type="text/css" href="css/blexee.css">
 <!--        <link rel="stylesheet" type="text/css" href="css/pageslider.css">-->
-        <script src="css/mdl/material.js"></script>
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-        <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css">
+        <link rel="stylesheet" href="css/fonts.css" type="text/css">
+        <script src="css/mdl/material.js"></script>
         <title>blexee control</title>
     </head>
     <body>
@@ -62,7 +62,7 @@
                     {{/each}}
                 </nav>
             </div>
-            <main class="mdl-layout__content">
+            <main class="mdl-layout__content">            
                 <div class="page-content">
                     <!-- Your content goes here -->
                     <div style="color:red; text-align: center;">Undefined Content</div>
@@ -142,70 +142,78 @@
         </script>
 
         <script id="device-services-tpl" type="text/template">
+        <div class="mdl-layout__container">
             <div id="device_page" class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
-            <header class="mdl-layout__header">
-                <div class="mdl-layout__header-row">
-                    <!-- Title -->
-                    <span class="mdl-layout-title">Services</span>
-                    <!-- Add spacer, to align navigation to the right -->
-                    <div class="mdl-layout-spacer"></div>
-                    <a class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon" href="#disconnect">
-                        <i class="material-icons">bluetooth_disabled</i>
-                    </a>
-                </div>
-            </header>
-            <main class="mdl-layout__content">
-                <div class="page-content">
-                    <!-- Your content goes here -->
-                    {{#unless this}}
-                        {{search}}
-                    {{/unless}}
-                    {{#if this}}
-                        {{#if requestingServices}}
+                <header class="mdl-layout__header">
+                    <div class="mdl-layout__drawer-button">
+                        <a class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon" href="#disconnect">
+                            <i class="material-icons">navigate_before</i>
+                        </a>
+                    </div>
+                    <div class="mdl-layout__header-row">
+                        <!-- Title -->
+                        <span class="mdl-layout-title">Services</span>
+                        <!-- Add spacer, to align navigation to the right -->
+                        <div class="mdl-layout-spacer"></div>
+                    </div>
+                </header>
+                <main class="mdl-layout__content">
+                    <div class="page-content">
+                        <!-- Your content goes here -->
+                        {{#unless this}}
                             {{search}}
-                        {{else}}
-                            {{#each services}}
-                            <div class="service-card-wide mdl-card mdl-shadow--2dp">
-                                <div class="mdl-card__title">
-                                    <h2 class="mdl-card__title-text">Service {{uuid}}</h2>
-                                </div>
-                                <div class="mdl-card__supporting-text">
-                                    {{#if Characteristics}}
-                                        <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp box">
-                                        <thead>
-                                            <th class="mdl-data-table__cell--non-numeric">
-                                                <i class="material-icons">memory</i>
-                                                <span style="vertical-align: middle;display: inline-block;">Characteristics</span>
-                                            </th>
-                                            <th>
-                                                Action
-                                            </th>
-                                        </thead>
-                                        {{#each Characteristics}}
-                                            <tr>
-                                                <td class="mdl-data-table__cell--non-numeric">
-                                                    <b>{{uuid}}</b><br>
-                                                    {{flags}}<br>
-                                                    {{[User Descriptor]}}
-                                                </td>
-                                                <td align="right">
-                                                    <button id="btn_{{uuid}}" class="mdl-button mdl-js-button mdl-button--icon">
-                                                        <i class="material-icons">crop_free</i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        {{/each}}
-                                        </table>
-                                    {{/if}}
-                                </div>
-                            </div>
+                        {{/unless}}
+                        {{#if this}}
+                            {{#if requestingServices}}
+                                {{search}}
                             {{else}}
-                                <span class="right" style="color:red">Program Error: no services are found.</span>
-                            {{/each}}            
+                                {{#each services}}
+                                <div class="service-card-wide mdl-card mdl-shadow--2dp">
+                                    <div class="mdl-card__title">
+                                        <h2 class="mdl-card__title-text">Service {{uuid}}</h2>
+                                    </div>
+                                    <div class="mdl-card__supporting-text">
+                                        {{#if Characteristics}}
+                                            <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp box">
+                                            <thead>
+                                                <th class="mdl-data-table__cell--non-numeric">
+                                                    <i class="material-icons">memory</i>
+                                                    <span style="vertical-align: middle;display: inline-block;">Characteristics</span>
+                                                </th>
+                                                <th>
+                                                    Action
+                                                </th>
+                                            </thead>
+                                            {{#each Characteristics}}
+                                                <tr>
+                                                    <td id="td-{{../uuid}}-{{uuid}}" class="mdl-data-table__cell--non-numeric">
+                                                        <p class="small">{{uuid}}</p>
+                                                        <p class="small">{{flags}}</p>
+                                                        <p class="small" id="dsc-{{../uuid}}-{{uuid}}">{{[User Descriptor]}}</p>
+                                                    </td>
+                                                    <td align="right">
+                                                        <button id="btn-{{uuid}}" 
+                                                            class="mdl-button mdl-js-button mdl-button--icon ble-characteristic-button"
+                                                            data-characteristic='{"id":"{{../uuid}}-{{uuid}}","serviceUuid":"{{../uuid}}","charUuid":"{{uuid}}","flags":"{{flags}}","descriptor":"{{[User Descriptor]}}"}'
+                                                        >
+                                                            <i class="material-icons">crop_free</i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            {{/each}}
+                                            </table>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                                {{else}}
+                                    <span class="right" style="color:red">Program Error: no services are found.</span>
+                                {{/each}}            
+                            {{/if}}
                         {{/if}}
-                    {{/if}}
-                </div>
-            </main>                
+                    </div>
+                </main>   
+            </div>
+        </div>
         </script>
         <script id="not-implemented-tpl" type="text/template">
             <div class="title">Empty</div>
@@ -226,14 +234,12 @@
         </script>
 
         <script>
-function toggle_drawer() {
-    var drawer = document.getElementsByClassName('mdl-layout__drawer')[0];
-    drawer.classList.toggle("is-visible");
-}
+            function toggle_drawer() {
+                var drawer = document.getElementsByClassName('mdl-layout__drawer')[0];
+                drawer.classList.toggle("is-visible");
+            }
         </script>
-
-
-        <!--        <script type="text/javascript" src="cordova.js"></script>-->
+        <!-- <script type="text/javascript" src="cordova.js"></script>-->
         <script type="text/javascript" src="js/libs/handlebars.js/handlebars.min.js"></script>
         <script type="text/javascript" src="js/libs/jquery/jquery.js"></script>
         <script type="text/javascript" src="js/libs/PageSlider.js"></script>

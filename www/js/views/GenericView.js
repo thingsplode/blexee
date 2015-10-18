@@ -1,9 +1,9 @@
 var GenericView = function (viewName, template, dataProvider) {
 
     var mdl, modelCtrl;
-    
+
     this.initialize = function () {
-        this.$el = $('<div/>');
+        this.$el = $('<div id="generic_view"/>');
         mdl = dataProvider(this);
         this.render(mdl);
         console.log(viewName + ' :: initialized');
@@ -20,7 +20,9 @@ var GenericView = function (viewName, template, dataProvider) {
     };
 
     this.unregisterModelControl = function () {
-        modelCtrl.off();
+        if (typeof modelCtrl !== 'undefined') {
+            modelCtrl.off();
+        }
     };
 
     this.setModel = function (model) {

@@ -72,9 +72,10 @@ var DeviceService = function () {
                     console.log('SIMU --> triggered service retrieval simuation');
                 }, 2000);
             }
+            deferred.resolve(deviceModel);
+            return deferred.promise();
         }
-        deferred.resolve(deviceModel);
-        return deferred.promise();
+        return $.Deferred().resolve().promise();
     };
 
     this.approximateAndConnectDevice = function (deviceID, success, failure) {
@@ -120,11 +121,11 @@ var DeviceService = function () {
 
     this.disconnect = function (deviceID) {
         //if (deviceModel.selectedDevice['id'] === deviceID){
-            deviceModel.connecting = false;
-            deviceModel.connected = false;
-            deviceModel.searching = false;
-            deviceModel.selectedDevice = '';
-            deviceModel.devices = [];
+        deviceModel.connecting = false;
+        deviceModel.connected = false;
+        deviceModel.searching = false;
+        deviceModel.selectedDevice = '';
+        deviceModel.devices = [];
         //} else {        };
     };
 

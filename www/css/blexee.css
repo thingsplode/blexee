@@ -22,6 +22,10 @@ td {
     text-align: left;
 }
 
+.short {
+    width: 150px;
+}
+
 .title {
     color: #607D8B;
     font-size: 2em;
@@ -44,6 +48,12 @@ p {
     margin-left: 1em;
 }
 
+p.small {
+    text-align: inherit;
+    margin: 0em;
+    font-size: 1em;
+    font-stretch: normal;
+}
 .right {
     float: right;
     margin-top: 0.4em;
