@@ -2,6 +2,7 @@
 
  var DEBUG_MODE = true;
  var SIMULATION = true;
+ var DEVICE_PRESENT = false;
 
  var simuData = {
      'bluetooth_enabled': true,
@@ -45,6 +46,7 @@
             };
         }
         //alert('device ready');
+        DEVICE_PRESENT = true;
     }, false);
 
     var deviceService = new DeviceService();
