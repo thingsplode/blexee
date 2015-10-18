@@ -2,7 +2,7 @@
 <widget xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0" id="com.thingsplode.blexee" version="1.0.0">
     <name>blexee</name>
     <description>
-        A sample Apache Cordova application that responds to the deviceready event.
+        A bluetooth low energy test application
     </description>
     <author email="dev@cordova.apache.org" href="http://cordova.io">
         Apache Cordova Team
@@ -23,4 +23,7 @@
         <allow-intent href="itms:*"/>
         <allow-intent href="itms-apps:*"/>
     </platform>
+    <preference name="StatusBarOverlaysWebView" value="false"/>
+    <preference name="StatusBarBackgroundColor" value="#3F51B5" />
+    <preference name="StatusBarStyle" value="lightcontent" />
 </widget>

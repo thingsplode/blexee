@@ -1,22 +1,5 @@
 <!DOCTYPE html>
 <!--
-    Licensed to the Apache Software Foundation (ASF) under one
-    or more contributor license agreements.  See the NOTICE file
-    distributed with this work for additional information
-    regarding copyright ownership.  The ASF licenses this file
-    to you under the Apache License, Version 2.0 (the
-    "License"); you may not use this file except in compliance
-    with the License.  You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing,
-    software distributed under the License is distributed on an
-    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-     KIND, either express or implied.  See the License for the
-    specific language governing permissions and limitations
-    under the License.
-
     Google Icons
     https://www.google.com/design/icons/
 
@@ -24,7 +7,7 @@
 
     Cordova: writing to a file: http://www.raymondcamden.com/2014/11/05/Cordova-Example-Writing-to-a-file
     Cordova writing to file: https://dzone.com/articles/cordova-example-writing-file
-    
+
 -->
 <html>
     <head>
@@ -67,7 +50,7 @@
                     {{/each}}
                 </nav>
             </div>
-            <main class="mdl-layout__content">            
+            <main class="mdl-layout__content">
                 <div class="page-content">
                     <!-- Your content goes here -->
                     <div style="color:red; text-align: center;">Undefined Content</div>
@@ -124,7 +107,7 @@
         <p>Please approach the device.</p>
             <!-- lilla: #BA65C9 green: #ACEC00 nice blue: #69aff4-->
             <!-- http://www.smashingmagazine.com/2015/07/designing-simple-pie-charts-with-css/ -->
-            
+
             <style>
                 .pie_circle {
                     fill: none;
@@ -198,7 +181,7 @@
                                                         <p class="small" id="dsc-{{../uuid}}-{{uuid}}">{{[User Descriptor]}}</p>
                                                     </td>
                                                     <td align="right">
-                                                        <button id="btn-{{uuid}}" 
+                                                        <button id="btn-{{uuid}}"
                                                             class="mdl-button mdl-js-button mdl-button--icon ble-characteristic-button"
                                                             data-characteristic='{"id":"{{../uuid}}-{{uuid}}","serviceUuid":"{{../uuid}}","charUuid":"{{uuid}}","flags":"{{flags}}","descriptor":"{{[User Descriptor]}}"}'
                                                         >
@@ -213,11 +196,11 @@
                                 </div>
                                 {{else}}
                                     <span class="right" style="color:red">Program Error: no services are found.</span>
-                                {{/each}}            
+                                {{/each}}
                             {{/if}}
                         {{/if}}
                     </div>
-                </main>   
+                </main>
             </div>
         </div>
         </script>
@@ -245,7 +228,8 @@
                 drawer.classList.toggle("is-visible");
             }
         </script>
-        <!-- <script type="text/javascript" src="cordova.js"></script>-->
+        <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="js/libs/fastclick.js"></script>
         <script type="text/javascript" src="js/libs/handlebars.js/handlebars.min.js"></script>
         <script type="text/javascript" src="js/libs/jquery/jquery.js"></script>
         <script type="text/javascript" src="js/libs/PageSlider.js"></script>
