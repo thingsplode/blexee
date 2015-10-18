@@ -29,12 +29,17 @@ function ErrorMessage(title, message) {
     var slider = new PageSlider($('body'));
     menuService.initialize().done(function () {
        //$('body').html(menuService.appContainerView.render().$el);
-        slider.slidePage(menuService.appContainerView.render().$el);
+        //slider.slidePage(menuService.appContainerView.render().$el);
+        //$('.page-content').html(menuService.optionsView.render().$el);
+        
+        var frame = menuService.appContainerView.render().$el;
+        frame.find('.page-content').html(menuService.optionsView.render().$el);
+        slider.slidePage(frame);
     });
 
     router.addRoute('', function () {
         console.log('View :: OptionsView');
-        $('.page-content').html(menuService.optionsView.render().$el);
+        
     });
 
     router.addRoute('jump/:view', function (view) {
@@ -93,6 +98,14 @@ function ErrorMessage(title, message) {
         });
     }, function () {
         menuService.deviceServicesView.unregisterModelControl();
+    });
+    
+    router.addRoute('disconnect', function(){
+        deviceService.disconnect();
+        var frame = menuService.appContainerView.render().$el;
+        frame.find('.page-content').html(menuService.optionsView.render().$el);
+        slider.slidePage(frame);
+        window.location.href = '#';
     });
 
     router.addRoute('reload/:view', function (view) {

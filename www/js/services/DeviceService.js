@@ -118,6 +118,16 @@ var DeviceService = function () {
         }
     };
 
+    this.disconnect = function (deviceID) {
+        //if (deviceModel.selectedDevice['id'] === deviceID){
+            deviceModel.connecting = false;
+            deviceModel.connected = false;
+            deviceModel.searching = false;
+            deviceModel.selectedDevice = '';
+            deviceModel.devices = [];
+        //} else {        };
+    };
+
     this.getGattServices = function () {
         console.log('DeviceService :: getGattServices');
         var deferred = $.Deferred();
@@ -188,7 +198,7 @@ var DeviceService = function () {
     ];
 
     var gattServices = [
-            {"id": 1, "uuid": "0x1800", "primary": "true", "Characteristics": [
+        {"id": 1, "uuid": "0x1800", "primary": "true", "Characteristics": [
                 {"uuid": "0x2A00", "flags": "read,write", "User Descriptor": "device_name"},
                 {"uuid": "0x2A01", "flags": "read", "User Descriptor": "appearance"},
                 {"uuid": "3334", "flags": "notify", "User Descriptor": "Yet Another Description"},

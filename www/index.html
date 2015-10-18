@@ -19,6 +19,7 @@
 
     Google Icons
     https://www.google.com/design/icons/
+    
 -->
 <html>
     <head>
@@ -143,14 +144,14 @@
         <script id="device-services-tpl" type="text/template">
             <div id="device_page" class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
             <header class="mdl-layout__header">
-                <button id="device_pane_control" class="mdl-button mdl-js-button mdl-button--icon left">
-                        <i class="material-icons">more_vert</i>
-                </button>
                 <div class="mdl-layout__header-row">
                     <!-- Title -->
                     <span class="mdl-layout-title">Services</span>
                     <!-- Add spacer, to align navigation to the right -->
                     <div class="mdl-layout-spacer"></div>
+                    <a class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon" href="#disconnect">
+                        <i class="material-icons">bluetooth_disabled</i>
+                    </a>
                 </div>
             </header>
             <main class="mdl-layout__content">
@@ -197,25 +198,10 @@
                                         </table>
                                     {{/if}}
                                 </div>
-                                {{#if Characteristics}}
-                                <div class="mdl-card__menu">
-                                    <button id="demo-menu-lower-right" class="mdl-button mdl-js-button mdl-button--icon right">
-                                        <i class="material-icons">more_vert</i>
-                                    </button>
-                                    <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="demo-menu-lower-right">
-                                    {{#each Characteristics}}
-                                        <li class="mdl-menu__item">{{[User Descriptor]}}</li>
-                                    {{/each}}
-                                    </ul>
-                                </div>
-                                {{/if}}
                             </div>
                             {{else}}
                                 <span class="right" style="color:red">Program Error: no services are found.</span>
                             {{/each}}            
-                            <a class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-color--accent mdl-color-text--accent-contrast ctrlbutton" href="#disconnect">
-                            <i class="material-icons">bluetooth_disabled</i>disconnect
-                            </a>
                         {{/if}}
                     {{/if}}
                 </div>
