@@ -3,7 +3,7 @@ var GenericView = function (viewName, template, dataProvider) {
     var mdl, modelCtrl;
     
     this.initialize = function () {
-        this.$el = $('<div id="main"/>');
+        this.$el = $('<div/>');
         mdl = dataProvider(this);
         this.render(mdl);
         console.log(viewName + ' :: initialized');

@@ -16,17 +16,16 @@ function PageSlider(container) {
                 state = window.location.hash;
 
         if (l === 0) {
-            console.log('STATE HISTORY IS EMPTY');
             stateHistory.push(state);
             this.slidePageFrom(page);
             return;
         }
         if (state === stateHistory[l - 2]) {
             stateHistory.pop();
-            this.slidePageFrom(page, 'down');
+            this.slidePageFrom(page, 'left');
         } else {
             stateHistory.push(state);
-            this.slidePageFrom(page, 'up');
+            this.slidePageFrom(page, 'right');
         }
 
     };
@@ -34,12 +33,12 @@ function PageSlider(container) {
     // Use this function directly if you want to control the sliding direction outside PageSlider
     this.slidePageFrom = function (page, from) {
 
-        container.append(page);
-        //container.html(page);
+        //container.append(page);
+        container.html(page);
 
         if (!currentPage || !from) {
             console.log("SETTING CURRENT PAGE");
-            page.attr("class", "page center");
+            page.attr("class", "sliderpage center");
             currentPage = page;
             return;
         }
@@ -48,14 +47,13 @@ function PageSlider(container) {
         console.log('New Page: ' + page.attr("class"));
 
         // Position the page at the starting position of the animation
-        page.attr("class", "page " + from);
+        page.attr("class", "sliderpage " + from);
 
 
         currentPage.on('webkitTransitionEnd', function (e) {
             var target = $(e.target);
             var evtTargetClass = target.attr("class");
-            console.log('indexof page [' + evtTargetClass.indexOf('page') + ']');
-            if (evtTargetClass.indexOf('page') > -1) {
+            if (evtTargetClass.indexOf('sliderpage') > -1) {
                 console.log('target (to be removed) class ->' + target.attr("class"));
                 target.remove();
             } else {
@@ -68,8 +66,8 @@ function PageSlider(container) {
         container[0].offsetWidth;
 
         // Position the new page and the current page at the ending position of their animation with a transition class indicating the duration of the animation
-        page.attr("class", "page transition center");
-        currentPage.attr("class", "page transition " + (from === "down" ? "up" : "down"));
+        page.attr("class", "sliderpage transition center");
+        currentPage.attr("class", "sliderpage transition " + (from === "left" ? "right" : "left"));
         currentPage = page;
     };
 
