@@ -196,7 +196,7 @@ var DeviceService = function () {
                     console.log("proximity [" + deviceModel.selectedDevice.proximity + "] at rssi [" + providedRssi + "]");
                     deviceModel.selectedDevice.proximity = getPercentFromRssi(providedRssi);
                     modelControl.update(providedRssi);
-                    if (providedRssi < -31 && !aborted) {
+                    if (providedRssi < CONNECT_LIMIT && !aborted) {
                         //todo: sometimes the rssi is very high (eg +127), so a double check is needed
                         console.log("HW --> the device is not close enough, rescanning...");
                         setTimeout(function () {
@@ -281,7 +281,8 @@ var DeviceService = function () {
                 //simulation mode
                 setTimeout(function () {
                     if (simuData.services_available) {
-                        deviceModel.services = getGattServices(bigPeripheralObj);
+                        //deviceModel.services = getGattServices(bigPeripheralObj);
+                        deviceModel.services = getGattServices(peripheralObjectReal);
                     }
                     deviceModel.requestingServices = false;
                     console.log('SIMU --> triggered service retrieval simulation |devicemodel.services| ' + JSON.stringify(deviceModel.services));
