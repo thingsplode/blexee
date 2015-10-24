@@ -1,14 +1,47 @@
-I/* global SIMULATION, simuData */
+/* global SIMULATION, simuData, ble */
 
 var DeviceService = function () {
 
+    var deviceModel = {
+        /*
+         * true is bluetooth device is enabled
+         */
+        bluetooth: true,
+        /*
+         * true while searching for bluetooth low energy devices
+         */
+        searching: false,
+        /*
+         * true while approximating and connecting to a ble device
+         */
+        connecting: false,
+        /*
+         * True while requesting gatt services from a connected ble device
+         */
+        requestingServices: false,
+        /*
+         * true when connected to a ble device
+         */
+        connected: false,
+        /*
+         * the details of the ble device which we are going to connect to or which we have connected to
+         */
+        selectedDevice: '',
+        /*
+         * all available devices found by the scanning operation
+         */
+        devices: [],
+        /*
+         * the gatt services of devices
+         */
+        services: []
+    };
     var modelControl = $.extend($({}), (function (o) {
         o.update = function () {
             o.trigger('modup', deviceModel);
         };
         return o;
     })($({})));
-
     this.initialize = function () {
         // No Initialization required
         var deferred = $.Deferred();
@@ -20,42 +53,168 @@ var DeviceService = function () {
         deferred.resolve();
         return deferred.promise();
     };
-
+    /*
+     * Scans bluetooth low energy devices
+     * @returns {unresolved} a promis which you can refer with done()
+     */
     this.scanForDevices = function () {
         console.log('deviceService :: scan for devices');
         deviceModel.searching = true;
         var deferred = $.Deferred();
-        this.bluetoothEnabled.done(function (bluetoothStatus){
-         if (bluetoothStatus) {
-             if (SIMULATION) {
-                 //simulation
-                 setTimeout(function () {
-                     console.log('--> device service timeout simulation triggered');
-                     console.log("SIMU --> devices: " + simuData.devices_available);
-                     if (simuData.devices_available) {
-                         deviceModel.devices = devices;
-                     }
-                     deviceModel.bluetooth = true;
-                     deviceModel.searching = false;
-                     deferred.resolve(deviceModel);
-                 }, 2000);
-             } else {
-                 //real use case
-                 deviceModel.searching = false;
-                 deviceModel.bluetooth = false;
-                 //modelControl.update();
-                 ble.startScan([],function(){},function);
-                 deferred.resolve(deviceModel);
-             }
-         } else {
-             deviceModel.searching = false;
-             deviceModel.bluetooth = false;
-             modelControl.update();
-             deferred.resolve(deviceModel);
-         };
+        this.bluetoothEnabled().done(function (bluetoothEnabledStatus) {
+            if (bluetoothEnabledStatus) {
+                if (SIMULATION) {
+                    //simulation
+                    setTimeout(function () {
+                        console.log('--> device service timeout simulation triggered');
+                        console.log("SIMU --> devices: " + simuData.devices_available);
+                        if (simuData.devices_available) {
+                            deviceModel.devices = simuDevices;
+                        }
+                        deviceModel.bluetooth = true;
+                        deviceModel.searching = false;
+                        deferred.resolve(deviceModel);
+                    }, 2000);
+                } else {
+                    //real use case
+                    deviceModel.searching = true;
+                    deviceModel.selectedDevice = '';
+                    deviceModel.devices = [];
+                    deviceModel.services = [];
+                    ble.startScan([], function (device) {
+                        //found a device
+                        console.log('HW --> device found: ' + JSON.stringify(device));
+                        deviceModel.devices.push(device);
+                        modelControl.update();
+                    }, function () {
+                        //failure while searching for a device
+                        console.log('HW --> failure while scanning for device.');
+                    });
+                    setTimeout(ble.stopScan,
+                            5000,
+                            function () {
+                                console.log("HW --> Scan complete");
+                                deviceModel.searching = false;
+                                deferred.resolve(deviceModel);
+                            },
+                            function () {
+                                console.log("HW --> stopScan failed");
+                                deviceModel.searching = false;
+                                deferred.resolve(deviceModel);
+                            }
+                    );
+                }
+            } else {
+                //bluetooth is not enabled
+                deviceModel.searching = false;
+                deviceModel.bluetooth = false;
+                modelControl.update();
+                deferred.resolve(deviceModel);
+            }
+            ;
         });
         return deferred.promise();
     };
+    this.approximateAndConnectDevice = function (deviceID, success, failure) {
+        deviceModel.searching = false;
+        deviceModel.connected = false;
+        deviceModel.connecting = false;
+        //todo: make a prescan
+        if (SIMULATION) {
+            //in simulation mode
+            deviceModel.devices = simuDevices;
+        }
+
+        if (deviceModel.devices) {
+            //configure selected device in simu mode
+            for (i = 0; i < deviceModel.devices.length; i++) {
+                if (deviceModel.devices[i].id === deviceID) {
+                    deviceModel.connecting = true;
+                    deviceModel.selectedDevice = deviceModel.devices[i];
+                    console.log("--> found device to connect to: " + JSON.stringify(deviceModel.selectedDevice));
+                    break;
+                }
+            }
+        }
+
+        if (deviceModel.selectedDevice !== null && deviceModel.connecting) {
+            if (SIMULATION) {
+                if (simuData.can_connect) {
+                    approximationSimuLoop(-100, deviceModel, modelControl, function () {
+                        deviceModel.connecting = false;
+                        deviceModel.connected = true;
+                        deviceModel.searching = false;
+                        success();
+                    });
+                } else {
+                    failure(new ErrorMessage("Cannot Connect", "Connection currently is in simulation mode and is not allowed. Please re-set the can_connect value in the simuData object."));
+                }
+            } else {
+                //in REAL hardware mode
+                //rssi to be expected between -100 and -26
+                var rssi = -100;
+                //console.log("HW --> BLE device proximity value: " + x + " [at rssi: ]" + i);
+                deviceModel.connectedDevice.proximity = getPercentFromRssi(rssi);
+                modelControl.update(rssi);
+                approximationLoop(deviceID, function (peripheralObject) {
+                    //succeeded
+                    // a peripheral object is handed over: https://github.com/don/cordova-plugin-ble-central/tree/a16b1746cba3292e5eb2f2b026cfbd465ea59c5f#peripheral-data
+                    deviceModel.connecting = false;
+                    deviceModel.connected = true;
+                    deviceModel.searching = false;
+                    deviceModel.services = peripheralObject;
+                    console.log('HW --> Connection was succesfull; peripheral object: ' + JSON.stringify(peripheralObject));
+                    success();
+                }, function (title, text) {
+                    //failed
+                    failure(new ErrorMessage(title, text));
+                });
+            }
+        } else {
+            failure("Cannot connect", "No device was selected and it is not in connecting mode.");
+        }
+    };
+
+    function approximationLoop(devID, succeeded, failed) {
+        var aborted = false;
+        scanHardware(devID).done(function (providedRssi) {
+            deviceModel.connectedDevice.proximity = getPercentFromRssi(providedRssi);
+            modelControl.update(providedRssi);
+            if (providedRssi < -26 && !aborted) {
+                approximationLoop(deviceModel, succeeded, failed);
+            } else {
+                ble.connect(devID, succeeded, failed);
+            }
+        }).fail(function (title, text) {
+            console.log('HW --> failed to approximate and loop');
+            aborted = true;
+            disconnect(function () {
+            }, function () {
+            });
+            failed(title, text);
+        });
+    }
+
+    function scanHardware(deviceID) {
+        var deferred = $.Deferred();
+        ble.startScan([], function (device) {
+            if (device.id === deviceID) {
+                ble.stopScan(function () {
+                    deferred.resolve(device.rssi);
+                }, function () {
+                    //failing to stop scanning
+                    deferred.reject("Could not stop scaning", "The device was scanned, but scanning could not be stopped.");
+                });
+            }
+        }, function () {
+            deferred.reject("Could not start scaning", "There was an error, the system could not be scanned.");
+        });
+        return deferred.promise();
+    }
+
+    function getPercentFromRssi(rssi) {
+        return 100 - (rssi * -1);
+    }
 
     this.requestServices = function (failure) {
         console.log('deviceService :: requesting available services');
@@ -67,9 +226,15 @@ var DeviceService = function () {
             deviceModel.requestingServices = true;
             var deferred = $.Deferred();
             if (!SIMULATION) {
-                //real use case
-                failure(new ErrorMessage('Simulation is disabled', 'Real hardware support is not enabled yet'));
+                //real HW use case
+                if (deviceModel.connected && deviceModel.selectedDevice) {
+                    //services are already retrieved while connecting and added to the device model
+                    deferred.resolve(deviceModel);
+                } else {
+                    failure(new ErrorMessage('Device is not connected', 'The device is not connected or device services are not recognized.'));
+                }
             } else {
+                //simulation mode
                 setTimeout(function () {
                     if (simuData.services_available) {
                         deviceModel.services = gattServices;
@@ -85,108 +250,61 @@ var DeviceService = function () {
         return $.Deferred().resolve().promise();
     };
 
-    this.approximateAndConnectDevice = function (deviceID, success, failure) {
-        deviceModel.searching = false;
-        deviceModel.connected = false;
-        deviceModel.connecting = false;
-        //todo: make a prescan
-        if (SIMULATION) {
-            deviceModel.devices = devices;
-        } else {
-            failure();
-        }
 
-        if (deviceModel.devices) {
-            for (i = 0; i < deviceModel.devices.length; i++) {
-                if (deviceModel.devices[i].id === deviceID) {
-                    deviceModel.connecting = true;
-                    deviceModel.selectedDevice = deviceModel.devices[i];
-                    console.log("--> found device to connect to: " + JSON.stringify(deviceModel.selectedDevice));
-                    break;
-                }
-            }
-            if (deviceModel.selectedDevice !== null && deviceModel.connecting) {
-                if (SIMULATION) {
-                    if (simuData.can_connect) {
-                        approximationSimuLoop(-100, deviceModel, modelControl, function () {
-                            deviceModel.connecting = false;
-                            deviceModel.connected = true;
-                            deviceModel.searching = false;
-                            success();
-                        });
-                    } else {
-                        failure(new ErrorMessage("Cannot Connect", "Connection currently is in simulation mode and is not allowed. Please re-set the can_connect value in the simuData object."));
-                    }
-                } else {
-                    failure("Cannot Connect", "Simulation is not enabled, but the real hardware is not implemented yet.");
-                }
-            } else {
-                console.log('Cannot connect to device, because selected device must be different from null and connecting should be true, while connecting ['+deviceModel.connecting+'] & selected device: ['+JSON.stringify(deviceModel.selectedDevice)+']');
-                failure("Cannot connect", "No device was selected and it is not in connecting mode.");
-            }
-        }
-    };
-
-    this.disconnect = function (deviceID) {
-        //if (deviceModel.selectedDevice['id'] === deviceID){
+    this.disconnect = function (success, failure) {
         deviceModel.connecting = false;
         deviceModel.connected = false;
         deviceModel.searching = false;
         deviceModel.selectedDevice = '';
         deviceModel.devices = [];
-        //} else {        };
-    };
+        deviceModel.services = [];
 
-    this.getGattServices = function () {
-        console.log('DeviceService :: getGattServices');
-        var deferred = $.Deferred();
-        deferred.resolve(gattServices);
-        return deferred.promise();
+        if (!SIMULATION && deviceModel.connected) {
+            ble.isConnected(deviceModel.selectedDevice.id, function () {
+                ble.disconnect(deviceModel.selectedDevice.id, success, failure);
+            }, function () {
+                //was not connected
+                console.log('HW --> Device [' + deviceModel.selectedDevice.id + '] was not connected.');
+            });
+        } else {
+            //simu mode
+            success();
+        }
     };
-
 
     this.getModelControl = function () {
         return modelControl;
     };
-
     this.getDeviceModel = function () {
         return deviceModel;
     };
-
-    var deviceModel = {
-        bluetooth: true,
-        searching: false,
-        connecting: false,
-        requestingServices: false,
-        connected: false,
-        selectedDevice: '',
-        devices: [],
-        services: []
-    };
-
+    /*
+     * Checks if the bluetooth device is enabled.
+     * @returns {unresolved}
+     */
     this.bluetoothEnabled = function () {
         var deferred = $.Deferred();
         if (SIMULATION) {
+            //simulation mode is activated
             console.log("SIMU --> bluetooth: " + simuData.bluetooth_enabled);
             deferred.resolve(simuData.bluetooth_enabled);
         } else {
-             ble.isEnabled(function(){
-              //success
-              console.info('HW :: --> bluetooth is enabled.');
-              deviceModel.bluetooth = true;
-              deferred.resolve(true);
-             }, function(){
-              //failure
-              console.info('HW :: --> bluetooth is false.');
-              deviceModel.bluetooth = false;
-              deferred.resolve(false);
-             });
+            //real hardware mode
+            ble.isEnabled(function () {
+                //success
+                console.info('HW :: --> bluetooth is enabled.');
+                deviceModel.bluetooth = true;
+                deferred.resolve(true);
+            }, function () {
+                //failure
+                console.info('HW :: --> bluetooth is false.');
+                deviceModel.bluetooth = false;
+                deferred.resolve(false);
+            });
         }
         return deferred.promise();
-
     };
-
-    var devices = [{"name": "TI SensorTag", "id": "BD922605-1B07-4D55-8D09-B66653E51BBA", "rssi": -79, "advertising": {
+    var simuDevices = [{"name": "TI SensorTag", "id": "BD922605-1B07-4D55-8D09-B66653E51BBA", "rssi": -79, "advertising": {
                 "kCBAdvDataChannel": 37,
                 "kCBAdvDataServiceData": {
                     "FED8": {
@@ -217,7 +335,6 @@ var DeviceService = function () {
                 "kCBAdvDataIsConnectable": true
             }}
     ];
-
     var gattServices = [
         {"id": 1, "uuid": "0x1800", "primary": "true", "Characteristics": [
                 {"uuid": "0x2A00", "flags": "read,write", "User Descriptor": "device_name"},
@@ -230,6 +347,14 @@ var DeviceService = function () {
         {"id": 5, "uuid": "523456", "primary": "true", "Characteristics": [{"uuid": "989p", "flags": "read", "User Descriptor": "Some Description"}]},
     ];
 
+    /**
+     * 
+     * @param {type} i loop count (should be -100)
+     * @param {type} deviceModel the model whihc contains all the devices
+     * @param {type} modelControl the model control which needs to be updated
+     * @param {type} finished finish method
+     * @returns {undefined}
+     */
     function approximationSimuLoop(i, deviceModel, modelControl, finished) {
         setTimeout(function () {
             var x = 100 - (i * -1);
