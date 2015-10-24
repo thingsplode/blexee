@@ -1,19 +1,20 @@
 /* global HomeView, Handlebars, DeviceView, StatusBar, FastClick, router, DEBUG_MODE */
 
- var DEBUG_MODE = true;
- var SIMULATION = true;
+var DEBUG_MODE = true;
+var SIMULATION = false;
+var DEVICE_PRESENT = false;
 
- var simuData = {
-     'bluetooth_enabled': true,
-     'devices_available': true,
-     'can_connect': true,
-     'services_available': true
- };
+var simuData = {
+    'bluetooth_enabled': true,
+    'devices_available': true,
+    'can_connect': true,
+    'services_available': true
+};
 
- function ErrorMessage(title, message) {
-     this.title = title;
-     this.message = message;
- }
+function ErrorMessage(title, message) {
+    this.title = title;
+    this.message = message;
+}
 
 (function () {
 
@@ -44,7 +45,8 @@
                         );
             };
         }
-        alert('device ready');
+        //alert('device ready');
+        DEVICE_PRESENT = true;
     }, false);
 
     var deviceService = new DeviceService();
@@ -139,8 +141,15 @@
         menuService.deviceServicesView.unregisterModelControl();
     });
     router.addRoute('disconnect', function () {
-        deviceService.disconnect();
-        window.location.href = '';
+        deviceService.disconnect(function () {
+            //success
+            window.location.href = '';
+        }, function () {
+            //failure
+            menuService.errView.setModel(new ErrorMessage('Could not disconnect', 'This is a yet unhandled failure.'));
+            $('.page-content').html(menuService.errView.render().$el);
+
+        });
     });
     router.addRoute('reload/:view', function (view) {
         //little trick to be able to reload parts of the page with the same url. without reloading the complete page (which causes flickering)
