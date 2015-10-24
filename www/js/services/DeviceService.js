@@ -258,22 +258,22 @@ var DeviceService = function () {
         return proximity;
     }
 
-    this.requestServices = function (failure) {
+    this.requestServices = function () {
+        var deferred = $.Deferred();
         console.log('deviceService :: requesting available services');
         if (!deviceModel.connected) {
-            failure(new ErrorMessage('Device is not connected', 'Before requesting device-services, please connect first a bluetooth low energy device'));
+            deferred.reject(new ErrorMessage('Device is not connected', 'Before requesting device-services, please connect first a bluetooth low energy device'));
         } else if (!this.bluetoothEnabled()) {
-            failure(new ErrorMessage('Bluetooth is not enabled', 'Before requesting device-services, please enable your bluetooth and connect a bluetooth low energy device'));
+            deferred.reject(new ErrorMessage('Bluetooth is not enabled', 'Before requesting device-services, please enable your bluetooth and connect a bluetooth low energy device'));
         } else {
             deviceModel.requestingServices = true;
-            var deferred = $.Deferred();
             if (!SIMULATION) {
                 //real HW use case
                 if (deviceModel.connected && deviceModel.selectedDevice) {
                     //services are already retrieved while connecting and added to the device model
                     deferred.resolve(deviceModel);
                 } else {
-                    failure(new ErrorMessage('Device is not connected', 'The device is not connected or device services are not recognized.'));
+                    deferred.reject(new ErrorMessage('Device is not connected', 'The device is not connected or device services are not recognized.'));
                 }
             } else {
                 //simulation mode
@@ -284,12 +284,11 @@ var DeviceService = function () {
                     deviceModel.requestingServices = false;
                     modelControl.update();
                     console.log('SIMU --> triggered service retrieval simuation');
+                    deferred.resolve(deviceModel);
                 }, 2000);
             }
-            deferred.resolve(deviceModel);
-            return deferred.promise();
         }
-        return $.Deferred().resolve().promise();
+        return deferred.promise();
     };
 
 

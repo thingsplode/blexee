@@ -126,16 +126,16 @@ function ErrorMessage(title, message) {
         //https://github.com/google/material-design-lite/tree/master/src/layout/snippets
         //http://stackoverflow.com/questions/32957407/material-design-lite-how-to-programatically-reset-a-floating-label-input-text
         $('body').html(menuService.deviceServicesView.render().$el);
-        deviceService.requestServices(function (err) {
-            menuService.errView.setModel(err);
-            $('.page-content').html(menuService.errView.render().$el);
-            //slider.slidePage(menuService.errView.render().$el);
-            menuService.deviceServicesView.unregisterModelControl();
-        }).done(function (deviceModel) {
+        deviceService.requestServices().done(function (deviceModel) {
             menuService.deviceServicesView.setModel(deviceModel);
             //$('.page-content').html(menuService.deviceServicesView.render().$el);
             //slider.slidePage(menuService.deviceServicesView.render().$el);
             menuService.deviceServicesView.registerModelControl(deviceService.getModelControl());
+        }).fail(function (errMsg) {
+            menuService.errView.setModel(errMsg);
+            $('.page-content').html(menuService.errView.render().$el);
+            //slider.slidePage(menuService.errView.render().$el);
+            menuService.deviceServicesView.unregisterModelControl();
         });
     }, function () {
         menuService.deviceServicesView.unregisterModelControl();
