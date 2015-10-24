@@ -126,11 +126,12 @@ function ErrorMessage(title, message) {
         //https://github.com/google/material-design-lite/tree/master/src/layout/snippets
         //http://stackoverflow.com/questions/32957407/material-design-lite-how-to-programatically-reset-a-floating-label-input-text
         $('body').html(menuService.deviceServicesView.render().$el);
-        deviceService.requestServices().done(function (deviceModel) {
-            menuService.deviceServicesView.setModel(deviceModel);
+        menuService.deviceServicesView.registerModelControl(deviceService.getModelControl());
+        
+        deviceService.requestServices().done(function () {
+            //menuService.deviceServicesView.setModel(deviceModel);
             //$('.page-content').html(menuService.deviceServicesView.render().$el);
-            //slider.slidePage(menuService.deviceServicesView.render().$el);
-            menuService.deviceServicesView.registerModelControl(deviceService.getModelControl());
+            //slider.slidePage(menuService.deviceServicesView.render().$el);            
         }).fail(function (errMsg) {
             menuService.errView.setModel(errMsg);
             $('.page-content').html(menuService.errView.render().$el);
@@ -159,11 +160,12 @@ function ErrorMessage(title, message) {
     router.start();
     $(document).ready(function () {
         $(document).on('click', '.ble-characteristic-button', function () {
+            //the characteristics button was pressed
             var charData = $.parseJSON($(this).attr('data-characteristic'));
             var descriptionElmName = '#dsc-' + charData.id;
             var flags = charData.flags.split(',');
             console.log('button clicked at [' + descriptionElmName + '] -> flags: [' + flags + ']');
-            if (flags.indexOf('write') > -1) {
+            if (flags.indexOf('Write') > -1) {//todo: the write here is case sensitive
                 //has write flag
                 $(descriptionElmName).html('<form class="characteristic-writer" data-service=\"' + charData.serviceUuid + '\" data-characteristic=\"' + charData.charUuid + '\" action=\"\">' +
                         '<div class=\"mdl-textfield mdl-js-textfield mdl-textfield--floating-label short\">' +

@@ -42,7 +42,7 @@ var DeviceService = function () {
         };
         return o;
     })($({})));
-    
+
     this.initialize = function () {
         // No Initialization required
         var deferred = $.Deferred();
@@ -283,9 +283,9 @@ var DeviceService = function () {
                         deviceModel.services = getGattServices(bigPeripheralObj);
                     }
                     deviceModel.requestingServices = false;
-                    modelControl.update();
                     console.log('SIMU --> triggered service retrieval simulation |devicemodel.services| ' + JSON.stringify(deviceModel.services));
-                    deferred.resolve(deviceModel);
+                    modelControl.update(deviceModel);
+                    deferred.resolve();
                 }, 2000);
             }
         }
@@ -498,7 +498,7 @@ var DeviceService = function () {
                 "service": "1800",
                 "characteristic": "2a01",
                 "properties": [
-                    "Read"
+                    "Read","Write","Notify"
                 ]
             },
             {
