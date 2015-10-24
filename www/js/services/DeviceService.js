@@ -117,134 +117,134 @@ var DeviceService = function () {
         return deferred.promise();
     };
     this.approximateAndConnectDevice = function (deviceID, success, failure) {
-      try {
-        deviceModel.searching = false;
-        deviceModel.connected = false;
-        deviceModel.connecting = false;
-        //todo: make a prescan
-        if (SIMULATION) {
-            //in simulation mode
-            deviceModel.devices = simuDevices;
-        }
-
-        if (deviceModel.devices) {
-            //configure selected device in simu mode
-            for (i = 0; i < deviceModel.devices.length; i++) {
-                if (deviceModel.devices[i].id === deviceID) {
-                    deviceModel.connecting = true;
-                    deviceModel.selectedDevice = deviceModel.devices[i];
-                    break;
-                }
-            }
-            console.log("--> found device to connect to: " + JSON.stringify(deviceModel.selectedDevice));
-        }
-
-        if (deviceModel.selectedDevice !== null && deviceModel.connecting) {
+        try {
+            deviceModel.searching = false;
+            deviceModel.connected = false;
+            deviceModel.connecting = false;
+            //todo: make a prescan
             if (SIMULATION) {
-                console.log("SIMU :: --> simulating approximation process");
-                if (simuData.can_connect) {
-                    approximationSimuLoop(-100, deviceModel, modelControl, function () {
+                //in simulation mode
+                deviceModel.devices = simuDevices;
+            }
+
+            if (deviceModel.devices) {
+                //configure selected device in simu mode
+                for (i = 0; i < deviceModel.devices.length; i++) {
+                    if (deviceModel.devices[i].id === deviceID) {
+                        deviceModel.connecting = true;
+                        deviceModel.selectedDevice = deviceModel.devices[i];
+                        break;
+                    }
+                }
+                console.log("--> found device to connect to: " + JSON.stringify(deviceModel.selectedDevice));
+            }
+
+            if (deviceModel.selectedDevice !== null && deviceModel.connecting) {
+                if (SIMULATION) {
+                    console.log("SIMU :: --> simulating approximation process");
+                    if (simuData.can_connect) {
+                        approximationSimuLoop(-100, deviceModel, modelControl, function () {
+                            deviceModel.connecting = false;
+                            deviceModel.connected = true;
+                            deviceModel.searching = false;
+                            success();
+                        });
+                    } else {
+                        failure(new ErrorMessage("Cannot Connect", "Connection currently is in simulation mode and is not allowed. Please re-set the can_connect value in the simuData object."));
+                    }
+                } else {
+                    //in REAL hardware mode
+                    //rssi to be expected between -100 and -26
+                    console.log("HW --> starting approximation and connection procedure.");
+                    var rssi = -100;
+                    deviceModel.selectedDevice.proximity = getPercentFromRssi(rssi);
+                    console.log("HW --> BLE device default proximity value: " + deviceModel.selectedDevice.proximity + " [at rssi: ]" + rssi);
+                    modelControl.update(rssi);
+                    approximationLoop(deviceID, function (peripheralObject) {
+                        //succeeded
+                        // a peripheral object is handed over: https://github.com/don/cordova-plugin-ble-central/tree/a16b1746cba3292e5eb2f2b026cfbd465ea59c5f#peripheral-data
                         deviceModel.connecting = false;
                         deviceModel.connected = true;
                         deviceModel.searching = false;
+                        deviceModel.services = peripheralObject;
+                        console.log('HW --> Connection was succesfull; peripheral object: ' + JSON.stringify(peripheralObject));
                         success();
+                    }, function (title, text) {
+                        //failed
+                        console.log("HW --> failed to connect to device [" + title + "] [" + text + "]");
+                        failure(new ErrorMessage(title, text));
                     });
-                } else {
-                    failure(new ErrorMessage("Cannot Connect", "Connection currently is in simulation mode and is not allowed. Please re-set the can_connect value in the simuData object."));
                 }
             } else {
-                //in REAL hardware mode
-                //rssi to be expected between -100 and -26
-                console.log("HW --> starting approximation and connection procedure.");
-                var rssi = -100;
-                deviceModel.selectedDevice.proximity = getPercentFromRssi(rssi);
-                console.log("HW --> BLE device default proximity value: " + deviceModel.selectedDevice.proximity + " [at rssi: ]" + rssi);
-                modelControl.update(rssi);
-                approximationLoop(deviceID, function (peripheralObject) {
-                    //succeeded
-                    // a peripheral object is handed over: https://github.com/don/cordova-plugin-ble-central/tree/a16b1746cba3292e5eb2f2b026cfbd465ea59c5f#peripheral-data
-                    deviceModel.connecting = false;
-                    deviceModel.connected = true;
-                    deviceModel.searching = false;
-                    deviceModel.services = peripheralObject;
-                    console.log('HW --> Connection was succesfull; peripheral object: ' + JSON.stringify(peripheralObject));
-                    success();
-                }, function (title, text) {
-                    //failed
-                    console.log("HW --> failed to connect to device ["+title+"] ["+text+"]");
-                    failure(new ErrorMessage(title, text));
-                });
+                console.log("Cannot connect, because there's no selected device [" + deviceModel.selectedDevice !== null + "] or not connecting [" + deviceModel.connecting + "]");
+                failure("Cannot connect", "No device was selected and it is not in connecting mode.");
             }
-        } else {
-            console.log("Cannot connect, because there's no selected device ["+deviceModel.selectedDevice !== null+"] or not connecting ["+deviceModel.connecting+"]");
-            failure("Cannot connect", "No device was selected and it is not in connecting mode.");
+        } catch (err) {
+            console.log("ERROR: " + err);
+            failure(err);
         }
-      } catch (err){
-       console.log("ERROR: "+err);
-       failure(err);
-      }
     };
 
     function approximationLoop(devID, succeeded, failed) {
-     try{
+        try {
 
-        console.log("Entering approximation loop with devce id ["+devID+"] // stringified value: ["+JSON.stringify(devID)+"]");
-        var aborted = false;
-        scanHardware(devID).done(function (providedRssi) {
-          try{
-           console.log("proximity ["+deviceModel.selectedDevice.proximity +"] at rssi ["+providedRssi+"]");
-            deviceModel.selectedDevice.proximity = getPercentFromRssi(providedRssi);
-            modelControl.update(providedRssi);
-            if (providedRssi < -26 && !aborted) {
-             //todo: sometimes the rssi is very high (eg +127), so a double check is needed
-                console.log("HW --> the device is not close enough, rescanning...");
-                setTimeout(function(){
-                 approximationLoop(devID, succeeded, failed);
-                },1000);
-            } else {
-                console.log("HW --> Device is close enough to connect / provided rssi ["+providedRssi+"]");
-                ble.connect(devID, succeeded, failed);
-            }
-           } catch (err){
-            console.log("Approximation loop :: error caugth:" + err);
-            failed("Error in Approximation Loop", err);
-           }
-        }).fail(function (title, text) {
-            console.log('HW --> failed to approximate and loop');
-            aborted = true;
-            disconnect(function () {
-            }, function () {
+            console.log("Entering approximation loop with devce id [" + devID + "] // stringified value: [" + JSON.stringify(devID) + "]");
+            var aborted = false;
+            scanHardware(devID).done(function (providedRssi) {
+                try {
+                    console.log("proximity [" + deviceModel.selectedDevice.proximity + "] at rssi [" + providedRssi + "]");
+                    deviceModel.selectedDevice.proximity = getPercentFromRssi(providedRssi);
+                    modelControl.update(providedRssi);
+                    if (providedRssi < -26 && !aborted) {
+                        //todo: sometimes the rssi is very high (eg +127), so a double check is needed
+                        console.log("HW --> the device is not close enough, rescanning...");
+                        setTimeout(function () {
+                            approximationLoop(devID, succeeded, failed);
+                        }, 1000);
+                    } else {
+                        console.log("HW --> Device is close enough to connect / provided rssi [" + providedRssi + "]");
+                        ble.connect(devID, succeeded, failed);
+                    }
+                } catch (err) {
+                    console.log("Approximation loop :: error caugth:" + err);
+                    failed("Error in Approximation Loop", err);
+                }
+            }).fail(function (title, text) {
+                console.log('HW --> failed to approximate and loop');
+                aborted = true;
+                disconnect(function () {
+                }, function () {
+                });
+                failed(title, text);
             });
-            failed(title, text);
-        });
 
-       } catch (err){
-          console.log("Error catched while approximating the device:" + err);
-          failed("Exception caught",err);
+        } catch (err) {
+            console.log("Error catched while approximating the device:" + err);
+            failed("Exception caught", err);
         }
     }
 
     function scanHardware(devID) {
         var deferred = $.Deferred();
         ble.startScan([], function (device) {
-         try {
-          //todo: never times out the scanning / therefore if somebody goes out of the region while scanning, the app will hang |> switch to time based stop implementation
-            console.log("HW --> Device found: "+JSON.stringify(device));
-            console.log("HW --> requested device id ["+devID+"] / found ID: ["+device.id+"]");
-            if (device.id === devID) {
-                console.log("stopping scanning.");
-                ble.stopScan(function () {
-                    console.log("Scanning stopped for device id ["+device.id+"] with rssi ["+device.rssi+"]");
-                    deferred.resolve(device.rssi);
-                }, function () {
-                    //failing to stop scanning
-                    deferred.reject("Could not stop scaning", "The device was scanned, but scanning could not be stopped.");
-                });
+            try {
+                //todo: never times out the scanning / therefore if somebody goes out of the region while scanning, the app will hang |> switch to time based stop implementation
+                console.log("HW --> Device found: " + JSON.stringify(device));
+                console.log("HW --> requested device id [" + devID + "] / found ID: [" + device.id + "]");
+                if (device.id === devID) {
+                    console.log("stopping scanning.");
+                    ble.stopScan(function () {
+                        console.log("Scanning stopped for device id [" + device.id + "] with rssi [" + device.rssi + "]");
+                        deferred.resolve(device.rssi);
+                    }, function () {
+                        //failing to stop scanning
+                        deferred.reject("Could not stop scaning", "The device was scanned, but scanning could not be stopped.");
+                    });
+                }
+            } catch (err) {
+                console.log("Error while scanning for hardware: " + err);
+                deferred.reject("Scan failed", err);
             }
-           } catch (err){
-             console.log("Error while scanning for hardware: "+err);
-             deferred.reject("Scan failed",err);
-           }
         }, function () {
             conosle.log("HW --> could not start scanning...");
             deferred.reject("Could not start scaning", "There was an error, the system could not be scanned.");
@@ -254,7 +254,7 @@ var DeviceService = function () {
 
     function getPercentFromRssi(rssi) {
         var proximity = (100 - (rssi * -1));
-        console.log("calculated proximity: ["+proximity+"] at rssi ["+rssi+"]");
+        console.log("calculated proximity: [" + proximity + "] at rssi [" + rssi + "]");
         return proximity;
     }
 
