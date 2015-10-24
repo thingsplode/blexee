@@ -156,11 +156,14 @@ var DeviceService = function () {
                 //console.log("HW --> BLE device proximity value: " + x + " [at rssi: ]" + i);
                 deviceModel.connectedDevice.proximity = getPercentFromRssi(rssi);
                 modelControl.update(rssi);
-                approximationLoop(deviceID, function () {
+                approximationLoop(deviceID, function (peripheralObject) {
                     //succeeded
+                    // a peripheral object is handed over: https://github.com/don/cordova-plugin-ble-central/tree/a16b1746cba3292e5eb2f2b026cfbd465ea59c5f#peripheral-data
                     deviceModel.connecting = false;
                     deviceModel.connected = true;
                     deviceModel.searching = false;
+                    deviceModel.services = peripheralObject;
+                    console.log('HW --> Connection was succesfull; peripheral object: ' + JSON.stringify(peripheralObject));
                     success();
                 }, function (title, text) {
                     //failed
@@ -174,7 +177,7 @@ var DeviceService = function () {
 
     function approximationLoop(devID, succeeded, failed) {
         var aborted = false;
-        hwScan(devID).done(function (providedRssi) {
+        scanHardware(devID).done(function (providedRssi) {
             deviceModel.connectedDevice.proximity = getPercentFromRssi(providedRssi);
             modelControl.update(providedRssi);
             if (providedRssi < -26 && !aborted) {
@@ -183,12 +186,16 @@ var DeviceService = function () {
                 ble.connect(devID, succeeded, failed);
             }
         }).fail(function (title, text) {
+            console.log('HW --> failed to approximate and loop');
             aborted = true;
+            disconnect(function () {
+            }, function () {
+            });
             failed(title, text);
         });
     }
 
-    function hwScan(deviceID) {
+    function scanHardware(deviceID) {
         var deferred = $.Deferred();
         ble.startScan([], function (device) {
             if (device.id === deviceID) {
@@ -219,9 +226,15 @@ var DeviceService = function () {
             deviceModel.requestingServices = true;
             var deferred = $.Deferred();
             if (!SIMULATION) {
-                //real use case
-                failure(new ErrorMessage('Simulation is disabled', 'Real hardware support is not enabled yet'));
+                //real HW use case
+                if (deviceModel.connected && deviceModel.selectedDevice) {
+                    //services are already retrieved while connecting and added to the device model
+                    deferred.resolve(deviceModel);
+                } else {
+                    failure(new ErrorMessage('Device is not connected', 'The device is not connected or device services are not recognized.'));
+                }
             } else {
+                //simulation mode
                 setTimeout(function () {
                     if (simuData.services_available) {
                         deviceModel.services = gattServices;
@@ -240,24 +253,21 @@ var DeviceService = function () {
 
     this.disconnect = function (success, failure) {
         if (!SIMULATION && deviceModel.connected) {
-            ble.disconnect(deviceModel.selectedDevice.id, success, failure);
+            ble.isConnected(deviceModel.selectedDevice.id, function () {
+                ble.disconnect(deviceModel.selectedDevice.id, success, failure);
+            }, function () {
+                //was not connected
+                console.log('HW --> Device [' + deviceModel.selectedDevice.id + '] was not connected.');
+            });
         }
-        //if (deviceModel.selectedDevice['id'] === deviceID){
         deviceModel.connecting = false;
         deviceModel.connected = false;
         deviceModel.searching = false;
         deviceModel.selectedDevice = '';
         deviceModel.devices = [];
-        //} else {        };
+        deviceModel.services = [];
     };
 
-
-    this.getGattServices = function () {
-        console.log('DeviceService :: getGattServices');
-        var deferred = $.Deferred();
-        deferred.resolve(gattServices);
-        return deferred.promise();
-    };
     this.getModelControl = function () {
         return modelControl;
     };
