@@ -259,6 +259,8 @@ var DeviceService = function () {
     }
 
     this.requestServices = function () {
+//2015-10-24 23:18:50.929 blexee[3498:384119] HW --> Connection was succesfull; peripheral object: {"name":"thing-0","id":"291C9A2E-CCA3-1EF0-5C5C-E19E29973F16","advertising":{"kCBAdvDataTxPowerLevel":8,"kCBAdvDataIsConnectable":true,"kCBAdvDataServiceUUIDs":["1815"],"kCBAdvDataServiceData":{"9999":{}},"kCBAdvDataManufacturerData":{}},"services":["1815"],"characteristics":[{"service":"1815","isNotifying":false,"characteristic":"2A56","properties":["Write","Notify","ExtendedProperties"]}],"rssi":127}
+
         var deferred = $.Deferred();
         console.log('deviceService :: requesting available services');
         if (!deviceModel.connected) {
