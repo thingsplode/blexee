@@ -1,4 +1,4 @@
-/* global SIMULATION, simuData, ble */
+/* global SIMULATION, CONNECT_LIMIT, simuData, ble */
 
 var DeviceService = function () {
 
@@ -196,7 +196,7 @@ var DeviceService = function () {
                     console.log("proximity [" + deviceModel.selectedDevice.proximity + "] at rssi [" + providedRssi + "]");
                     deviceModel.selectedDevice.proximity = getPercentFromRssi(providedRssi);
                     modelControl.update(providedRssi);
-                    if (providedRssi < -26 && !aborted) {
+                    if (providedRssi < -31 && !aborted) {
                         //todo: sometimes the rssi is very high (eg +127), so a double check is needed
                         console.log("HW --> the device is not close enough, rescanning...");
                         setTimeout(function () {
@@ -272,7 +272,8 @@ var DeviceService = function () {
                 //real HW use case
                 if (deviceModel.connected && deviceModel.selectedDevice) {
                     //services are already retrieved while connecting and added to the device model
-                    deferred.resolve(deviceModel);
+                    modelControl.update(deviceModel);
+                    deferred.resolve();
                 } else {
                     deferred.reject(new ErrorMessage('Device is not connected', 'The device is not connected or device services are not recognized.'));
                 }
@@ -294,16 +295,20 @@ var DeviceService = function () {
 
 
     this.disconnect = function (success, failure) {
-        deviceModel.connecting = false;
-        deviceModel.connected = false;
-        deviceModel.searching = false;
-        deviceModel.selectedDevice = '';
-        deviceModel.devices = [];
-        deviceModel.services = [];
-
+     deviceModel.searching = false;
+     deviceModel.selectedDevice = '';
+     deviceModel.devices = [];
+     deviceModel.services = [];
         if (!SIMULATION && deviceModel.connected) {
             ble.isConnected(deviceModel.selectedDevice.id, function () {
-                ble.disconnect(deviceModel.selectedDevice.id, success, failure);
+             console.log('HW --> Disconnecting from [' + deviceModel.selectedDevice.id + '].');
+                ble.disconnect(deviceModel.selectedDevice.id, function(){
+                 //Successfully disconnected
+                 console.log('HW --> disconnected');
+                 deviceModel.connecting = false;
+                 deviceModel.connected = false;
+                 success();
+                }, failure);
             }, function () {
                 //was not connected
                 console.log('HW --> Device [' + deviceModel.selectedDevice.id + '] was not connected.');

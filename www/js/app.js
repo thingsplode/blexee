@@ -1,7 +1,7 @@
 /* global HomeView, Handlebars, DeviceView, StatusBar, FastClick, router, DEBUG_MODE */
 
 var DEBUG_MODE = true;
-var SIMULATION = true;
+var SIMULATION = false;
 var DEVICE_PRESENT = false;
 
 var simuData = {
@@ -127,11 +127,11 @@ function ErrorMessage(title, message) {
         //http://stackoverflow.com/questions/32957407/material-design-lite-how-to-programatically-reset-a-floating-label-input-text
         $('body').html(menuService.deviceServicesView.render().$el);
         menuService.deviceServicesView.registerModelControl(deviceService.getModelControl());
-        
+
         deviceService.requestServices().done(function () {
             //menuService.deviceServicesView.setModel(deviceModel);
             //$('.page-content').html(menuService.deviceServicesView.render().$el);
-            //slider.slidePage(menuService.deviceServicesView.render().$el);            
+            //slider.slidePage(menuService.deviceServicesView.render().$el);
         }).fail(function (errMsg) {
             menuService.errView.setModel(errMsg);
             $('.page-content').html(menuService.errView.render().$el);
