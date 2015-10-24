@@ -34,9 +34,14 @@ var GenericView = function (viewName, template, dataProvider) {
     };
 
     this.render = function () {
-        console.log(viewName + ' :: rendering');
-        console.log(viewName + ' [rendering modeldata]--> ' + JSON.stringify(mdl));
-        this.$el.html(template(mdl));
+        try {
+            console.log(viewName + ' :: rendering');
+            console.log(viewName + ' [rendering modeldata]--> ' + JSON.stringify(mdl));
+            this.$el.html(template(mdl));
+        } catch (err) {
+            console.log("ERROR: rendering error --> " + err);
+            this.$el.html(err);
+        }
         return this;
     };
 

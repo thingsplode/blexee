@@ -173,17 +173,17 @@
                                                     Action
                                                 </th>
                                             </thead>
-                                            {{#each Characteristics}}
+                                            {{#each characteristics}}
                                                 <tr>
                                                     <td id="td-{{../uuid}}-{{uuid}}" class="mdl-data-table__cell--non-numeric">
                                                         <p class="small">{{uuid}}</p>
                                                         <p class="small">{{flags}}</p>
-                                                        <p class="small" id="dsc-{{../uuid}}-{{uuid}}">{{[User Descriptor]}}</p>
+                                                        <p class="small" id="dsc-{{../uuid}}-{{uuid}}">{{descriptor}}</p>
                                                     </td>
                                                     <td align="right">
                                                         <button id="btn-{{uuid}}"
                                                             class="mdl-button mdl-js-button mdl-button--icon ble-characteristic-button"
-                                                            data-characteristic='{"id":"{{../uuid}}-{{uuid}}","serviceUuid":"{{../uuid}}","charUuid":"{{uuid}}","flags":"{{flags}}","descriptor":"{{[User Descriptor]}}"}'
+                                                            data-characteristic='{"id":"{{../uuid}}-{{uuid}}","serviceUuid":"{{../uuid}}","charUuid":"{{uuid}}","flags":"{{flags}}","descriptor":"{{descriptor}}"}'
                                                         >
                                                             <i class="material-icons">crop_free</i>
                                                         </button>
