@@ -61,7 +61,7 @@ var DeviceService = function () {
         console.log('deviceService :: scan for devices');
         deviceModel.searching = true;
         var deferred = $.Deferred();
-        this.bluetoothEnabled.done(function (bluetoothEnabledStatus) {
+        this.bluetoothEnabled().done(function (bluetoothEnabledStatus) {
             if (bluetoothEnabledStatus) {
                 if (SIMULATION) {
                     //simulation
@@ -252,6 +252,13 @@ var DeviceService = function () {
 
 
     this.disconnect = function (success, failure) {
+        deviceModel.connecting = false;
+        deviceModel.connected = false;
+        deviceModel.searching = false;
+        deviceModel.selectedDevice = '';
+        deviceModel.devices = [];
+        deviceModel.services = [];
+
         if (!SIMULATION && deviceModel.connected) {
             ble.isConnected(deviceModel.selectedDevice.id, function () {
                 ble.disconnect(deviceModel.selectedDevice.id, success, failure);
@@ -259,13 +266,10 @@ var DeviceService = function () {
                 //was not connected
                 console.log('HW --> Device [' + deviceModel.selectedDevice.id + '] was not connected.');
             });
+        } else {
+            //simu mode
+            success();
         }
-        deviceModel.connecting = false;
-        deviceModel.connected = false;
-        deviceModel.searching = false;
-        deviceModel.selectedDevice = '';
-        deviceModel.devices = [];
-        deviceModel.services = [];
     };
 
     this.getModelControl = function () {
@@ -355,7 +359,7 @@ var DeviceService = function () {
         setTimeout(function () {
             var x = 100 - (i * -1);
             console.log("SIMU --> proximity value: " + x + " [at rssi: ]" + i);
-            deviceModel.connectedDevice.proximity = x;
+            deviceModel.selectedDevice.proximity = x;
             modelControl.update(i);
             i++;
             if (i < 0) {
