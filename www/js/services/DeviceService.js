@@ -20,33 +20,40 @@ var DeviceService = function () {
         deferred.resolve();
         return deferred.promise();
     };
+
     this.scanForDevices = function () {
         console.log('deviceService :: scan for devices');
         deviceModel.searching = true;
         var deferred = $.Deferred();
-        if (this.bluetoothEnabled()) {
-            if (SIMULATION) {
-                //simulation
-                setTimeout(function () {
-                    console.log('--> device service timeout simulation triggered');
-                    console.log("SIMU --> devices: " + simuData.devices_available);
-                    if (simuData.devices_available) {
-                        deviceModel.devices = devices;
-                    }
-                    deviceModel.bluetooth = true;
-                    deviceModel.searching = false;
-                    deferred.resolve(deviceModel);
-                }, 2000);
-            } else {
-                //real use case
-                deferred.resolve(deviceModel);
-            }
-        } else {
-            deviceModel.searching = false;
-            deviceModel.bluetooth = false;
-            modelControl.update();
-            deferred.resolve(deviceModel);
-        }
+        this.bluetoothEnabled.done(function (bluetoothStatus){
+         if (bluetoothStatus) {
+             if (SIMULATION) {
+                 //simulation
+                 setTimeout(function () {
+                     console.log('--> device service timeout simulation triggered');
+                     console.log("SIMU --> devices: " + simuData.devices_available);
+                     if (simuData.devices_available) {
+                         deviceModel.devices = devices;
+                     }
+                     deviceModel.bluetooth = true;
+                     deviceModel.searching = false;
+                     deferred.resolve(deviceModel);
+                 }, 2000);
+             } else {
+                 //real use case
+                 deviceModel.searching = false;
+                 deviceModel.bluetooth = false;
+                 //modelControl.update();
+                 deferred.resolve(deviceModel);
+                 deferred.resolve(deviceModel);
+             }
+         } else {
+             deviceModel.searching = false;
+             deviceModel.bluetooth = false;
+             modelControl.update();
+             deferred.resolve(deviceModel);
+         };
+        });
         return deferred.promise();
     };
 
@@ -157,12 +164,24 @@ var DeviceService = function () {
     };
 
     this.bluetoothEnabled = function () {
+        var deferred = $.Deferred();
         if (SIMULATION) {
             console.log("SIMU --> bluetooth: " + simuData.bluetooth_enabled);
-            return simuData.bluetooth_enabled;
+            deferred.resolve(simuData.bluetooth_enabled);
         } else {
-            return false;
+             ble.isEnabled(function(){
+              //success
+              console.info('HW :: --> bluetooth is enabled.');
+              deviceModel.bluetooth = true;
+              deferred.resolve(true);
+             }, function(){
+              //failure
+              console.info('HW :: --> bluetooth is false.');
+              deviceModel.bluetooth = false;
+              deferred.resolve(false);
+             });
         }
+        return deferred.promise();
 
     };
 
