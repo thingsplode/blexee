@@ -11,13 +11,26 @@ var DEVICE_PRESENT = false;
     var slider;
 
     //initialization functions
+    function configureConsoleLog(dbgMode) {
+        if (!dbgMode) {
+            console.log('WARNING -> Removing console log functionality!');
+            console = console || {};
+            console.log = function () {
+            };
+        } else {
+            console.log = null;
+            console.log;         // null
+            delete console.log;
+            console.log('ENABLING -> console log functionality!');
+        }
+    }
+
+    cfgService.registerTriggerableFunction('consoleReplacement', '/blexee/debugMode', configureConsoleLog);
+    cfgService.setValue('/blexee/debugMode', true);
     var dbgMode = cfgService.getValue('/blexee/debugMode');
     console.log('DEBUG MODE: ' + dbgMode);
-    if (!dbgMode) {
-        console = console || {};
-        console.log = function () {
-        };
-    }
+    configureConsoleLog(dbgMode);
+
 
     menuService.initialize().done(function () {
 //$('body').html(menuService.appContainerView.render().$el);
