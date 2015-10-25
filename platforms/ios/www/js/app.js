@@ -186,9 +186,16 @@ function ErrorMessage(title, message) {
                     $.each(formArray, function (index, field) {
                         values[field.name] = field.value;
                     });
-                    console.log('FORM SUBMITTED: ==> [' + JSON.stringify(values) + '] ' + bleService + ' ' + bleCharacteristic + " ");
                     //when there's no name attribute on the form, use: e.target[0].value
-                    target.remove();
+                    console.log('FORM SUBMITTED: ==> [' + JSON.stringify(values) + '] ' + bleService + ' ' + bleCharacteristic + " ");
+                    deviceService.writeData(bleService, bleCharacteristic, JSON.stringify(values), function () {
+                        target.remove();
+                    }, function (err) {
+                        menuService.errView.setModel(err);
+                        $('.page-content').html(menuService.errView.render().$el);
+                    });
+
+
                 });
                 if (flags.indexOf('read') > -1) {
                     //has read AND write flag

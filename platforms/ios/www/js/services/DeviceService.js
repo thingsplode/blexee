@@ -297,19 +297,19 @@ var DeviceService = function () {
 
 
     this.disconnect = function (success, failure) {
-     deviceModel.searching = false;
-     deviceModel.selectedDevice = '';
-     deviceModel.devices = [];
-     deviceModel.services = [];
+        deviceModel.searching = false;
+        deviceModel.devices = [];
+        deviceModel.services = [];
         if (!SIMULATION && deviceModel.connected) {
             ble.isConnected(deviceModel.selectedDevice.id, function () {
-             console.log('HW --> Disconnecting from [' + deviceModel.selectedDevice.id + '].');
-                ble.disconnect(deviceModel.selectedDevice.id, function(){
-                 //Successfully disconnected
-                 console.log('HW --> disconnected');
-                 deviceModel.connecting = false;
-                 deviceModel.connected = false;
-                 success();
+                console.log('HW --> Disconnecting from [' + deviceModel.selectedDevice.id + '].');
+                ble.disconnect(deviceModel.selectedDevice.id, function () {
+                    //Successfully disconnected
+                    console.log('HW --> disconnected');
+                    deviceModel.connecting = false;
+                    deviceModel.connected = false;
+                    deviceModel.selectedDevice = '';
+                    success();
                 }, failure);
             }, function () {
                 //was not connected
@@ -317,9 +317,43 @@ var DeviceService = function () {
             });
         } else {
             //simu mode
+            console.log('SIMU :: --> Disconnecting from [' + deviceModel.selectedDevice.id + '].');
+            deviceModel.selectedDevice = '';
             success();
         }
     };
+
+    this.writeData = function (serviceUuid, characteristicUuid, data, success, failure) {
+        if (deviceModel.connected && deviceModel.selectedDevice !== null) {
+            if (!SIMULATION) {
+                ble.isConnected(deviceModel.selectedDevice.id, function () {
+                    //todo: make a hexa writer
+                    ble.write(deviceModel.selectedDevice.id, serviceUuid, characteristicUuid, stringToBytes(data), success, function () {
+                        failure(new ErrorMessage("Couldn't write data", "Please make sure that you've wrote data which is acceptable."));
+                    });
+                }, function () {
+                    failure(new ErrorMessage("Device is not connected", "Please make sure that the device is connected first."));
+                });
+            } else {
+                console.log("SIMU :: -- write --> service [" + serviceUuid + "] characteristic [" + characteristicUuid + "] + data " + data);
+                success();
+            }
+        }
+    };
+
+    // ASCII only
+    function stringToBytes(string) {
+        var array = new Uint8Array(string.length);
+        for (var i = 0, l = string.length; i < l; i++) {
+            array[i] = string.charCodeAt(i);
+        }
+        return array.buffer;
+    }
+
+    // ASCII only
+    function bytesToString(buffer) {
+        return String.fromCharCode.apply(null, new Uint8Array(buffer));
+    }
 
     this.getModelControl = function () {
         return modelControl;
@@ -505,7 +539,7 @@ var DeviceService = function () {
                 "service": "1800",
                 "characteristic": "2a01",
                 "properties": [
-                    "Read","Write","Notify"
+                    "Read", "Write", "Notify"
                 ]
             },
             {
