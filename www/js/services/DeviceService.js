@@ -272,6 +272,7 @@ var DeviceService = function () {
                 //real HW use case
                 if (deviceModel.connected && deviceModel.selectedDevice) {
                     //services are already retrieved while connecting and added to the device model
+                    deviceModel.requestingServices = false;
                     modelControl.update(deviceModel);
                     deferred.resolve();
                 } else {

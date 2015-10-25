@@ -1,9 +1,9 @@
 /* global HomeView, Handlebars, DeviceView, StatusBar, FastClick, router, DEBUG_MODE */
 
 var DEBUG_MODE = true;
-var SIMULATION = true;
+var SIMULATION = false;
 var DEVICE_PRESENT = false;
-var CONNECT_LIMIT = -31;
+var CONNECT_LIMIT = -51;
 
 var simuData = {
     'bluetooth_enabled': true,

@@ -13,6 +13,7 @@ var GenericView = function (viewName, template, dataProvider) {
         var view = this;
         modelCtrl = modelControl;
         modelCtrl.on('modup', function (e, data) {
+            console.log(viewName + ' :: Model updated -> [event] ' + JSON.stringify(e) + '[model data] ' + JSON.stringify(data));
             console.log(viewName + ' :: Model updated -> [event] ' + JSON.stringify(e));
             view.setModel(data);
             view.render();
@@ -35,8 +36,7 @@ var GenericView = function (viewName, template, dataProvider) {
 
     this.render = function () {
         try {
-            console.log(viewName + ' :: rendering');
-            console.log(viewName + ' [rendering modeldata]--> ' + JSON.stringify(mdl));
+            console.log(viewName + ' :: rendering with [modeldata]--> ' + JSON.stringify(mdl));
             this.$el.html(template(mdl));
         } catch (err) {
             console.log("ERROR: rendering error --> " + err);

@@ -3,6 +3,7 @@
 var DEBUG_MODE = true;
 var SIMULATION = false;
 var DEVICE_PRESENT = false;
+var CONNECT_LIMIT = -51;
 
 var simuData = {
     'bluetooth_enabled': true,
