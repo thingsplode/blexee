@@ -1,10 +1,11 @@
 var ConfigurationService = function () {
     var SCHEMA_STORAGE_KEY = "config_schemas";
     var dirty = true;
+    var self = this;
     var cfgSchemas = [
         {
             "path": "/blexee",
-            "text": "Menu",
+            "caption": "General Config",
             "keys": [
                 {
                     "id": "simuMode",
@@ -21,9 +22,9 @@ var ConfigurationService = function () {
                 },
                 {
                     "id": "traceMode",
-                    "caption": "Debug Mode",
+                    "caption": "Trace Mode",
                     "type": "Boolean",
-                    "value": true
+                    "value": false
                 },
                 {
                     "id": "connectLimit",
@@ -35,6 +36,38 @@ var ConfigurationService = function () {
         }
     ];
     var functionStore = [];
+
+    $(document).ready(function () {
+        $(document).on('change', '.config-field', updateField);
+        $(document).on('submit', '.config-field', function (e) {
+            e.preventDefault();
+        });
+    });
+
+    function updateField(event) {
+        event.preventDefault();
+        var target = $(event.target),
+                root = $(this).attr('data-path'),
+                keyId = $(this).attr('data-field-id'),
+                triggerType = $(this).attr('data-trigger-type');
+        if (triggerType.toUpperCase() === 'INPUT') {
+            console.log('EVENT RECEIVED::: ' + root + ':' + keyId + ' value [' + target.val() + '] type [' + target[0].type + ']//Trigger Type[' + triggerType + ']');
+            if (target[0].type.toUpperCase() === 'CHECKBOX') {
+                console.log('CHECKED STATE:' + target.prop("checked"));
+                if (target.prop("checked")) {
+                    self.setValue(root + '/' + keyId, true);
+                } else {
+                    self.setValue(root + '/' + keyId, false);
+                }
+            }
+        } else if (triggerType.toUpperCase() === 'FORM') {
+            console.log('EVENT RECEIVED::: ' + root + ':' + keyId + ' value [' + target.val() + '] type [' + target[0].type + ']//Trigger Type[' + triggerType + ']');
+            if (target[0].type.toUpperCase() === "TEXT") {
+                self.setValue(root + '/' + keyId, target.val());
+            }
+        }
+    }
+
     this.registerTriggerableFunction = function (funcID, path, func) {
         found = false;
         if (functionStore.length > 0) {
@@ -65,6 +98,13 @@ var ConfigurationService = function () {
         deferred.resolve();
         return deferred.promise();
     }
+
+    this.reset = function () {
+
+        window.localStorage.removeItem(SCHEMA_STORAGE_KEY);
+        window.localStorage.clear();
+        console.log('//' + window.localStorage.getItem(SCHEMA_STORAGE_KEY) + '//');
+    };
 
     function loadConfiguration() {
         var deferred = $.Deferred();

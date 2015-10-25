@@ -5,26 +5,13 @@ var DEVICE_PRESENT = false;
 (function () {
 
     var cfgService = new ConfigurationService();
+    //cfgService.reset();
     var deviceService = new DeviceService(cfgService);
     var menuService = new MenuService(deviceService, cfgService);
     //var slider = new PageSlider($('.page-content'));
     var slider;
 
-    //initialization functions
-    function configureConsoleLog(dbgMode) {
-        if (!dbgMode) {
-            console.log('WARNING -> Removing console log functionality!');
-            console = console || {};
-            console.log = function () {
-            };
-        } else {
-            console.log = null;
-            console.log;         // null
-            delete console.log;
-            console.log('ENABLING -> console log functionality!');
-        }
-    }
-
+    //initialization function
     cfgService.registerTriggerableFunction('consoleReplacement', '/blexee/debugMode', configureConsoleLog);
     cfgService.setValue('/blexee/debugMode', true);
     var dbgMode = cfgService.getValue('/blexee/debugMode');
@@ -56,28 +43,39 @@ var DEVICE_PRESENT = false;
     router.addRoute('jump/:view', function (view) {
         console.log('Routing View :: ' + view);
         if (view === 'DeviceView') {
-            //special handling required
-            console.log("DeviceView :: check if bluetooth is enabled");
-            var deviceModel = deviceService.getDeviceModel();
-            if (!deviceService.bluetoothEnabled()) {
-                //if bluetooth is not enabled
-                menuService.errView.setModel(new ErrorMessage('Please enable your bluetooth device', 'Use the device settings to enable the bluetooth connection a retry the app functions.'));
-                $('.page-content').html(menuService.errView.render().$el);
-                //slider.slidePage(menuService.errView.render().$el);
-            } else if (deviceModel.connected) {
-                //redirect to: #connected/device_id
-                window.location.href = '#connected/' + deviceModel.selectedDevice.id;
-            } else {
-                //if not connected yet -> searcg for devices
-                console.log("DeviceView :: start searching");
-                deviceService.scanForDevices().done(function (deviceModel) {
+            try {
+                //special handling required
+                console.log("DeviceView :: check if bluetooth is enabled");
+                var deviceModel = deviceService.getDeviceModel();
+                if (!deviceService.bluetoothEnabled()) {
+                    //if bluetooth is not enabled
+                    menuService.errView.setModel(new ErrorMessage('Please enable your bluetooth device', 'Use the device settings to enable the bluetooth connection a retry the app functions.'));
+                    $('.page-content').html(menuService.errView.render().$el);
+                    //slider.slidePage(menuService.errView.render().$el);
+                } else if (deviceModel.connected) {
+                    //redirect to: #connected/device_id
+                    window.location.href = '#connected/' + deviceModel.selectedDevice.id;
+                } else {
+                    //if not connected yet -> searcg for devices
+                    console.log("DeviceView :: start searching");
+                    deviceService.scanForDevices().done(function (deviceModel) {
+                        menuService.getMenuView(view).setModel(deviceModel);
+                        menuService.getMenuView(view).render();
+                    });
                     menuService.getMenuView(view).setModel(deviceModel);
-                    menuService.getMenuView(view).render();
-                });
-                menuService.getMenuView(view).setModel(deviceModel);
-                $('.page-content').html(menuService.getMenuView(view).render().$el);
-                //slider.slidePage(menuService.getMenuView(view).render().$el);
+                    $('.page-content').html(menuService.getMenuView(view).render().$el);
+                    //slider.slidePage(menuService.getMenuView(view).render().$el);
+                }
+            } catch (error) {
+                console.log('ERROR: ' + error);
+                menuService.errView.setModel(new ErrorMessage('Program error', error.toString()));
+                //$('.page-content').html(menuService.errView.render().$el);
+                $('body').html(menuService.errView.render().$el);
             }
+        }
+        if (view === 'SettingsView') {
+            menuService.getMenuView(view).setModel(cfgService.getConfigSchemas());
+            $('.page-content').html(menuService.getMenuView(view).render().$el);
         } else {
             $('.page-content').html(menuService.getMenuView(view).render().$el);
             //slider.slidePage(menuService.getMenuView(view).render().$el);
@@ -192,4 +190,18 @@ var DEVICE_PRESENT = false;
 //            console.log('------------------click-------------->');
 //        });
     });
+
+    function configureConsoleLog(dbgMode) {
+        if (!dbgMode) {
+            console.log('WARNING -> Removing console log functionality!');
+            console = console || {};
+            console.log = function () {
+            };
+        } else {
+            console.log = null;
+            console.log;         // null
+            delete console.log;
+            console.log('ENABLING -> console log functionality!');
+        }
+    }
 }());

@@ -436,10 +436,17 @@ var DeviceService = function (configService) {
     };
 
     var simuService;
-    if (configService.getValue('/blexee/simuMode')) {
-        simuService = new SimuService(configService);
-    }
+    createSimuService(configService.getValue('/blexee/simuMode'));
+    configService.registerTriggerableFunction('simuServiceSetup', '/blexee/simuMode', createSimuService);
 
+    function createSimuService(simuMode) {
+        if (!simuMode) {
+            simuService = null;
+            delete simuService;
+        } else {
+            simuService = new SimuService(configService);
+        }
+    }
 //    var simuService;
 //    var imported = document.createElement('script');
 //    imported.src = 'js/services/SimuService.js';

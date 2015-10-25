@@ -204,6 +204,45 @@
             </div>
         </div>
         </script>
+        
+        <script id="settings-tpl" type="text/template">
+            {{#unless this}}
+                <span class="right" style="color:red">Program Error: no configuration data is found.</span>
+            {{/unless}}
+            {{#if this}}
+                {{#each this}}
+                    <div class="service-card-wide mdl-card mdl-shadow--2dp">
+                        <div class="mdl-card__title">
+                            <h2 class="mdl-card__title-text">{{caption}}</h2>
+                        </div>
+                        <div class="mdl-card__supporting-text"> 
+                        {{#if keys}}
+                            <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp box">
+                                <thead>
+                                    <tr>
+                                        <th class="mdl-data-table__cell--non-numeric">
+                                            <i class="material-icons">memory</i>
+                                            Configuration Key
+                                        </th>
+                                        <th>Setting</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {{#each keys}}
+                                    <tr>
+                                        <td class="mdl-data-table__cell--non-numeric">{{caption}}</td>
+                                        <td>{{generate_field id type value valueset ../path}}</td>
+                                    </tr>
+                                {{/each}}
+                                </tbody>
+                            </table>
+                        {{/if}}
+                        </div>
+                    </div>
+                {{/each}}
+            {{/if}}
+        </script>
+        
         <script id="not-implemented-tpl" type="text/template">
             <div class="title">Empty</div>
             <span class="right" style="color:red">Not implemented yet</span>

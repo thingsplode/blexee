@@ -26,6 +26,9 @@ td {
     width: 150px;
 }
 
+.shorter {
+    width: 5em;
+}
 .title {
     color: #607D8B;
     font-size: 2em;

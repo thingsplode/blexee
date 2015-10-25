@@ -52,7 +52,7 @@ var MenuService = function (deviceService, configService) {
             return '';
         });
 
-        this.settingsView = new GenericView('SettingsView', Handlebars.compile($('#not-implemented-tpl').html()), function (view) {
+        this.settingsView = new GenericView('SettingsView', Handlebars.compile($('#settings-tpl').html()), function (view) {
             return '';
         });
 
