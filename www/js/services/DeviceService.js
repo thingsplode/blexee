@@ -1,6 +1,6 @@
 /* global SIMULATION, CONNECT_LIMIT, simuData, ble */
 
-var DeviceService = function () {
+var DeviceService = function (configService) {
 
     var deviceModel = {
         /*
@@ -68,8 +68,8 @@ var DeviceService = function () {
                     //simulation
                     setTimeout(function () {
                         console.log('--> device service timeout simulation triggered');
-                        console.log("SIMU --> devices: " + simuData.devices_available);
-                        if (simuData.devices_available) {
+                        console.log("SIMU --> devices: " + simuService.getSimuData().devices_available);
+                        if (simuService.getSimuData().devices_available) {
                             deviceModel.devices = simuService.getSimuDevices();
                         }
                         deviceModel.bluetooth = true;
@@ -143,7 +143,7 @@ var DeviceService = function () {
             if (deviceModel.selectedDevice !== null && deviceModel.connecting) {
                 if (SIMULATION) {
                     console.log("SIMU :: --> simulating approximation process");
-                    if (simuData.can_connect) {
+                    if (simuService.getSimuData().can_connect) {
                         simuService.approximationSimuLoop(-100, deviceModel, modelControl, function () {
                             deviceModel.connecting = false;
                             deviceModel.connected = true;
@@ -281,7 +281,7 @@ var DeviceService = function () {
             } else {
                 //simulation mode
                 setTimeout(function () {
-                    if (simuData.services_available) {
+                    if (simuService.getSimuData().services_available) {
                         //deviceModel.services = getGattServices(bigPeripheralObj);
                         deviceModel.services = getGattServices(simuService.getRealPeripheralObject());
                     }
@@ -369,8 +369,8 @@ var DeviceService = function () {
         var deferred = $.Deferred();
         if (SIMULATION) {
             //simulation mode is activated
-            console.log("SIMU --> bluetooth: " + simuData.bluetooth_enabled);
-            deferred.resolve(simuData.bluetooth_enabled);
+            console.log("SIMU --> bluetooth: " + simuService.getSimuData().bluetooth_enabled);
+            deferred.resolve(simuService.getSimuData().bluetooth_enabled);
         } else {
             //real hardware mode
             ble.isEnabled(function () {
@@ -437,7 +437,7 @@ var DeviceService = function () {
 
     var simuService;
     if (SIMULATION) {
-        simuService = new SimuService();
+        simuService = new SimuService(configService);
     }
 
 //    var simuService;

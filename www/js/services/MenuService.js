@@ -1,6 +1,6 @@
 /* global Handlebars */
 
-var MenuService = function (deviceService) {
+var MenuService = function (deviceService, configService) {
 
     var menus = [];
     var appContainerView, optionsView, deviceDemoView, deviceServicesView, connectView, customerDemoView, logisticianDemoView, settingsView, serviceMenuView, errView;

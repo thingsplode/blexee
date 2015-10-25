@@ -1,4 +1,15 @@
-var SimuService = function () {
+var SimuService = function (configService) {
+
+    var simuData = {
+        'bluetooth_enabled': true,
+        'devices_available': true,
+        'can_connect': true,
+        'services_available': true
+    };
+
+    this.getSimuData = function () {
+        return simuData;
+    };
 
     this.getSimuDevices = function () {
         return simuDevices;

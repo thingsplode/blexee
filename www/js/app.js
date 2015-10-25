@@ -1,16 +1,9 @@
-/* global HomeView, Handlebars, DeviceView, StatusBar, FastClick, router, DEBUG_MODE */
+/* global HomeView, Handlebars, DeviceView, router, DEBUG_MODE */
 
 var DEBUG_MODE = true;
 var SIMULATION = true;
 var DEVICE_PRESENT = false;
 var CONNECT_LIMIT = -51;
-
-var simuData = {
-    'bluetooth_enabled': true,
-    'devices_available': true,
-    'can_connect': true,
-    'services_available': true
-};
 
 function ErrorMessage(title, message) {
     this.title = title;
@@ -24,34 +17,10 @@ function ErrorMessage(title, message) {
         console.log = function () {
         };
     }
-
-    document.addEventListener('deviceready', function () {
-        console.log(StatusBar);
-        //StatusBar.backgroundColorByHexString('#ffffff');
-        //StatusBar.styleDefault();
-        //StatusBar.styleBlackTranslucent();
-        //StatusBar.backgroundColorByName("red");
-        StatusBar.styleLightContent();
-        StatusBar.overlaysWebView(false);
-        StatusBar.backgroundColorByHexString('#3F51B5');
-        FastClick.attach(document.body);
-
-        if (navigator.notification) { // Override default HTML alert with native dialog
-            window.alert = function (message) {
-                navigator.notification.alert(
-                        message, // message
-                        null, // callback
-                        "Blexee", // title
-                        'OK'        // buttonName
-                        );
-            };
-        }
-        //alert('device ready');
-        DEVICE_PRESENT = true;
-    }, false);
-
-    var deviceService = new DeviceService();
-    var menuService = new MenuService(deviceService);
+    
+    var cfgService = new ConfigurationService();
+    var deviceService = new DeviceService(cfgService);
+    var menuService = new MenuService(deviceService, cfgService);
     //var slider = new PageSlider($('.page-content'));
     var slider;
     menuService.initialize().done(function () {
