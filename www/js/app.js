@@ -1,7 +1,7 @@
 /* global HomeView, Handlebars, DeviceView, StatusBar, FastClick, router, DEBUG_MODE */
 
 var DEBUG_MODE = true;
-var SIMULATION = false;
+var SIMULATION = true;
 var DEVICE_PRESENT = false;
 var CONNECT_LIMIT = -51;
 
