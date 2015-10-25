@@ -1,7 +1,7 @@
 /* global SIMULATION, simuData, ble */
 
 var DeviceService = function (configService) {
-
+    var self = this;
     var deviceModel = {
         /*
          * true is bluetooth device is enabled
@@ -323,36 +323,68 @@ var DeviceService = function (configService) {
         }
     };
 
-    this.writeData = function (serviceUuid, characteristicUuid, data, success, failure) {
+    this.writeData = function (serviceUuid, characteristicUuid, arrayBufferData, success, failure) {
         if (deviceModel.connected && deviceModel.selectedDevice !== null) {
             if (!configService.getValue('/blexee/simuMode')) {
                 ble.isConnected(deviceModel.selectedDevice.id, function () {
                     //todo: make a hexa writer
-                    ble.write(deviceModel.selectedDevice.id, serviceUuid, characteristicUuid, stringToBytes(data), success, function () {
+                    ble.write(deviceModel.selectedDevice.id, serviceUuid, characteristicUuid, arrayBufferData, success, function () {
                         failure(new ErrorMessage("Couldn't write data", "Please make sure that you've wrote data which is acceptable."));
                     });
                 }, function () {
                     failure(new ErrorMessage("Device is not connected", "Please make sure that the device is connected first."));
                 });
             } else {
-                console.log("SIMU :: -- write --> service [" + serviceUuid + "] characteristic [" + characteristicUuid + "] + data " + data);
+                console.log("SIMU :: -- write --> service [" + serviceUuid + "] characteristic [" + characteristicUuid + "] + data " + arrayBufferData);
                 success();
             }
         }
     };
 
     // ASCII only
-    function stringToBytes(string) {
+    this.stringToBytes = function stringToBytes(string) {
         var array = new Uint8Array(string.length);
         for (var i = 0, l = string.length; i < l; i++) {
             array[i] = string.charCodeAt(i);
         }
         return array.buffer;
-    }
+    };
 
     // ASCII only
     function bytesToString(buffer) {
         return String.fromCharCode.apply(null, new Uint8Array(buffer));
+    }
+
+    this.parseHexString = function (str) {
+        str = str.replace(/ /g, '');
+        console.log('HEXX PARSER ::: original string [' + str + '] / string length [' + str.length + ']');
+        var result = new Uint8Array(str.length / 2);
+        var index = 0;
+        while (str.length >= 2) {
+            result[index] = parseInt(str.substring(0, 2), 16);
+            str = str.substring(2, str.length);
+            index++;
+        }
+        console.log('HEXX PARSER ::: byte length [' + result.byteLength + ']');
+        console.log('HEXX PARSER ::: length [' + result.length + ']');
+        console.log('CHARS: ' + bytesToString(result.buffer));
+        return result.buffer;
+    };
+
+    function createHexString(arr) {
+        var result = "";
+        var z;
+
+        for (var i = 0; i < arr.length; i++) {
+            var str = arr[i].toString(16);
+
+            z = 8 - str.length + 1;
+            str = Array(z).join("0") + str;
+
+            result += str;
+        }
+
+        return result;
     }
 
     this.getModelControl = function () {

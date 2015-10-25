@@ -164,7 +164,7 @@ var DEVICE_PRESENT = false;
                     });
                     //when there's no name attribute on the form, use: e.target[0].value
                     console.log('FORM SUBMITTED: ==> [' + JSON.stringify(values) + '] ' + bleService + ' ' + bleCharacteristic + " ");
-                    deviceService.writeData(bleService, bleCharacteristic, JSON.stringify(values), function () {
+                    deviceService.writeData(bleService, bleCharacteristic, deviceService.parseHexString(values['write-data']), function () {
                         target.remove();
                     }, function (err) {
                         menuService.errView.setModel(err);
