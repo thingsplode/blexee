@@ -1,28 +1,24 @@
-/* global HomeView, Handlebars, DeviceView, router, DEBUG_MODE */
+/* global HomeView, Handlebars, DeviceView, router */
 
-var DEBUG_MODE = true;
-var SIMULATION = true;
 var DEVICE_PRESENT = false;
-var CONNECT_LIMIT = -51;
-
-function ErrorMessage(title, message) {
-    this.title = title;
-    this.message = message;
-}
 
 (function () {
 
-    if (!DEBUG_MODE) {
-        console = console || {};
-        console.log = function () {
-        };
-    }
-    
     var cfgService = new ConfigurationService();
     var deviceService = new DeviceService(cfgService);
     var menuService = new MenuService(deviceService, cfgService);
     //var slider = new PageSlider($('.page-content'));
     var slider;
+
+    //initialization functions
+    var dbgMode = cfgService.getValue('/blexee/debugMode');
+    console.log('DEBUG MODE: ' + dbgMode);
+    if (!dbgMode) {
+        console = console || {};
+        console.log = function () {
+        };
+    }
+
     menuService.initialize().done(function () {
 //$('body').html(menuService.appContainerView.render().$el);
 //slider.slidePage(menuService.appContainerView.render().$el);
@@ -174,7 +170,7 @@ function ErrorMessage(title, message) {
             } else {
                 //only read
                 var cellElementName = '#td-' + charData.id;
-                if (SIMULATION) {
+                if (cfgService.getValue('/blexee/simuMode')) {
                     $(descriptionElmName).append('<br>Test');
                 }
             }

@@ -1,4 +1,4 @@
-/* global SIMULATION, CONNECT_LIMIT, simuData, ble */
+/* global SIMULATION, simuData, ble */
 
 var DeviceService = function (configService) {
 
@@ -46,7 +46,7 @@ var DeviceService = function (configService) {
     this.initialize = function () {
         // No Initialization required
         var deferred = $.Deferred();
-        if (SIMULATION) {
+        if (configService.getValue('/blexee/simuMode')) {
             $.getScript("device_simulation.js", function () {
                 alert("Script loaded but not necessarily executed.");
             });
@@ -64,7 +64,7 @@ var DeviceService = function (configService) {
         var deferred = $.Deferred();
         this.bluetoothEnabled().done(function (bluetoothEnabledStatus) {
             if (bluetoothEnabledStatus) {
-                if (SIMULATION) {
+                if (configService.getValue('/blexee/simuMode')) {
                     //simulation
                     setTimeout(function () {
                         console.log('--> device service timeout simulation triggered');
@@ -123,7 +123,7 @@ var DeviceService = function (configService) {
             deviceModel.connected = false;
             deviceModel.connecting = false;
             //todo: make a prescan
-            if (SIMULATION) {
+            if (configService.getValue('/blexee/simuMode')) {
                 //in simulation mode
                 deviceModel.devices = simuService.getSimuDevices();
             }
@@ -141,7 +141,7 @@ var DeviceService = function (configService) {
             }
 
             if (deviceModel.selectedDevice !== null && deviceModel.connecting) {
-                if (SIMULATION) {
+                if (configService.getValue('/blexee/simuMode')) {
                     console.log("SIMU :: --> simulating approximation process");
                     if (simuService.getSimuData().can_connect) {
                         simuService.approximationSimuLoop(-100, deviceModel, modelControl, function () {
@@ -196,7 +196,7 @@ var DeviceService = function (configService) {
                     console.log("proximity [" + deviceModel.selectedDevice.proximity + "] at rssi [" + providedRssi + "]");
                     deviceModel.selectedDevice.proximity = getPercentFromRssi(providedRssi);
                     modelControl.update(providedRssi);
-                    if (providedRssi < CONNECT_LIMIT && !aborted) {
+                    if (providedRssi < configService.getValue('/blexee/connectLimit') && !aborted) {
                         //todo: sometimes the rssi is very high (eg +127), so a double check is needed
                         console.log("HW --> the device is not close enough, rescanning...");
                         setTimeout(function () {
@@ -268,7 +268,7 @@ var DeviceService = function (configService) {
             deferred.reject(new ErrorMessage('Bluetooth is not enabled', 'Before requesting device-services, please enable your bluetooth and connect a bluetooth low energy device'));
         } else {
             deviceModel.requestingServices = true;
-            if (!SIMULATION) {
+            if (!configService.getValue('/blexee/simuMode')) {
                 //real HW use case
                 if (deviceModel.connected && deviceModel.selectedDevice) {
                     //services are already retrieved while connecting and added to the device model
@@ -300,7 +300,7 @@ var DeviceService = function (configService) {
         deviceModel.searching = false;
         deviceModel.devices = [];
         deviceModel.services = [];
-        if (!SIMULATION && deviceModel.connected) {
+        if (!configService.getValue('/blexee/simuMode') && deviceModel.connected) {
             ble.isConnected(deviceModel.selectedDevice.id, function () {
                 console.log('HW --> Disconnecting from [' + deviceModel.selectedDevice.id + '].');
                 ble.disconnect(deviceModel.selectedDevice.id, function () {
@@ -325,7 +325,7 @@ var DeviceService = function (configService) {
 
     this.writeData = function (serviceUuid, characteristicUuid, data, success, failure) {
         if (deviceModel.connected && deviceModel.selectedDevice !== null) {
-            if (!SIMULATION) {
+            if (!configService.getValue('/blexee/simuMode')) {
                 ble.isConnected(deviceModel.selectedDevice.id, function () {
                     //todo: make a hexa writer
                     ble.write(deviceModel.selectedDevice.id, serviceUuid, characteristicUuid, stringToBytes(data), success, function () {
@@ -367,7 +367,7 @@ var DeviceService = function (configService) {
      */
     this.bluetoothEnabled = function () {
         var deferred = $.Deferred();
-        if (SIMULATION) {
+        if (configService.getValue('/blexee/simuMode')) {
             //simulation mode is activated
             console.log("SIMU --> bluetooth: " + simuService.getSimuData().bluetooth_enabled);
             deferred.resolve(simuService.getSimuData().bluetooth_enabled);
@@ -436,7 +436,7 @@ var DeviceService = function (configService) {
     };
 
     var simuService;
-    if (SIMULATION) {
+    if (configService.getValue('/blexee/simuMode')) {
         simuService = new SimuService(configService);
     }
 
