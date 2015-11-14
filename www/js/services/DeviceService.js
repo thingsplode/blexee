@@ -3,35 +3,35 @@
 var DeviceService = function (configService) {
     var self = this;
     var deviceModel = {
-        /*
+        /**
          * true is bluetooth device is enabled
          */
         bluetooth: true,
-        /*
+        /**
          * true while searching for bluetooth low energy devices
          */
         searching: false,
-        /*
+        /**
          * true while approximating and connecting to a ble device
          */
         connecting: false,
-        /*
+        /**
          * True while requesting gatt services from a connected ble device
          */
         requestingServices: false,
-        /*
+        /**
          * true when connected to a ble device
          */
         connected: false,
-        /*
+        /**
          * the details of the ble device which we are going to connect to or which we have connected to
          */
         selectedDevice: '',
-        /*
+        /**
          * all available devices found by the scanning operation
          */
         devices: [],
-        /*
+        /**
          * the gatt services of devices
          */
         services: []
@@ -187,8 +187,8 @@ var DeviceService = function (configService) {
     };
 
     function approximationLoop(devID, succeeded, failed) {
+        //todo: stop approximation loop if the user switches to a new screen while approximation is running
         try {
-
             console.log("Entering approximation loop with devce id [" + devID + "] // stringified value: [" + JSON.stringify(devID) + "]");
             var aborted = false;
             scanHardware(devID).done(function (providedRssi) {
