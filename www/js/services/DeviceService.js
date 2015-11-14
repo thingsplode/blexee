@@ -36,6 +36,7 @@ var DeviceService = function (configService) {
          */
         services: []
     };
+    
     var modelControl = $.extend($({}), (function (o) {
         o.update = function () {
             o.trigger('modup', deviceModel);
@@ -43,6 +44,10 @@ var DeviceService = function (configService) {
         return o;
     })($({})));
 
+    /**
+     * Initializer function
+     * @returns {unresolved}
+     */
     this.initialize = function () {
         // No Initialization required
         var deferred = $.Deferred();
@@ -54,7 +59,7 @@ var DeviceService = function (configService) {
         deferred.resolve();
         return deferred.promise();
     };
-    /*
+    /**
      * Scans bluetooth low energy devices
      * @returns {unresolved} a promis which you can refer with done()
      */
@@ -117,6 +122,14 @@ var DeviceService = function (configService) {
         });
         return deferred.promise();
     };
+    
+    /**
+     * Serarches for a devices and once reached the preconfigured proximity limit it connects to it.
+     * @param {type} deviceID the device id to connect to
+     * @param {type} success the function which will be called, once the connection should took place;
+     * @param {type} failure the function which shall be called if theres a failure;
+     * @returns {undefined}
+     */
     this.approximateAndConnectDevice = function (deviceID, success, failure) {
         try {
             deviceModel.searching = false;
@@ -186,6 +199,13 @@ var DeviceService = function (configService) {
         }
     };
 
+    /**
+     * @private
+     * @param {type} devID
+     * @param {type} succeeded
+     * @param {type} failed
+     * @returns {undefined}
+     */
     function approximationLoop(devID, succeeded, failed) {
         //todo: stop approximation loop if the user switches to a new screen while approximation is running
         try {
@@ -225,6 +245,11 @@ var DeviceService = function (configService) {
         }
     }
 
+    /**
+     * @private
+     * @param {type} devID
+     * @returns {unresolved}
+     */
     function scanHardware(devID) {
         var deferred = $.Deferred();
         ble.startScan([], function (device) {
@@ -253,12 +278,21 @@ var DeviceService = function (configService) {
         return deferred.promise();
     }
 
+    /**
+     * @private
+     * @param {type} rssi
+     * @returns {Number}
+     */
     function getPercentFromRssi(rssi) {
         var proximity = (100 - (rssi * -1));
         console.log("calculated proximity: [" + proximity + "] at rssi [" + rssi + "]");
         return proximity;
     }
 
+    /**
+     * Request a list of available GATT service from the device
+     * @returns {unresolved}
+     */
     this.requestServices = function () {
         var deferred = $.Deferred();
         console.log('deviceService :: requesting available services');
@@ -296,6 +330,12 @@ var DeviceService = function (configService) {
     };
 
 
+    /**
+     * 
+     * @param {type} success
+     * @param {type} failure
+     * @returns {undefined}
+     */
     this.disconnect = function (success, failure) {
         deviceModel.searching = false;
         deviceModel.devices = [];
@@ -323,6 +363,16 @@ var DeviceService = function (configService) {
         }
     };
 
+
+    /**
+     * 
+     * @param {type} serviceUuid
+     * @param {type} characteristicUuid
+     * @param {type} arrayBufferData
+     * @param {type} success
+     * @param {type} failure
+     * @returns {undefined}
+     */
     this.writeData = function (serviceUuid, characteristicUuid, arrayBufferData, success, failure) {
         if (deviceModel.connected && deviceModel.selectedDevice !== null) {
             if (!configService.getValue('/blexee/simuMode')) {
@@ -393,7 +443,7 @@ var DeviceService = function (configService) {
     this.getDeviceModel = function () {
         return deviceModel;
     };
-    /*
+    /**
      * Checks if the bluetooth device is enabled.
      * @returns {unresolved}
      */
@@ -420,6 +470,12 @@ var DeviceService = function (configService) {
         return deferred.promise();
     };
 
+    
+    /**
+     * 
+     * @param {type} peripheralObject
+     * @returns {Array|DeviceService.getGattServices.gattSrvs}
+     */
     var getGattServices = function (peripheralObject) {
         var gattSrvs = [];
 

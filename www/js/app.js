@@ -1,10 +1,47 @@
 /* global HomeView, Handlebars, DeviceView, router */
 
+/*
+ * Will be set to true by the Hardware Service if running on real phone
+ */
 var DEVICE_PRESENT = false;
 
 (function () {
+    var cfgSchema = [
+        {
+            "path": "/blexee",
+            "caption": "General Config",
+            "keys": [
+                {
+                    "id": "simuMode",
+                    "caption": "Simulation",
+                    "type": "Boolean",
+                    "valueset": ["Simulation", "Real"],
+                    "value": true
+                },
+                {
+                    "id": "debugMode",
+                    "caption": "Debug Mode",
+                    "type": "Boolean",
+                    "value": false
+                },
+                {
+                    "id": "traceMode",
+                    "caption": "Trace Mode",
+                    "type": "Boolean",
+                    "value": false
+                },
+                {
+                    "id": "connectLimit",
+                    "caption": "Connect Limit",
+                    "type": "Numeric",
+                    "value": "-51"
+                }
+            ]
+        }
+    ];
 
-    var cfgService = new ConfigurationService();
+    //todo: nullify and delete objects with references
+    var cfgService = new ConfigurationService(cfgSchema);
     //cfgService.reset();
     var deviceService = new DeviceService(cfgService);
     var menuService = new MenuService(deviceService, cfgService);
@@ -27,6 +64,7 @@ var DEVICE_PRESENT = false;
     router.addRoute('', function () {
         $('body').html(menuService.appContainerView.render().$el);
         $('.page-content').html(menuService.optionsView.render().$el);
+        componentHandler.upgradeAllRegistered();
     });
 //    router.addRoute('start', function () {
 //        console.log('View :: OptionsView');
@@ -51,6 +89,7 @@ var DEVICE_PRESENT = false;
                     //if bluetooth is not enabled
                     menuService.errView.setModel(new ErrorMessage('Please enable your bluetooth device', 'Use the device settings to enable the bluetooth connection a retry the app functions.'));
                     $('.page-content').html(menuService.errView.render().$el);
+                    componentHandler.upgradeAllRegistered();
                     //slider.slidePage(menuService.errView.render().$el);
                 } else if (deviceModel.connected) {
                     //redirect to: #connected/device_id
@@ -64,6 +103,7 @@ var DEVICE_PRESENT = false;
                     });
                     menuService.getMenuView(view).setModel(deviceModel);
                     $('.page-content').html(menuService.getMenuView(view).render().$el);
+                    componentHandler.upgradeAllRegistered();
                     //slider.slidePage(menuService.getMenuView(view).render().$el);
                 }
             } catch (error) {
@@ -75,15 +115,19 @@ var DEVICE_PRESENT = false;
         }
         if (view === 'SettingsView') {
             menuService.getMenuView(view).setModel(cfgService.getConfigSchemas());
-            $('.page-content').html(menuService.getMenuView(view).render().$el);
+            elm = menuService.getMenuView(view).render().$el;
+            $('.page-content').html(elm);
+            componentHandler.upgradeAllRegistered();
         } else {
             $('.page-content').html(menuService.getMenuView(view).render().$el);
+            componentHandler.upgradeAllRegistered();
             //slider.slidePage(menuService.getMenuView(view).render().$el);
         }
     });
     router.addRoute('connect/:deviceId', function (deviceId) {
         console.log('Trying to connect-> ' + deviceId);
         $('.page-content').html(menuService.connectView.render().$el);
+        //componentHandler.upgradeAllRegistered();
         //slider.slidePage(menuService.connectView.render().$el);
         menuService.connectView.registerModelControl(deviceService.getModelControl());
         deviceService.approximateAndConnectDevice(deviceId, function () {
@@ -93,16 +137,15 @@ var DEVICE_PRESENT = false;
         }, function (error) {
             menuService.errView.setModel(error);
             $('.page-content').html(menuService.errView.render().$el);
+            componentHandler.upgradeAllRegistered();
             //slider.slidePage(menuService.errView.render().$el);
         });
     }, function () {
         menuService.connectView.unregisterModelControl();
     });
     router.addRoute('connected', function () {
-        //http://stackoverflow.com/questions/31492069/material-design-lite-inputs-in-ember-js-app-loses-it-design-after-route-transiti
-        //https://github.com/google/material-design-lite/tree/master/src/layout/snippets
-        //http://stackoverflow.com/questions/32957407/material-design-lite-how-to-programatically-reset-a-floating-label-input-text
         $('body').html(menuService.deviceServicesView.render().$el);
+        componentHandler.upgradeAllRegistered();
         menuService.deviceServicesView.registerModelControl(deviceService.getModelControl());
 
         deviceService.requestServices().done(function () {
@@ -112,6 +155,7 @@ var DEVICE_PRESENT = false;
         }).fail(function (errMsg) {
             menuService.errView.setModel(errMsg);
             $('.page-content').html(menuService.errView.render().$el);
+            componentHandler.upgradeAllRegistered();
             //slider.slidePage(menuService.errView.render().$el);
             menuService.deviceServicesView.unregisterModelControl();
         });
@@ -126,6 +170,7 @@ var DEVICE_PRESENT = false;
             //failure
             menuService.errView.setModel(new ErrorMessage('Could not disconnect', 'This is a yet unhandled failure.'));
             $('.page-content').html(menuService.errView.render().$el);
+            componentHandler.upgradeAllRegistered();
 
         });
     });
@@ -144,14 +189,17 @@ var DEVICE_PRESENT = false;
             console.log('button clicked at [' + descriptionElmName + '] -> flags: [' + flags + ']');
             if (flags.indexOf('Write') > -1) {//todo: the write here is case sensitive
                 //has write flag
-                $(descriptionElmName).html('<form class="characteristic-writer" data-service=\"' + charData.serviceUuid + '\" data-characteristic=\"' + charData.charUuid + '\" action=\"\">' +
+                var stuff = $('<form class="characteristic-writer" data-service=\"' + charData.serviceUuid + '\" data-characteristic=\"' + charData.charUuid + '\" action=\"\">' +
                         '<div class=\"mdl-textfield mdl-js-textfield mdl-textfield--floating-label short\">' +
                         '<input name="write-data" class=\"mdl-textfield__input\" type=\"text\" pattern=\"-?[A-Fa-f0-9]*(\.[A-Fa-f0-9]+)?\" size=\"30\" id=\"inp-' + charData.id + '\"/>' +
                         '<label class=\"mdl-textfield__label\" for=\"inp-' + charData.id + '\" >' + charData.descriptor + '</label>' +
                         '<span class=\"mdl-textfield__error\">Input is not a hex!</span>' +
                         '</div>' +
                         '</form>');
-
+                //componentHandler.upgradeElement(stuff[0]);
+                $(descriptionElmName).html(stuff);
+                //componentHandler.upgradeDom();
+                componentHandler.upgradeAllRegistered();
                 $('.characteristic-writer').on('submit', function (e) {
                     e.preventDefault();
                     var target = $(e.target);
@@ -169,6 +217,7 @@ var DEVICE_PRESENT = false;
                     }, function (err) {
                         menuService.errView.setModel(err);
                         $('.page-content').html(menuService.errView.render().$el);
+                        componentHandler.upgradeAllRegistered();
                     });
 
 

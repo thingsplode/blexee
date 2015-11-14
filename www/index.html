@@ -8,6 +8,28 @@
     Cordova: writing to a file: http://www.raymondcamden.com/2014/11/05/Cordova-Example-Writing-to-a-file
     Cordova writing to file: https://dzone.com/articles/cordova-example-writing-file
 
+    What's the best platform to install apps
+    https://fueled.com/blog/whats-best-framework-building-mobile-apps/ 
+
+    Todo:
+        https://www.npmjs.com/package/cordova-plugin-vibration
+        https://www.npmjs.com/package/cordova-plugin-splashscreen
+        https://www.npmjs.com/package/cordova-plugin-device
+        https://www.npmjs.com/package/phonegap-plugin-barcodescanner
+        https://www.npmjs.com/package/cordova-plugin-barcodescanner
+        https://www.npmjs.com/package/cordova-plugin-actionsheet
+        https://www.npmjs.com/package/cordova-plugin-ios-longpress-fix
+        https://www.npmjs.com/package/cordova-plugin-ble-central
+        https://www.npmjs.com/package/cordova-plugin-app-preferences
+        https://www.npmjs.com/package/cordova-plugin-native-transitions
+        https://www.npmjs.com/package/cordova-plugin-websocket
+        https://www.npmjs.com/package/cordova-plugin-barcode-scanner2
+        https://www.npmjs.com/package/cordova-plugin-auth-dialog
+        https://www.npmjs.com/package/cordovapush
+
+        https://www.npmjs.com/package/cordova-plugin-chrome-apps-sockets-udp
+        https://www.npmjs.com/package/cordova-plugin-chrome-apps-socket
+
 -->
 <html>
     <head>
@@ -111,12 +133,12 @@
             <style>
                 .pie_circle {
                     fill: none;
-                    stroke: #8C9EFF;
+                    stroke: #4CAF50;
                     stroke-width: 20;
                     stroke-dasharray: {{absolut_from_percentage selectedDevice.proximity 384}} 376; /* stroke-dasharray: 10 {max}; 2π × circle_radius ≈ max */
                 }
                 .pie_back{fill: none;
-                    stroke: #8C9EFF;
+                    stroke: #9E9E9E;
                     opacity: 0.15;
                     stroke-width: 20;
                 }
@@ -159,14 +181,14 @@
                                 {{#each services}}
                                 <div class="service-card-wide mdl-card mdl-shadow--2dp">
                                     <div class="mdl-card__title">
-                                        <h2 class="mdl-card__title-text">Service {{uuid}}</h2>
+                                        <h2 class="mdl-card__title-text caption">Service {{uuid}}</h2>
                                     </div>
                                     <div class="mdl-card__supporting-text">
                                         {{#if characteristics}}
-                                            <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp box">
+                                            <table class="mdl-data-table mdl-data-table--selectable mdl-shadow--2dp box">
                                             <thead>
-                                                <th class="mdl-data-table__cell--non-numeric">
-                                                    <i class="material-icons">memory</i>
+                                                <th class="mdl-data-table__cell--non-numeric" style="text-align:left; vertical-align:middle">
+                                                    <i class="material-icons" style="vertical-align:middle">memory</i>
                                                     <span style="vertical-align: middle;display: inline-block;">Characteristics</span>
                                                 </th>
                                                 <th>
@@ -213,18 +235,18 @@
                 {{#each this}}
                     <div class="service-card-wide mdl-card mdl-shadow--2dp">
                         <div class="mdl-card__title">
-                            <h2 class="mdl-card__title-text">{{caption}}</h2>
+                            <h2 class="mdl-card__title-text caption">{{caption}}</h2>
                         </div>
-                        <div class="mdl-card__supporting-text"> 
+                        <div class="mdl-card__supporting-text" style="margin: 0 auto;"> 
                         {{#if keys}}
-                            <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp box">
+                            <table class="mdl-data-table mdl-data-table--selectable mdl-shadow--2dp box">
                                 <thead>
                                     <tr>
-                                        <th class="mdl-data-table__cell--non-numeric">
-                                            <i class="material-icons">memory</i>
-                                            Configuration Key
+                                        <th class="mdl-data-table__cell--non-numeric" style="text-align:left; vertical-align:middle">
+                                            <i class="material-icons" style="vertical-align:middle">memory</i>
+                                            Configuration
                                         </th>
-                                        <th>Setting</th>
+                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>

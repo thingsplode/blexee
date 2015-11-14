@@ -1,40 +1,8 @@
-var ConfigurationService = function () {
+var ConfigurationService = function (cfgSchema) {
     var SCHEMA_STORAGE_KEY = "config_schemas";
     var dirty = true;
     var self = this;
-    var cfgSchemas = [
-        {
-            "path": "/blexee",
-            "caption": "General Config",
-            "keys": [
-                {
-                    "id": "simuMode",
-                    "caption": "Simulation",
-                    "type": "Boolean",
-                    "valueset": ["Simulation", "Real"],
-                    "value": true
-                },
-                {
-                    "id": "debugMode",
-                    "caption": "Debug Mode",
-                    "type": "Boolean",
-                    "value": false
-                },
-                {
-                    "id": "traceMode",
-                    "caption": "Trace Mode",
-                    "type": "Boolean",
-                    "value": false
-                },
-                {
-                    "id": "connectLimit",
-                    "caption": "Connect Limit",
-                    "type": "Numeric",
-                    "value": "-51"
-                }
-            ]
-        }
-    ];
+    
     var functionStore = [];
 
     $(document).ready(function () {
@@ -44,6 +12,11 @@ var ConfigurationService = function () {
         });
     });
 
+    /**
+     * 
+     * @param {type} event
+     * @returns {undefined}
+     */
     function updateField(event) {
         event.preventDefault();
         var target = $(event.target),
@@ -68,6 +41,13 @@ var ConfigurationService = function () {
         }
     }
 
+    /**
+     * Register a function to be called when the coresponding setting is changed;
+     * @param {type} funcID the unique id of the function which will indentify it during calls 
+     * @param {type} path the configuration path (in the form: /superNode/subNode/configurationKey) upon the change the function will be triggered
+     * @param {type} func the reference to the function which will be triggered if the configuration key chnages
+     * @returns {undefined}
+     */
     this.registerTriggerableFunction = function (funcID, path, func) {
         found = false;
         if (functionStore.length > 0) {
@@ -82,6 +62,12 @@ var ConfigurationService = function () {
             functionStore.push(new TriggerableFunction(funcID, path, func));
         }
     };
+    
+    /**
+     * @private
+     * @param {type} path the path for which the triggerable functions should be returned
+     * @returns {Array} all configured triggerable functions
+     */
     function getFunctions(path) {
         if (functionStore.length > 0) {
             return functionStore.filter(function (funcEntry) {
@@ -94,7 +80,7 @@ var ConfigurationService = function () {
 
     function save() {
         var deferred = $.Deferred();
-        window.localStorage.setItem(SCHEMA_STORAGE_KEY, JSON.stringify(cfgSchemas));
+        window.localStorage.setItem(SCHEMA_STORAGE_KEY, JSON.stringify(cfgSchema));
         deferred.resolve();
         return deferred.promise();
     }
@@ -110,7 +96,7 @@ var ConfigurationService = function () {
         var deferred = $.Deferred();
         var storedValues = window.localStorage.getItem(SCHEMA_STORAGE_KEY);
         if (storedValues) {
-            cfgSchemas = JSON.parse(storedValues);
+            cfgSchema = JSON.parse(storedValues);
         }
         deferred.resolve();
         return deferred.promise();
@@ -128,12 +114,13 @@ var ConfigurationService = function () {
         }
         var key = pathArray.pop();
         var schemaPath = pathArray.join('/');
-        return cfgSchemas.filter(function (schemaEntry) {
+        return cfgSchema.filter(function (schemaEntry) {
             return schemaEntry.path === schemaPath;
         })[0].keys.filter(function (keyEntry) {
             return keyEntry.id === key;
         })[0].value;
     };
+    
     this.setValue = function (path, value) {
         var pathArray = path.split('/');
         if (pathArray.length < 1) {
@@ -141,11 +128,11 @@ var ConfigurationService = function () {
         }
         var key = pathArray.pop();
         var schemaPath = pathArray.join('/');
-        for (i = 0; i < cfgSchemas.length; i++) {
-            if (cfgSchemas[i].path === schemaPath) {
-                for (x = 0; x < cfgSchemas[i].keys.length; x++) {
-                    if (cfgSchemas[i].keys[x].id === key) {
-                        cfgSchemas[i].keys[x].value = value;
+        for (i = 0; i < cfgSchema.length; i++) {
+            if (cfgSchema[i].path === schemaPath) {
+                for (x = 0; x < cfgSchema[i].keys.length; x++) {
+                    if (cfgSchema[i].keys[x].id === key) {
+                        cfgSchema[i].keys[x].value = value;
                         //console.log('CONFIGURATION ::: ' + JSON.stringify(cfgSchemas));
                         save();
                         var triggerableFunctions = getFunctions(path);
@@ -162,7 +149,7 @@ var ConfigurationService = function () {
         return false;
     };
     this.getConfigSchemas = function () {
-        return cfgSchemas;
+        return cfgSchema;
     };
 
     TriggerableFunction.prototype.call = function (value) {

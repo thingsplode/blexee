@@ -27,7 +27,7 @@ td {
 }
 
 .shorter {
-    width: 5em;
+    width: 2em;
 }
 .title {
     color: #607D8B;
@@ -41,6 +41,13 @@ td {
     margin-right: 0.3em;
     margin-left: 1em;
     line-height: 100%;
+}
+
+.caption {
+    color: #607D8B;
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 400;
 }
 
 p {
@@ -101,7 +108,8 @@ The device card styles, which are used when devices are listed
 .device-card.mdl-card {
     width: 200px;
     height: 165px;
-    background: #46B6AC;
+    //background: #46B6AC;
+    background: #9E9E9E;
 }
 .device-card > .mdl-card__actions {
     border-color: rgba(255, 255, 255, 0.2);
@@ -130,7 +138,7 @@ The device card styles, which are used when devices are listed
 .device-card-square > .mdl-card__title {
     color: #fff;
     background:
-        url('../img/box_sm.png') bottom right 0% no-repeat #46B6AC;
+        url('../img/box_sm.png') bottom right 0% no-repeat #9E9E9E;
 }
 
 .pie-chart {

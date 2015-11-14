@@ -85,7 +85,7 @@ var SimuService = function (configService) {
 
     var wrongGattServices = [
         {"id": 1, "uuid": "0x1800", "primary": "true", "characteristics": [
-                {"uuid": "0x2A00", "flags": "read,write", "descriptor": "device_name"},
+                {"uuid": "0x2A00", "flags": "read, write", "descriptor": "device_name"},
                 {"uuid": "0x2A01", "flags": "read", "descriptor": "appearance"},
                 {"uuid": "3334", "flags": "notify", "descriptor": "Yet Another Description"},
             ]},
