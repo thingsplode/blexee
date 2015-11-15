@@ -39,7 +39,11 @@ var DEVICE_PRESENT = false;
             ]
         }
     ],
-            device_uuid = '291C9A2E-CCA3-1EF0-5C5C-E19E29973F16',
+            blexeeServices = [
+                {"id": "logistician", "uuid": "833e65ce-4e2a-4b56-89a3-d7ba9aefa820", "characteristics": [{"deliver": "1a00"},{"pickup":"1a01"}]},
+                {"id": "customer", "uuid": "91dd5587-075d-4db1-8004-a4ab255735ce", "characteristics": [{deliver: "2a00"},{"pickup":"2a01"}]}
+            ],
+            deviceUuid = '291C9A2E-CCA3-1EF0-5C5C-E19E29973F16',
             currentUseCase = '';
 
     //todo: nullify and delete objects with references
@@ -105,8 +109,8 @@ var DEVICE_PRESENT = false;
                             menuService.getMenuView('DeviceView').setModel(deviceModel);
                             menuService.getMenuView('DeviceView').render();
                         } else if (currentUseCase === 'LogisticianDemoView') {
-                            if ($.inArray(device_uuid, deviceModel.devices)) {
-                                window.location.href = '#connect/' + device_uuid;
+                            if ($.inArray(deviceUuid, deviceModel.devices)) {
+                                window.location.href = '#connect/' + deviceUuid;
                             }
                         }
                     });
@@ -149,6 +153,8 @@ var DEVICE_PRESENT = false;
             //slider.slidePage(menuService.errView.render().$el);
         });
     }, function () {
+        //todo: break approximation
+        //todo: stop scanning
         menuService.connectView.unregisterModelControl();
     });
     router.addRoute('connected', function () {
@@ -179,9 +185,9 @@ var DEVICE_PRESENT = false;
     });
 
     router.addRoute('disconnect', function () {
+        //todo: the disconnect has a slow effect / would be more interesting to redirect first, than disconnect
         deviceService.disconnect(function () {
             //success
-            window.location.href = '';
         }, function () {
             //failure
             menuService.errView.setModel(new ErrorMessage('Could not disconnect', 'This is a yet unhandled failure.'));
@@ -189,14 +195,12 @@ var DEVICE_PRESENT = false;
             componentHandler.upgradeAllRegistered();
 
         });
+        window.location.href = '';
     });
 
     router.addRoute('deliver', function () {
         deviceService.scanBarcode().done(function (result) {
-            alert("We got a barcode\n" +
-                    "Result: " + result.text + "\n" +
-                    "Format: " + result.format + "\n" +
-                    "Cancelled: " + result.cancelled);
+            //todo: cancelling barcode is not working
             window.location.href = '#connected';
         }).fail(function (errMsg) {
             menuService.errView.setModel(errMsg);

@@ -1,7 +1,7 @@
 /* global SIMULATION, simuData, ble */
 
 var DeviceService = function (configService) {
-    var self = this;
+    var self = this, cancelApproximation = false;
     var deviceModel = {
         /**
          * true is bluetooth device is enabled
@@ -77,6 +77,7 @@ var DeviceService = function (configService) {
         } else {
             //real mode
             cordova.plugins.barcodeScanner.scan(function (result) {
+                console.log('deviceService :: barcode scanned: [' + result.text + "] of type [" + result.format + "] / status: [" + result.cancelled + "]");
                 deferred.resolve(result);
             }, function (error) {
                 deferred.reject(new ErrorMessage('Scanning failed', error));
@@ -245,7 +246,11 @@ var DeviceService = function (configService) {
                         //todo: sometimes the rssi is very high (eg +127), so a double check is needed
                         console.log("HW --> the device is not close enough, rescanning...");
                         setTimeout(function () {
-                            approximationLoop(devID, succeeded, failed);
+                            if (!cancelApproximation) {
+                                approximationLoop(devID, succeeded, failed);
+                            } else {
+                                cancelApproximation = false;
+                            }
                         }, 1000);
                     } else {
                         console.log("HW --> Device is close enough to connect / provided rssi [" + providedRssi + "]");
@@ -269,6 +274,10 @@ var DeviceService = function (configService) {
             failed("Exception caught", err);
         }
     }
+
+    this.breakApproximation = function () {
+        cancelApproximation = true;
+    };
 
     /**
      * Scan for bluetooth hardware
@@ -391,12 +400,12 @@ var DeviceService = function (configService) {
 
 
     /**
-     * Write data to a GATT Characteristic
-     * @param {type} serviceUuid
-     * @param {type} characteristicUuid
-     * @param {type} arrayBufferData
-     * @param {type} success
-     * @param {type} failure
+     * Write data to a GATT Characteristic found on a GATT service
+     * @param {type} serviceUuid the unique ID of the service which contains the characteristic to be updated
+     * @param {type} characteristicUuid the unique ID of the characteristics to be updated
+     * @param {type} arrayBufferData the data to be written
+     * @param {type} success function called once the data writing has succeeded
+     * @param {type} failure function called if data could not be written
      * @returns {undefined}
      */
     this.writeData = function (serviceUuid, characteristicUuid, arrayBufferData, success, failure) {
@@ -411,7 +420,7 @@ var DeviceService = function (configService) {
                     failure(new ErrorMessage("Device is not connected", "Please make sure that the device is connected first."));
                 });
             } else {
-                console.log("SIMU :: -- write --> service [" + serviceUuid + "] characteristic [" + characteristicUuid + "] + data " + arrayBufferData);
+                console.log("SIMU :: -- write --> service [" + serviceUuid + "] characteristic [" + characteristicUuid + "] + data " + JSON.stringify(arrayBufferData));
                 success();
             }
         }
