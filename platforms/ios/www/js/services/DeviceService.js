@@ -1,41 +1,46 @@
-/* global SIMULATION, CONNECT_LIMIT, simuData, ble */
+/* global SIMULATION, simuData, ble */
 
-var DeviceService = function () {
-
+var DeviceService = function (configService) {
+    var self = this;
     var deviceModel = {
-        /*
+        /**
          * true is bluetooth device is enabled
          */
         bluetooth: true,
-        /*
+        /**
          * true while searching for bluetooth low energy devices
          */
         searching: false,
-        /*
+        /**
          * true while approximating and connecting to a ble device
          */
         connecting: false,
-        /*
+        /**
          * True while requesting gatt services from a connected ble device
          */
         requestingServices: false,
-        /*
+        /**
          * true when connected to a ble device
          */
         connected: false,
-        /*
+        /**
          * the details of the ble device which we are going to connect to or which we have connected to
          */
         selectedDevice: '',
-        /*
+        /**
          * all available devices found by the scanning operation
          */
         devices: [],
-        /*
+        /**
          * the gatt services of devices
          */
         services: []
     };
+
+    /**
+     * Observable component, which will update the observer with the deviceModelData
+     * @type @exp;$@call;extend
+     */
     var modelControl = $.extend($({}), (function (o) {
         o.update = function () {
             o.trigger('modup', deviceModel);
@@ -43,10 +48,14 @@ var DeviceService = function () {
         return o;
     })($({})));
 
+    /**
+     * Initializer function
+     * @returns {unresolved} a promise which you can refer with done()
+     */
     this.initialize = function () {
         // No Initialization required
         var deferred = $.Deferred();
-        if (SIMULATION) {
+        if (configService.getValue('/blexee/simuMode')) {
             $.getScript("device_simulation.js", function () {
                 alert("Script loaded but not necessarily executed.");
             });
@@ -54,9 +63,30 @@ var DeviceService = function () {
         deferred.resolve();
         return deferred.promise();
     };
-    /*
-     * Scans bluetooth low energy devices
-     * @returns {unresolved} a promis which you can refer with done()
+
+    /**
+     * Scans a barcode and returns a promise; within the done function the result is handed over (result.text, result.format, result.cancelled)
+     * @returns {unresolved} a promise which you can refer with done() or fail()
+     */
+    this.scanBarcode = function () {
+        console.log('deviceService :: scan for barcode');
+        var deferred = $.Deferred();
+        if (configService.getValue('/blexee/simuMode')) {
+            //simulated mode
+            deferred.resolve({'text': 'abcdefgh', 'format': 'CODE_128', 'cancelled': 'false'});
+        } else {
+            //real mode
+            cordova.plugins.barcodeScanner.scan(function (result) {
+                deferred.resolve(result);
+            }, function (error) {
+                deferred.reject(new ErrorMessage('Scanning failed', error));
+            });
+        }
+        return deferred.promise();
+    };
+    /**
+     * Scans bluetooth low energy devices for 3 seconds and returns a list of found devices;
+     * @returns {unresolved} a promise which you can refer with done()
      */
     this.scanForDevices = function () {
         console.log('deviceService :: scan for devices');
@@ -64,13 +94,13 @@ var DeviceService = function () {
         var deferred = $.Deferred();
         this.bluetoothEnabled().done(function (bluetoothEnabledStatus) {
             if (bluetoothEnabledStatus) {
-                if (SIMULATION) {
-                    //simulation
+                if (configService.getValue('/blexee/simuMode')) {
+                    //simulation mode
                     setTimeout(function () {
                         console.log('--> device service timeout simulation triggered');
-                        console.log("SIMU --> devices: " + simuData.devices_available);
-                        if (simuData.devices_available) {
-                            deviceModel.devices = simuDevices;
+                        console.log("SIMU --> devices: " + simuService.getSimuData().devices_available);
+                        if (simuService.getSimuData().devices_available) {
+                            deviceModel.devices = simuService.getSimuDevices();
                         }
                         deviceModel.bluetooth = true;
                         deviceModel.searching = false;
@@ -117,15 +147,23 @@ var DeviceService = function () {
         });
         return deferred.promise();
     };
+
+    /**
+     * Serarches for a devices and once reached the preconfigured proximity limit it connects to it.
+     * @param {type} deviceID the device id to connect to
+     * @param {type} success the function which will be called, once the connection should took place;
+     * @param {type} failure the function which shall be called if theres a failure;
+     * @returns {undefined}
+     */
     this.approximateAndConnectDevice = function (deviceID, success, failure) {
         try {
             deviceModel.searching = false;
             deviceModel.connected = false;
             deviceModel.connecting = false;
             //todo: make a prescan
-            if (SIMULATION) {
+            if (configService.getValue('/blexee/simuMode')) {
                 //in simulation mode
-                deviceModel.devices = simuDevices;
+                deviceModel.devices = simuService.getSimuDevices();
             }
 
             if (deviceModel.devices) {
@@ -141,10 +179,10 @@ var DeviceService = function () {
             }
 
             if (deviceModel.selectedDevice !== null && deviceModel.connecting) {
-                if (SIMULATION) {
+                if (configService.getValue('/blexee/simuMode')) {
                     console.log("SIMU :: --> simulating approximation process");
-                    if (simuData.can_connect) {
-                        approximationSimuLoop(-100, deviceModel, modelControl, function () {
+                    if (simuService.getSimuData().can_connect) {
+                        simuService.approximationSimuLoop(-100, deviceModel, modelControl, function () {
                             deviceModel.connecting = false;
                             deviceModel.connected = true;
                             deviceModel.searching = false;
@@ -186,9 +224,16 @@ var DeviceService = function () {
         }
     };
 
+    /**
+     * @private
+     * @param {type} devID
+     * @param {type} succeeded
+     * @param {type} failed
+     * @returns {undefined}
+     */
     function approximationLoop(devID, succeeded, failed) {
+        //todo: stop approximation loop if the user switches to a new screen while approximation is running
         try {
-
             console.log("Entering approximation loop with devce id [" + devID + "] // stringified value: [" + JSON.stringify(devID) + "]");
             var aborted = false;
             scanHardware(devID).done(function (providedRssi) {
@@ -196,7 +241,7 @@ var DeviceService = function () {
                     console.log("proximity [" + deviceModel.selectedDevice.proximity + "] at rssi [" + providedRssi + "]");
                     deviceModel.selectedDevice.proximity = getPercentFromRssi(providedRssi);
                     modelControl.update(providedRssi);
-                    if (providedRssi < CONNECT_LIMIT && !aborted) {
+                    if (providedRssi < configService.getValue('/blexee/connectLimit') && !aborted) {
                         //todo: sometimes the rssi is very high (eg +127), so a double check is needed
                         console.log("HW --> the device is not close enough, rescanning...");
                         setTimeout(function () {
@@ -225,6 +270,12 @@ var DeviceService = function () {
         }
     }
 
+    /**
+     * Scan for bluetooth hardware
+     * @private
+     * @param {type} devID
+     * @returns {unresolved}
+     */
     function scanHardware(devID) {
         var deferred = $.Deferred();
         ble.startScan([], function (device) {
@@ -247,18 +298,27 @@ var DeviceService = function () {
                 deferred.reject("Scan failed", err);
             }
         }, function () {
-            conosle.log("HW --> could not start scanning...");
+            console.log("HW --> could not start scanning...");
             deferred.reject("Could not start scaning", "There was an error, the system could not be scanned.");
         });
         return deferred.promise();
     }
 
+    /**
+     * @private
+     * @param {type} rssi
+     * @returns {Number}
+     */
     function getPercentFromRssi(rssi) {
         var proximity = (100 - (rssi * -1));
         console.log("calculated proximity: [" + proximity + "] at rssi [" + rssi + "]");
         return proximity;
     }
 
+    /**
+     * Request a list of available GATT service from the device
+     * @returns {unresolved}
+     */
     this.requestServices = function () {
         var deferred = $.Deferred();
         console.log('deviceService :: requesting available services');
@@ -268,7 +328,7 @@ var DeviceService = function () {
             deferred.reject(new ErrorMessage('Bluetooth is not enabled', 'Before requesting device-services, please enable your bluetooth and connect a bluetooth low energy device'));
         } else {
             deviceModel.requestingServices = true;
-            if (!SIMULATION) {
+            if (!configService.getValue('/blexee/simuMode')) {
                 //real HW use case
                 if (deviceModel.connected && deviceModel.selectedDevice) {
                     //services are already retrieved while connecting and added to the device model
@@ -281,9 +341,9 @@ var DeviceService = function () {
             } else {
                 //simulation mode
                 setTimeout(function () {
-                    if (simuData.services_available) {
+                    if (simuService.getSimuData().services_available) {
                         //deviceModel.services = getGattServices(bigPeripheralObj);
-                        deviceModel.services = getGattServices(peripheralObjectReal);
+                        deviceModel.services = getGattServices(simuService.getRealPeripheralObject());
                     }
                     deviceModel.requestingServices = false;
                     console.log('SIMU --> triggered service retrieval simulation |devicemodel.services| ' + JSON.stringify(deviceModel.services));
@@ -296,11 +356,17 @@ var DeviceService = function () {
     };
 
 
+    /**
+     * Disconnect from a connected bluetooth low energy device;
+     * @param {type} success function called upon successfull disconnect
+     * @param {type} failure function called if there's an error
+     * @returns {undefined} nothing
+     */
     this.disconnect = function (success, failure) {
         deviceModel.searching = false;
         deviceModel.devices = [];
         deviceModel.services = [];
-        if (!SIMULATION && deviceModel.connected) {
+        if (!configService.getValue('/blexee/simuMode') && deviceModel.connected) {
             ble.isConnected(deviceModel.selectedDevice.id, function () {
                 console.log('HW --> Disconnecting from [' + deviceModel.selectedDevice.id + '].');
                 ble.disconnect(deviceModel.selectedDevice.id, function () {
@@ -323,54 +389,101 @@ var DeviceService = function () {
         }
     };
 
-    this.writeData = function (serviceUuid, characteristicUuid, data, success, failure) {
+
+    /**
+     * Write data to a GATT Characteristic
+     * @param {type} serviceUuid
+     * @param {type} characteristicUuid
+     * @param {type} arrayBufferData
+     * @param {type} success
+     * @param {type} failure
+     * @returns {undefined}
+     */
+    this.writeData = function (serviceUuid, characteristicUuid, arrayBufferData, success, failure) {
         if (deviceModel.connected && deviceModel.selectedDevice !== null) {
-            if (!SIMULATION) {
+            if (!configService.getValue('/blexee/simuMode')) {
                 ble.isConnected(deviceModel.selectedDevice.id, function () {
                     //todo: make a hexa writer
-                    ble.write(deviceModel.selectedDevice.id, serviceUuid, characteristicUuid, stringToBytes(data), success, function () {
+                    ble.write(deviceModel.selectedDevice.id, serviceUuid, characteristicUuid, arrayBufferData, success, function () {
                         failure(new ErrorMessage("Couldn't write data", "Please make sure that you've wrote data which is acceptable."));
                     });
                 }, function () {
                     failure(new ErrorMessage("Device is not connected", "Please make sure that the device is connected first."));
                 });
             } else {
-                console.log("SIMU :: -- write --> service [" + serviceUuid + "] characteristic [" + characteristicUuid + "] + data " + data);
+                console.log("SIMU :: -- write --> service [" + serviceUuid + "] characteristic [" + characteristicUuid + "] + data " + arrayBufferData);
                 success();
             }
         }
     };
 
     // ASCII only
-    function stringToBytes(string) {
+    this.stringToBytes = function stringToBytes(string) {
         var array = new Uint8Array(string.length);
         for (var i = 0, l = string.length; i < l; i++) {
             array[i] = string.charCodeAt(i);
         }
         return array.buffer;
-    }
+    };
 
     // ASCII only
     function bytesToString(buffer) {
         return String.fromCharCode.apply(null, new Uint8Array(buffer));
     }
 
+    this.parseHexString = function (str) {
+        str = str.replace(/ /g, '');
+        console.log('HEXX PARSER ::: original string [' + str + '] / string length [' + str.length + ']');
+        var result = new Uint8Array(str.length / 2);
+        var index = 0;
+        while (str.length >= 2) {
+            result[index] = parseInt(str.substring(0, 2), 16);
+            str = str.substring(2, str.length);
+            index++;
+        }
+        console.log('HEXX PARSER ::: byte length [' + result.byteLength + ']');
+        console.log('HEXX PARSER ::: length [' + result.length + ']');
+        console.log('CHARS: ' + bytesToString(result.buffer));
+        return result.buffer;
+    };
+
+    function createHexString(arr) {
+        var result = "";
+        var z;
+
+        for (var i = 0; i < arr.length; i++) {
+            var str = arr[i].toString(16);
+
+            z = 8 - str.length + 1;
+            str = Array(z).join("0") + str;
+
+            result += str;
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns a reference to the model control, which will update the view with the device model:
+     * { bluetooth: boolean, searching: boolean, connecting: boolean, requestingServices: boolean, connected: boolean, selectedDevice: deviceID, devices: [], services:[]}
+     * @returns {Object|DeviceService.modelControl}
+     */
     this.getModelControl = function () {
         return modelControl;
     };
     this.getDeviceModel = function () {
         return deviceModel;
     };
-    /*
+    /**
      * Checks if the bluetooth device is enabled.
      * @returns {unresolved}
      */
     this.bluetoothEnabled = function () {
         var deferred = $.Deferred();
-        if (SIMULATION) {
+        if (configService.getValue('/blexee/simuMode')) {
             //simulation mode is activated
-            console.log("SIMU --> bluetooth: " + simuData.bluetooth_enabled);
-            deferred.resolve(simuData.bluetooth_enabled);
+            console.log("SIMU --> bluetooth: " + simuService.getSimuData().bluetooth_enabled);
+            deferred.resolve(simuService.getSimuData().bluetooth_enabled);
         } else {
             //real hardware mode
             ble.isEnabled(function () {
@@ -388,6 +501,13 @@ var DeviceService = function () {
         return deferred.promise();
     };
 
+
+    /**
+     * Extract the GATT services from a JSON data structure (peripheral data), which includes all characteristics
+     * A sample can be found here: https://github.com/don/cordova-plugin-ble-central/tree/a16b1746cba3292e5eb2f2b026cfbd465ea59c5f#peripheral-data
+     * @param {type} peripheralObject
+     * @returns {Array|DeviceService.getGattServices.gattSrvs}
+     */
     var getGattServices = function (peripheralObject) {
         var gattSrvs = [];
 
@@ -435,135 +555,23 @@ var DeviceService = function () {
         return gattSrvs;
     };
 
-    /**
-     *
-     * @param {type} i loop count (should be -100)
-     * @param {type} deviceModel the model whihc contains all the devices
-     * @param {type} modelControl the model control which needs to be updated
-     * @param {type} finished finish method
-     * @returns {undefined}
-     */
-    function approximationSimuLoop(i, deviceModel, modelControl, finished) {
-        setTimeout(function () {
-            var x = 100 - (i * -1);
-            console.log("SIMU --> proximity value: " + x + " [at rssi: ]" + i);
-            deviceModel.selectedDevice.proximity = x;
-            modelControl.update(i);
-            i++;
-            if (i < 0) {
-                approximationSimuLoop(i, deviceModel, modelControl, finished);
-            } else {
-                console.log(" ---> " + JSON.stringify(finished));
-                finished();
-            }
-        }, 20);
+    var simuService;
+    createSimuService(configService.getValue('/blexee/simuMode'));
+    configService.registerTriggerableFunction('simuServiceSetup', '/blexee/simuMode', createSimuService);
+
+    function createSimuService(simuMode) {
+        if (!simuMode) {
+            simuService = null;
+            delete simuService;
+        } else {
+            simuService = new SimuService(configService);
+        }
     }
-
-    var simuDevices = [{"name": "TI SensorTag", "id": "BD922605-1B07-4D55-8D09-B66653E51BBA", "rssi": -79, "advertising": {
-                "kCBAdvDataChannel": 37,
-                "kCBAdvDataServiceData": {
-                    "FED8": {
-                        "byteLength": 7 /* data not shown */
-                    }
-                },
-                "kCBAdvDataLocalName": "local-name",
-                "kCBAdvDataServiceUUIDs": ["FED8"],
-                "kCBAdvDataManufacturerData": {
-                    "byteLength": 7  /* data not shown */
-                },
-                "kCBAdvDataTxPowerLevel": 32,
-                "kCBAdvDataIsConnectable": true
-            }},
-        {"name": "Some Other Device", "id": "BD922605-1B07-4D55-8D09-B66653E51B23A", "rssi": -79, "advertising": {
-                "kCBAdvDataChannel": 37,
-                "kCBAdvDataServiceData": {
-                    "FED8": {
-                        "byteLength": 7 /* data not shown */
-                    }
-                },
-                "kCBAdvDataLocalName": "demo",
-                "kCBAdvDataServiceUUIDs": ["FED8"],
-                "kCBAdvDataManufacturerData": {
-                    "byteLength": 7  /* data not shown */
-                },
-                "kCBAdvDataTxPowerLevel": 32,
-                "kCBAdvDataIsConnectable": true
-            }}
-    ];
-
-    var wrongGattServices = [
-        {"id": 1, "uuid": "0x1800", "primary": "true", "characteristics": [
-                {"uuid": "0x2A00", "flags": "read,write", "descriptor": "device_name"},
-                {"uuid": "0x2A01", "flags": "read", "descriptor": "appearance"},
-                {"uuid": "3334", "flags": "notify", "descriptor": "Yet Another Description"},
-            ]},
-        {"id": 2, "uuid": "223456", "primary": "true", "characteristics": [{"uuid": "2345", "flags": "read", "descriptor": "A Description"}]},
-        {"id": 3, "uuid": "323456", "primary": "true", "characteristics": [{"uuid": "2346", "flags": "write", "descriptor": "Another Description"}]},
-        {"id": 4, "uuid": "423456", "primary": "true", "characteristics": [{"uuid": "1345", "flags": "read", "descriptor": "So more Description"}]},
-        {"id": 5, "uuid": "523456", "primary": "true", "characteristics": [{"uuid": "989p", "flags": "read", "descriptor": "Some Description"}]},
-    ];
-    var peripheralObjectReal = {
-        "name": "thing-0",
-        "id": "291C9A2E-CCA3-1EF0-5C5C-E19E29973F16",
-        "advertising": {
-            "kCBAdvDataTxPowerLevel": 8,
-            "kCBAdvDataIsConnectable": true,
-            "kCBAdvDataServiceUUIDs": ["1815"],
-            "kCBAdvDataServiceData":
-                    {"9999": {}},
-            "kCBAdvDataManufacturerData": {}},
-        "services": ["1815"],
-        "characteristics": [
-            {"service": "1815", "isNotifying": false, "characteristic": "2A56", "properties": ["Write", "Notify", "ExtendedProperties"]}],
-        "rssi": 127};
-
-    var bigPeripheralObj = {
-        "name": "Battery Demo",
-        "id": "20:FF:D0:FF:D1:C0",
-        "advertising": [2, 1, 6, 3, 3, 15, 24, 8, 9, 66, 97, 116, 116, 101, 114, 121],
-        "rssi": -55,
-        "services": [
-            "1800",
-            "1801",
-            "180f"
-        ],
-        "characteristics": [
-            {
-                "service": "1800",
-                "characteristic": "2a00",
-                "properties": [
-                    "Read"
-                ]
-            },
-            {
-                "service": "1800",
-                "characteristic": "2a01",
-                "properties": [
-                    "Read", "Write", "Notify"
-                ]
-            },
-            {
-                "service": "1801",
-                "characteristic": "2a05",
-                "properties": [
-                    "Read"
-                ]
-            },
-            {
-                "service": "180f",
-                "characteristic": "2a19",
-                "properties": [
-                    "Read"
-                ],
-                "descriptors": [
-                    {
-                        "uuid": "2901"
-                    },
-                    {
-                        "uuid": "2904"
-                    }
-                ]
-            }
-        ]
-    };
+//    var simuService;
+//    var imported = document.createElement('script');
+//    imported.src = 'js/services/SimuService.js';
+//    document.head.appendChild(imported);
+//    $(document).ready(function () {
+//        
+//    });
 };

@@ -39,7 +39,7 @@ var GenericView = function (viewName, template, dataProvider) {
             console.log(viewName + ' :: rendering with [modeldata]--> ' + JSON.stringify(mdl));
             this.$el.html(template(mdl));
         } catch (err) {
-            console.log("ERROR: rendering error --> " + err);
+            console.log("ERROR: rendering error --> " + err + '\n' + err.stack);
             this.$el.html(err);
         }
         return this;
