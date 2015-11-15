@@ -66,7 +66,7 @@ var SimuService = function (configService) {
                 "kCBAdvDataTxPowerLevel": 32,
                 "kCBAdvDataIsConnectable": true
             }},
-        {"name": "Some Other Device", "id": "BD922605-1B07-4D55-8D09-B66653E51B23A", "rssi": -79, "advertising": {
+        {"name": "Some Other Device", "id": "291C9A2E-CCA3-1EF0-5C5C-E19E29973F16", "rssi": -79, "advertising": {
                 "kCBAdvDataChannel": 37,
                 "kCBAdvDataServiceData": {
                     "FED8": {

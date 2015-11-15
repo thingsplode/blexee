@@ -36,7 +36,11 @@ var DeviceService = function (configService) {
          */
         services: []
     };
-    
+
+    /**
+     * Observable component, which will update the observer with the deviceModelData
+     * @type @exp;$@call;extend
+     */
     var modelControl = $.extend($({}), (function (o) {
         o.update = function () {
             o.trigger('modup', deviceModel);
@@ -46,7 +50,7 @@ var DeviceService = function (configService) {
 
     /**
      * Initializer function
-     * @returns {unresolved}
+     * @returns {unresolved} a promise which you can refer with done()
      */
     this.initialize = function () {
         // No Initialization required
@@ -59,9 +63,30 @@ var DeviceService = function (configService) {
         deferred.resolve();
         return deferred.promise();
     };
+
     /**
-     * Scans bluetooth low energy devices
-     * @returns {unresolved} a promis which you can refer with done()
+     * Scans a barcode and returns a promise; within the done function the result is handed over (result.text, result.format, result.cancelled)
+     * @returns {unresolved} a promise which you can refer with done() or fail()
+     */
+    this.scanBarcode = function () {
+        console.log('deviceService :: scan for barcode');
+        var deferred = $.Deferred();
+        if (configService.getValue('/blexee/simuMode')) {
+            //simulated mode
+            deferred.resolve({'text': 'abcdefgh', 'format': 'CODE_128', 'cancelled': 'false'});
+        } else {
+            //real mode
+            cordova.plugins.barcodeScanner.scan(function (result) {
+                deferred.resolve(result);
+            }, function (error) {
+                deferred.reject(new ErrorMessage('Scanning failed', error));
+            });
+        }
+        return deferred.promise();
+    };
+    /**
+     * Scans bluetooth low energy devices for 3 seconds and returns a list of found devices;
+     * @returns {unresolved} a promise which you can refer with done()
      */
     this.scanForDevices = function () {
         console.log('deviceService :: scan for devices');
@@ -70,7 +95,7 @@ var DeviceService = function (configService) {
         this.bluetoothEnabled().done(function (bluetoothEnabledStatus) {
             if (bluetoothEnabledStatus) {
                 if (configService.getValue('/blexee/simuMode')) {
-                    //simulation
+                    //simulation mode
                     setTimeout(function () {
                         console.log('--> device service timeout simulation triggered');
                         console.log("SIMU --> devices: " + simuService.getSimuData().devices_available);
@@ -122,7 +147,7 @@ var DeviceService = function (configService) {
         });
         return deferred.promise();
     };
-    
+
     /**
      * Serarches for a devices and once reached the preconfigured proximity limit it connects to it.
      * @param {type} deviceID the device id to connect to
@@ -246,6 +271,7 @@ var DeviceService = function (configService) {
     }
 
     /**
+     * Scan for bluetooth hardware
      * @private
      * @param {type} devID
      * @returns {unresolved}
@@ -331,10 +357,10 @@ var DeviceService = function (configService) {
 
 
     /**
-     * 
-     * @param {type} success
-     * @param {type} failure
-     * @returns {undefined}
+     * Disconnect from a connected bluetooth low energy device;
+     * @param {type} success function called upon successfull disconnect
+     * @param {type} failure function called if there's an error
+     * @returns {undefined} nothing
      */
     this.disconnect = function (success, failure) {
         deviceModel.searching = false;
@@ -365,7 +391,7 @@ var DeviceService = function (configService) {
 
 
     /**
-     * 
+     * Write data to a GATT Characteristic
      * @param {type} serviceUuid
      * @param {type} characteristicUuid
      * @param {type} arrayBufferData
@@ -437,6 +463,11 @@ var DeviceService = function (configService) {
         return result;
     }
 
+    /**
+     * Returns a reference to the model control, which will update the view with the device model:
+     * { bluetooth: boolean, searching: boolean, connecting: boolean, requestingServices: boolean, connected: boolean, selectedDevice: deviceID, devices: [], services:[]}
+     * @returns {Object|DeviceService.modelControl}
+     */
     this.getModelControl = function () {
         return modelControl;
     };
@@ -470,9 +501,10 @@ var DeviceService = function (configService) {
         return deferred.promise();
     };
 
-    
+
     /**
-     * 
+     * Extract the GATT services from a JSON data structure (peripheral data), which includes all characteristics
+     * A sample can be found here: https://github.com/don/cordova-plugin-ble-central/tree/a16b1746cba3292e5eb2f2b026cfbd465ea59c5f#peripheral-data
      * @param {type} peripheralObject
      * @returns {Array|DeviceService.getGattServices.gattSrvs}
      */

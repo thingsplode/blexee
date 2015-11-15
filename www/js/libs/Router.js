@@ -5,6 +5,13 @@ var router = (function () {
     var routes = [];
     var currentRoute;
 
+    /**
+     * 
+     * @param {type} route the current URL of the browser
+     * @param {type} entryHandler the function which will be execute while entering the new address
+     * @param {type} exitHandler the function to be executed when leaving this page
+     * @returns {undefined}
+     */
     function addRoute(route, entryHandler, exitHandler) {
         routes.push({parts: route.split('/'), entryHandler: entryHandler, exitHandler: exitHandler});
     }

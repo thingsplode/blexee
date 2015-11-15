@@ -1,6 +1,6 @@
 /* global HomeView, Handlebars, DeviceView, router */
-
-/*
+"use strict";
+/**
  * Will be set to true by the Hardware Service if running on real phone
  */
 var DEVICE_PRESENT = false;
@@ -38,7 +38,9 @@ var DEVICE_PRESENT = false;
                 }
             ]
         }
-    ];
+    ],
+            device_uuid = '291C9A2E-CCA3-1EF0-5C5C-E19E29973F16',
+            currentUseCase = '';
 
     //todo: nullify and delete objects with references
     var cfgService = new ConfigurationService(cfgSchema);
@@ -57,9 +59,9 @@ var DEVICE_PRESENT = false;
 
 
     menuService.initialize().done(function () {
-//$('body').html(menuService.appContainerView.render().$el);
-//slider.slidePage(menuService.appContainerView.render().$el);
-//$('.page-content').html(menuService.optionsView.render().$el);
+        //$('body').html(menuService.appContainerView.render().$el);
+        //slider.slidePage(menuService.appContainerView.render().$el);
+        //$('.page-content').html(menuService.optionsView.render().$el);
     });
     router.addRoute('', function () {
         $('body').html(menuService.appContainerView.render().$el);
@@ -80,10 +82,11 @@ var DEVICE_PRESENT = false;
 
     router.addRoute('jump/:view', function (view) {
         console.log('Routing View :: ' + view);
-        if (view === 'DeviceView') {
+        currentUseCase = view;
+        if (view === 'DeviceView' || view === 'LogisticianDemoView') {
             try {
                 //special handling required
-                console.log("DeviceView :: check if bluetooth is enabled");
+                console.log(":: check if bluetooth is enabled");
                 var deviceModel = deviceService.getDeviceModel();
                 if (!deviceService.bluetoothEnabled()) {
                     //if bluetooth is not enabled
@@ -96,13 +99,19 @@ var DEVICE_PRESENT = false;
                     window.location.href = '#connected/' + deviceModel.selectedDevice.id;
                 } else {
                     //if not connected yet -> searcg for devices
-                    console.log("DeviceView :: start searching");
+                    console.log(":: start searching for devices");
                     deviceService.scanForDevices().done(function (deviceModel) {
-                        menuService.getMenuView(view).setModel(deviceModel);
-                        menuService.getMenuView(view).render();
+                        if (currentUseCase === 'DeviceView') {
+                            menuService.getMenuView('DeviceView').setModel(deviceModel);
+                            menuService.getMenuView('DeviceView').render();
+                        } else if (currentUseCase === 'LogisticianDemoView') {
+                            if ($.inArray(device_uuid, deviceModel.devices)) {
+                                window.location.href = '#connect/' + device_uuid;
+                            }
+                        }
                     });
-                    menuService.getMenuView(view).setModel(deviceModel);
-                    $('.page-content').html(menuService.getMenuView(view).render().$el);
+                    menuService.getMenuView('DeviceView').setModel(deviceModel);
+                    $('.page-content').html(menuService.getMenuView('DeviceView').render().$el);
                     componentHandler.upgradeAllRegistered();
                     //slider.slidePage(menuService.getMenuView(view).render().$el);
                 }
@@ -112,11 +121,9 @@ var DEVICE_PRESENT = false;
                 //$('.page-content').html(menuService.errView.render().$el);
                 $('body').html(menuService.errView.render().$el);
             }
-        }
-        if (view === 'SettingsView') {
+        } else if (view === 'SettingsView') {
             menuService.getMenuView(view).setModel(cfgService.getConfigSchemas());
-            elm = menuService.getMenuView(view).render().$el;
-            $('.page-content').html(elm);
+            $('.page-content').html(menuService.getMenuView(view).render().$el);
             componentHandler.upgradeAllRegistered();
         } else {
             $('.page-content').html(menuService.getMenuView(view).render().$el);
@@ -124,6 +131,7 @@ var DEVICE_PRESENT = false;
             //slider.slidePage(menuService.getMenuView(view).render().$el);
         }
     });
+
     router.addRoute('connect/:deviceId', function (deviceId) {
         console.log('Trying to connect-> ' + deviceId);
         $('.page-content').html(menuService.connectView.render().$el);
@@ -144,10 +152,16 @@ var DEVICE_PRESENT = false;
         menuService.connectView.unregisterModelControl();
     });
     router.addRoute('connected', function () {
-        $('body').html(menuService.deviceServicesView.render().$el);
-        componentHandler.upgradeAllRegistered();
-        menuService.deviceServicesView.registerModelControl(deviceService.getModelControl());
-
+        //entry handler
+        if (currentUseCase === 'DeviceView') {
+            $('body').html(menuService.deviceServicesView.render().$el);
+            componentHandler.upgradeAllRegistered();
+            menuService.deviceServicesView.registerModelControl(deviceService.getModelControl());
+        } else if (currentUseCase === 'LogisticianDemoView') {
+            $('body').html(menuService.logisticianDemoView.render().$el);
+            componentHandler.upgradeAllRegistered();
+            menuService.logisticianDemoView.registerModelControl(deviceService.getModelControl());
+        }
         deviceService.requestServices().done(function () {
             //menuService.deviceServicesView.setModel(deviceModel);
             //$('.page-content').html(menuService.deviceServicesView.render().$el);
@@ -160,8 +174,10 @@ var DEVICE_PRESENT = false;
             menuService.deviceServicesView.unregisterModelControl();
         });
     }, function () {
+        //exit handler
         menuService.deviceServicesView.unregisterModelControl();
     });
+
     router.addRoute('disconnect', function () {
         deviceService.disconnect(function () {
             //success
@@ -174,71 +190,95 @@ var DEVICE_PRESENT = false;
 
         });
     });
+
+    router.addRoute('deliver', function () {
+        deviceService.scanBarcode().done(function (result) {
+            alert("We got a barcode\n" +
+                    "Result: " + result.text + "\n" +
+                    "Format: " + result.format + "\n" +
+                    "Cancelled: " + result.cancelled);
+            window.location.href = '#connected';
+        }).fail(function (errMsg) {
+            menuService.errView.setModel(errMsg);
+            $('.page-content').html(menuService.errView.render().$el);
+            componentHandler.upgradeAllRegistered();
+            //slider.slidePage(menuService.errView.render().$el);
+            //menuService.deviceServicesView.unregisterModelControl();
+        });
+
+    });
+
     router.addRoute('reload/:view', function (view) {
         //little trick to be able to reload parts of the page with the same url. without reloading the complete page (which causes flickering)
         window.location.href = '#jump/' + view;
     });
     console.log("Router :: initialized");
     router.start();
+
+    //Register event listeners
     $(document).ready(function () {
         $(document).on('click', '.ble-characteristic-button', function () {
-            //the characteristics button was pressed
-            var charData = $.parseJSON($(this).attr('data-characteristic'));
-            var descriptionElmName = '#dsc-' + charData.id;
-            var flags = charData.flags.split(',');
-            console.log('button clicked at [' + descriptionElmName + '] -> flags: [' + flags + ']');
-            if (flags.indexOf('Write') > -1) {//todo: the write here is case sensitive
-                //has write flag
-                var stuff = $('<form class="characteristic-writer" data-service=\"' + charData.serviceUuid + '\" data-characteristic=\"' + charData.charUuid + '\" action=\"\">' +
-                        '<div class=\"mdl-textfield mdl-js-textfield mdl-textfield--floating-label short\">' +
-                        '<input name="write-data" class=\"mdl-textfield__input\" type=\"text\" pattern=\"-?[A-Fa-f0-9]*(\.[A-Fa-f0-9]+)?\" size=\"30\" id=\"inp-' + charData.id + '\"/>' +
-                        '<label class=\"mdl-textfield__label\" for=\"inp-' + charData.id + '\" >' + charData.descriptor + '</label>' +
-                        '<span class=\"mdl-textfield__error\">Input is not a hex!</span>' +
-                        '</div>' +
-                        '</form>');
-                //componentHandler.upgradeElement(stuff[0]);
-                $(descriptionElmName).html(stuff);
-                //componentHandler.upgradeDom();
-                componentHandler.upgradeAllRegistered();
-                $('.characteristic-writer').on('submit', function (e) {
-                    e.preventDefault();
-                    var target = $(e.target);
-                    var bleService = $(this).attr('data-service');
-                    var bleCharacteristic = $(this).attr('data-characteristic');
-                    var values = {};
-                    var formArray = $(this).serializeArray();
-                    $.each(formArray, function (index, field) {
-                        values[field.name] = field.value;
-                    });
-                    //when there's no name attribute on the form, use: e.target[0].value
-                    console.log('FORM SUBMITTED: ==> [' + JSON.stringify(values) + '] ' + bleService + ' ' + bleCharacteristic + " ");
-                    deviceService.writeData(bleService, bleCharacteristic, deviceService.parseHexString(values['write-data']), function () {
-                        target.remove();
-                    }, function (err) {
-                        menuService.errView.setModel(err);
-                        $('.page-content').html(menuService.errView.render().$el);
-                        componentHandler.upgradeAllRegistered();
-                    });
-
-
-                });
-                if (flags.indexOf('read') > -1) {
-                    //has read AND write flag
-                }
-            } else if (flags.indexOf('notify') > -1) {
-                //has notify
-            } else {
-                //only read
-                var cellElementName = '#td-' + charData.id;
-                if (cfgService.getValue('/blexee/simuMode')) {
-                    $(descriptionElmName).append('<br>Test');
-                }
-            }
+            //when a gatt-characteristic-attached button is clicked
+            characteristicUpdate(this);
         });
-//        $(document).on('click', function () {
-//            console.log('------------------click-------------->');
-//        });
+        $(document).on('submit', '.characteristic-writer', function (e) {
+            e.preventDefault();
+            var target = $(e.target);
+            var bleService = $(target).attr('data-service');
+            var bleCharacteristic = $(target).attr('data-characteristic');
+            var values = {};
+            var formArray = $(this).serializeArray();
+            $.each(formArray, function (index, field) {
+                values[field.name] = field.value;
+            });
+            //when there's no name attribute on the form, use: e.target[0].value
+            console.log('FORM SUBMITTED: ==> [' + JSON.stringify(values) + '] ' + bleService + ' ' + bleCharacteristic + " ");
+            deviceService.writeData(bleService, bleCharacteristic, deviceService.parseHexString(values['write-data']), function () {
+                target.remove();
+            }, function (err) {
+                menuService.errView.setModel(err);
+                $('.page-content').html(menuService.errView.render().$el);
+                componentHandler.upgradeAllRegistered();
+            });
+        });
     });
+
+    /**
+     * Depending on the type of the characteristic various write, read and/or notify actions can be triggered
+     * @param {type} callingElement
+     * @returns {undefined}
+     */
+    function characteristicUpdate(callingElement) {
+        //the characteristics button was pressed
+        var charData = $.parseJSON($(callingElement).attr('data-characteristic'));
+        var descriptionElmName = '#dsc-' + charData.id;
+        var flags = charData.flags.split(',');
+        console.log('button clicked at [' + descriptionElmName + '] -> flags: [' + flags + ']');
+        if (flags.indexOf('Write') > -1) {//todo: the write here is case sensitive
+            //has write flag
+            var stuff = $('<form class="characteristic-writer" data-service=\"' + charData.serviceUuid + '\" data-characteristic=\"' + charData.charUuid + '\" action=\"\">' +
+                    '<div class=\"mdl-textfield mdl-js-textfield mdl-textfield--floating-label short\">' +
+                    '<input name="write-data" class=\"mdl-textfield__input\" type=\"text\" pattern=\"-?[A-Fa-f0-9]*(\.[A-Fa-f0-9]+)?\" size=\"30\" id=\"inp-' + charData.id + '\"/>' +
+                    '<label class=\"mdl-textfield__label\" for=\"inp-' + charData.id + '\" >' + charData.descriptor + '</label>' +
+                    '<span class=\"mdl-textfield__error\">Input is not a hex!</span>' +
+                    '</div>' +
+                    '</form>');
+            $(descriptionElmName).html(stuff);
+            //componentHandler.upgradeElement(stuff[0]);
+            componentHandler.upgradeAllRegistered();
+            if (flags.indexOf('read') > -1) {
+                //has read AND write flag
+            }
+        } else if (flags.indexOf('notify') > -1) {
+            //has notify
+        } else {
+            //only read
+            var cellElementName = '#td-' + charData.id;
+            if (cfgService.getValue('/blexee/simuMode')) {
+                $(descriptionElmName).append('<br>Test');
+            }
+        }
+    }
 
     function configureConsoleLog(dbgMode) {
         if (!dbgMode) {

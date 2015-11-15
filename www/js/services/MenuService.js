@@ -3,7 +3,7 @@
 var MenuService = function (deviceService, configService) {
 
     var menus = [];
-    var appContainerView, optionsView, deviceDemoView, deviceServicesView, connectView, customerDemoView, logisticianDemoView, settingsView, serviceMenuView, errView;
+    var appContainerView, optionsView, deviceSelectionView, deviceServicesView, connectView, customerDemoView, logisticianDemoView, settingsView, serviceMenuView, errView;
 
     var modelControl = $.extend($({}), (function (o) {
         o.update = function () {
@@ -31,7 +31,7 @@ var MenuService = function (deviceService, configService) {
             return menus;
         });
 
-        this.deviceDemoView = new GenericView('DeviceView', Handlebars.compile($("#device-demo-tpl").html()), function (view) {
+        this.deviceSelectionView = new GenericView('DeviceView', Handlebars.compile($("#device-selection-tpl").html()), function (view) {
             return '';
         });
         //deviceDemoView.registerModelControl(deviceService.getModelControl());
@@ -48,7 +48,7 @@ var MenuService = function (deviceService, configService) {
             return '';
         });
 
-        this.logisticianDemoView = new GenericView('LogisticianDemoView', Handlebars.compile($('#not-implemented-tpl').html()), function (view) {
+        this.logisticianDemoView = new GenericView('LogisticianDemoView', Handlebars.compile($('#logistician-tpl').html()), function (view) {
             return '';
         });
 
@@ -63,7 +63,7 @@ var MenuService = function (deviceService, configService) {
         this.errView = new GenericView('ErrorView', Handlebars.compile($('#err-tpl').html()), function (view) {
             return '';
         });
-        this.addMenu('Device Demo', 'A tool, which provides an insight to the technical details and enables interaction with the technology.', this.deviceDemoView);
+        this.addMenu('Device Demo', 'A tool, which provides an insight to the technical details and enables interaction with the technology.', this.deviceSelectionView);
         this.addMenu('Customer Demo', 'Demonstrates the interaction of a customer with the system.', this.customerDemoView);
         this.addMenu('Logistician Demo', 'Demonstrates the interaction of logistician with the system.', this.logisticianDemoView);
         this.addMenu('Service Menu', 'Provides a possible service menu example.', this.serviceMenuView);
