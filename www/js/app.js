@@ -153,8 +153,8 @@ var DEVICE_PRESENT = false;
             //slider.slidePage(menuService.errView.render().$el);
         });
     }, function () {
-        //todo: break approximation
-        //todo: stop scanning
+        //break approximation and stop scanning
+        deviceService.breakApproximation();
         menuService.connectView.unregisterModelControl();
     });
     router.addRoute('connected', function () {

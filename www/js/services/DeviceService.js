@@ -233,7 +233,6 @@ var DeviceService = function (configService) {
      * @returns {undefined}
      */
     function approximationLoop(devID, succeeded, failed) {
-        //todo: stop approximation loop if the user switches to a new screen while approximation is running
         try {
             console.log("Entering approximation loop with devce id [" + devID + "] // stringified value: [" + JSON.stringify(devID) + "]");
             var aborted = false;
@@ -251,8 +250,9 @@ var DeviceService = function (configService) {
                             } else {
                                 cancelApproximation = false;
                             }
-                        }, 1000);
+                        }, 500);
                     } else {
+                        //todo: make a second check here...
                         console.log("HW --> Device is close enough to connect / provided rssi [" + providedRssi + "]");
                         ble.connect(devID, succeeded, failed);
                     }
