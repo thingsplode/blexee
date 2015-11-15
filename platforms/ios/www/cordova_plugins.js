@@ -41,6 +41,13 @@ module.exports = [
         "clobbers": [
             "ble"
         ]
+    },
+    {
+        "file": "plugins/cordova-plugin-barcodescanner/www/barcodescanner.js",
+        "id": "cordova-plugin-barcodescanner.BarcodeScanner",
+        "clobbers": [
+            "cordova.plugins.barcodeScanner"
+        ]
     }
 ];
 module.exports.metadata = 
@@ -51,7 +58,8 @@ module.exports.metadata =
     "org.apache.cordova.console": "0.2.13",
     "cordova-plugin-statusbar": "1.0.1",
     "cordova-plugin-dialogs": "1.1.1",
-    "cordova-plugin-ble-central": "1.0.1"
+    "cordova-plugin-ble-central": "1.0.1",
+    "cordova-plugin-barcodescanner": "0.7.0"
 }
 // BOTTOM OF METADATA
 });

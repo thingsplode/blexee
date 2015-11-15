@@ -31,6 +31,10 @@
                         {
                             "xml": "<feature name=\"Notification\"><param name=\"ios-package\" value=\"CDVNotification\" /></feature>",
                             "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"BarcodeScanner\"><param name=\"ios-package\" value=\"CDVBarcodeScanner\" /></feature>",
+                            "count": 1
                         }
                     ],
                     "/widget": [
@@ -50,6 +54,36 @@
                         }
                     ],
                     "CoreBluetooth.framework": [
+                        {
+                            "xml": false,
+                            "count": 1
+                        }
+                    ],
+                    "libiconv.dylib": [
+                        {
+                            "xml": false,
+                            "count": 1
+                        }
+                    ],
+                    "AVFoundation.framework": [
+                        {
+                            "xml": false,
+                            "count": 1
+                        }
+                    ],
+                    "AssetsLibrary.framework": [
+                        {
+                            "xml": false,
+                            "count": 1
+                        }
+                    ],
+                    "CoreVideo.framework": [
+                        {
+                            "xml": false,
+                            "count": 1
+                        }
+                    ],
+                    "QuartzCore.framework": [
                         {
                             "xml": false,
                             "count": 1
@@ -76,6 +110,9 @@
             "PACKAGE_NAME": "com.thingsplode.blexee"
         },
         "cordova-plugin-ble-central": {
+            "PACKAGE_NAME": "com.thingsplode.blexee"
+        },
+        "cordova-plugin-barcodescanner": {
             "PACKAGE_NAME": "com.thingsplode.blexee"
         }
     },
