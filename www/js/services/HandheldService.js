@@ -1,5 +1,8 @@
 /* global StatusBar */
-
+/**
+ * Represents the phone or tablet, configures the hardware specific aspects;
+ * @returns {undefined}
+ */
 (function () {
     document.addEventListener('deviceready', function () {
         console.log(StatusBar);
@@ -9,7 +12,7 @@
         //StatusBar.backgroundColorByName("red");
         StatusBar.styleLightContent();
         StatusBar.overlaysWebView(false);
-        StatusBar.backgroundColorByHexString('#3F51B5');
+        StatusBar.backgroundColorByHexString('#4CAF50');
         FastClick.attach(document.body);
 
         if (navigator.notification) { // Override default HTML alert with native dialog
