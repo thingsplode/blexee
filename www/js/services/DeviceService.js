@@ -1,4 +1,4 @@
-/* global SIMULATION, simuData, ble */
+/* global SIMULATION, simuData, ble, cordova */
 
 var DeviceService = function (configService) {
     var self = this, cancelApproximation = false;
@@ -367,11 +367,10 @@ var DeviceService = function (configService) {
 
     /**
      * Disconnect from a connected bluetooth low energy device;
-     * @param {type} success function called upon successfull disconnect
-     * @param {type} failure function called if there's an error
-     * @returns {undefined} nothing
+     * @returns {undefined} JQuery deferred object to be used with done or fail methods
      */
-    this.disconnect = function (success, failure) {
+    this.disconnect = function () {
+        var deferred = $.Deferred();
         deviceModel.searching = false;
         deviceModel.devices = [];
         deviceModel.services = [];
@@ -384,8 +383,10 @@ var DeviceService = function (configService) {
                     deviceModel.connecting = false;
                     deviceModel.connected = false;
                     deviceModel.selectedDevice = '';
-                    success();
-                }, failure);
+                    deferred.resolve();
+                }, function(){
+                    deferred.reject(new ErrorMessage('Bluetooth cannot disconnect', 'Generic error received while trying to disconnect from bluetooth device.'));
+                });
             }, function () {
                 //was not connected
                 console.log('HW --> Device [' + deviceModel.selectedDevice.id + '] was not connected.');
@@ -394,8 +395,9 @@ var DeviceService = function (configService) {
             //simu mode
             console.log('SIMU :: --> Disconnecting from [' + deviceModel.selectedDevice.id + '].');
             deviceModel.selectedDevice = '';
-            success();
+            deferred.resolve();
         }
+        return deferred.promise();
     };
 
 
@@ -424,15 +426,6 @@ var DeviceService = function (configService) {
                 success();
             }
         }
-    };
-
-    // ASCII only
-    this.stringToBytes = function stringToBytes(string) {
-        var array = new Uint8Array(string.length);
-        for (var i = 0, l = string.length; i < l; i++) {
-            array[i] = string.charCodeAt(i);
-        }
-        return array.buffer;
     };
 
     // ASCII only

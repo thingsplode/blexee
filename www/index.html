@@ -12,10 +12,10 @@
     https://fueled.com/blog/whats-best-framework-building-mobile-apps/ 
 
     Todo:
+        http://plugins.telerik.com/cordova/plugin/barcodescanner
         https://www.npmjs.com/package/cordova-plugin-vibration
         https://www.npmjs.com/package/cordova-plugin-splashscreen
         https://www.npmjs.com/package/cordova-plugin-device
-        https://www.npmjs.com/package/phonegap-plugin-barcodescanner
         https://www.npmjs.com/package/cordova-plugin-barcodescanner
         https://www.npmjs.com/package/cordova-plugin-actionsheet
         https://www.npmjs.com/package/cordova-plugin-ios-longpress-fix
@@ -266,6 +266,55 @@
                     </div>
                 {{/each}}
             {{/if}}
+        </script>
+        
+        <script id="customer-tpl" type="text/template">
+            <div class="mdl-layout__container">
+            <div id="device_page" class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+                <header class="mdl-layout__header">
+                    <div class="mdl-layout__drawer-button">
+                        <a class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon" href="#disconnect">
+                            <i class="material-icons">navigate_before</i>
+                        </a>
+                    </div>
+                    <div class="mdl-layout__header-row">
+                        <!-- Title -->
+                        <span class="mdl-layout-title">Delivery and Pickup</span>
+                        <!-- Add spacer, to align navigation to the right -->
+                        <div class="mdl-layout-spacer"></div>
+                        <a id='service-notification-badge' href="#events" class="mdl-badge material-icons" data-badge="5">alarm</a>
+                    </div>
+                </header>
+                <main class="mdl-layout__content">
+                    <div class="page-content">
+                        <!-- Your content goes here -->
+                        {{#unless this}}
+                            {{search}}
+                        {{/unless}}
+                        {{#if this}}
+                            {{#if requestingServices}}
+                                {{search}}
+                            {{else}}
+                                {{#if services}}
+                                <div class="service-card-wide mdl-card mdl-shadow--2dp">
+                                    <div class="mdl-card__title">
+                                        <h2 class="mdl-card__title-text caption">Actions</h2>
+                                    </div>
+                                    <div class="mdl-card__supporting-text">
+                                        <a id="pickup-btn" href="#pickup" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent right">
+                                            Pickup
+                                        </a>
+                                    </div>
+                                </div>
+                                {{else}}
+                                    <span class="right" style="color:red">Program Error: no services are found.</span>
+                                {{/if}}
+                            {{/if}}
+                        {{/if}}
+                    </div>
+                </main>
+            </div>
+        </div>
         </script>
         
         <script id="logistician-tpl" type="text/template">
