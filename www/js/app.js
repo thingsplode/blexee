@@ -1,5 +1,8 @@
 /* global HomeView, Handlebars, DeviceView, router */
 "use strict";
+
+//todo: entering into approximation loop without bluetooth with no error
+//once device are found in simulation mode, it will not search for new ones
 /**
  * Will be set to true by the Hardware Service if running on real phone
  */
@@ -210,6 +213,7 @@ var DEVICE_PRESENT = false;
             //todo: cancelling barcode is not working
             //try: http://plugins.telerik.com/cordova/plugin/barcodescanner
             //todo: write barcode to ble address
+            //cancelled true -- take care±!
             window.location.href = '#connected';
         }).fail(function (errMsg) {
             menuService.errView.setModel(errMsg);
@@ -220,7 +224,7 @@ var DEVICE_PRESENT = false;
         });
 
     });
-    
+
     router.addRoute('pickup', function(){
         //todo: deliver barcode to ble address
         window.location.href = '#disconnect';

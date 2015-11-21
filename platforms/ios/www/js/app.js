@@ -1,5 +1,8 @@
 /* global HomeView, Handlebars, DeviceView, router */
 "use strict";
+
+//todo: entering into approximation loop without bluetooth with no error
+//once device are found in simulation mode, it will not search for new ones
 /**
  * Will be set to true by the Hardware Service if running on real phone
  */
@@ -39,7 +42,11 @@ var DEVICE_PRESENT = false;
             ]
         }
     ],
-            device_uuid = '291C9A2E-CCA3-1EF0-5C5C-E19E29973F16',
+            blexeeServices = [
+                {"id": "logistician", "uuid": "833e65ce-4e2a-4b56-89a3-d7ba9aefa820", "characteristics": [{"deliver": "1a00"}, {"pickup": "1a01"}]},
+                {"id": "customer", "uuid": "91dd5587-075d-4db1-8004-a4ab255735ce", "characteristics": [{deliver: "2a00"}, {"pickup": "2a01"}]}
+            ],
+            deviceUuid = '291C9A2E-CCA3-1EF0-5C5C-E19E29973F16',
             currentUseCase = '';
 
     //todo: nullify and delete objects with references
@@ -83,7 +90,7 @@ var DEVICE_PRESENT = false;
     router.addRoute('jump/:view', function (view) {
         console.log('Routing View :: ' + view);
         currentUseCase = view;
-        if (view === 'DeviceView' || view === 'LogisticianDemoView') {
+        if (view === 'DeviceView' || view === 'LogisticianDemoView' || view === 'CustomerDemoView') {
             try {
                 //special handling required
                 console.log(":: check if bluetooth is enabled");
@@ -98,15 +105,15 @@ var DEVICE_PRESENT = false;
                     //redirect to: #connected/device_id
                     window.location.href = '#connected/' + deviceModel.selectedDevice.id;
                 } else {
-                    //if not connected yet -> searcg for devices
+                    //if not connected yet -> search for devices
                     console.log(":: start searching for devices");
                     deviceService.scanForDevices().done(function (deviceModel) {
                         if (currentUseCase === 'DeviceView') {
                             menuService.getMenuView('DeviceView').setModel(deviceModel);
                             menuService.getMenuView('DeviceView').render();
-                        } else if (currentUseCase === 'LogisticianDemoView') {
-                            if ($.inArray(device_uuid, deviceModel.devices)) {
-                                window.location.href = '#connect/' + device_uuid;
+                        } else if (currentUseCase === 'LogisticianDemoView' || currentUseCase === 'CustomerDemoView') {
+                            if ($.inArray(deviceUuid, deviceModel.devices)) {
+                                window.location.href = '#connect/' + deviceUuid;
                             }
                         }
                     });
@@ -149,6 +156,8 @@ var DEVICE_PRESENT = false;
             //slider.slidePage(menuService.errView.render().$el);
         });
     }, function () {
+        //break approximation and stop scanning
+        deviceService.breakApproximation();
         menuService.connectView.unregisterModelControl();
     });
     router.addRoute('connected', function () {
@@ -161,6 +170,10 @@ var DEVICE_PRESENT = false;
             $('body').html(menuService.logisticianDemoView.render().$el);
             componentHandler.upgradeAllRegistered();
             menuService.logisticianDemoView.registerModelControl(deviceService.getModelControl());
+        } else if (currentUseCase === 'CustomerDemoView'){
+            $('body').html(menuService.customerDemoView.render().$el);
+            componentHandler.upgradeAllRegistered();
+            menuService.customerDemoView.registerModelControl(deviceService.getModelControl());
         }
         deviceService.requestServices().done(function () {
             //menuService.deviceServicesView.setModel(deviceModel);
@@ -179,24 +192,28 @@ var DEVICE_PRESENT = false;
     });
 
     router.addRoute('disconnect', function () {
-        deviceService.disconnect(function () {
+        //todo: the disconnect has a slow effect / would be more interesting to redirect first, than disconnect ?? <- to be tested
+        deviceService.disconnect().done(function () {
             //success
-            window.location.href = '';
-        }, function () {
+            console.log('diconnected form BLE device.');
+        }).fail(function () {
             //failure
             menuService.errView.setModel(new ErrorMessage('Could not disconnect', 'This is a yet unhandled failure.'));
             $('.page-content').html(menuService.errView.render().$el);
             componentHandler.upgradeAllRegistered();
 
         });
+        window.location.href = '';
+    }, function () {
+        console.log('...leaving disconnect state;');
     });
 
     router.addRoute('deliver', function () {
         deviceService.scanBarcode().done(function (result) {
-            alert("We got a barcode\n" +
-                    "Result: " + result.text + "\n" +
-                    "Format: " + result.format + "\n" +
-                    "Cancelled: " + result.cancelled);
+            //todo: cancelling barcode is not working
+            //try: http://plugins.telerik.com/cordova/plugin/barcodescanner
+            //todo: write barcode to ble address
+            //cancelled true -- take care±!
             window.location.href = '#connected';
         }).fail(function (errMsg) {
             menuService.errView.setModel(errMsg);
@@ -206,6 +223,11 @@ var DEVICE_PRESENT = false;
             //menuService.deviceServicesView.unregisterModelControl();
         });
 
+    });
+
+    router.addRoute('pickup', function(){
+        //todo: deliver barcode to ble address
+        window.location.href = '#disconnect';
     });
 
     router.addRoute('reload/:view', function (view) {

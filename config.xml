@@ -23,7 +23,12 @@
         <allow-intent href="itms:*"/>
         <allow-intent href="itms-apps:*"/>
     </platform>
+    <preference name="Fullscreen" value="true" />
+    <preference name="WebViewBounce" value="true" />
+    <preference name="DisallowOverscroll" value="true"/>
+    <preference name="BackgroundColor" value="#9E9E9E"/>
+    <preference name="HideKeyboardFormAccessoryBar" value="true"/>
     <preference name="StatusBarOverlaysWebView" value="false"/>
-    <preference name="StatusBarBackgroundColor" value="#3F51B5" />
+    <preference name="StatusBarBackgroundColor" value="#4CAF50" />
     <preference name="StatusBarStyle" value="lightcontent" />
 </widget>
