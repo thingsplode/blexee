@@ -4,9 +4,10 @@
     <description>
         A bluetooth low energy test application
     </description>
-    <author email="dev@cordova.apache.org" href="http://cordova.io">
-        Apache Cordova Team
+    <author email="tamas.csaba@gmail.com" href="http://cordova.io">
+        Csaba Tamas
     </author>
+     <icon src="img/cake.png" platform="ios" width="57" height="57" density="mdpi" />
     <content src="index.html"/>
     <plugin name="cordova-plugin-whitelist" version="1"/>
     <access origin="*"/>
