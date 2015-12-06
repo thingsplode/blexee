@@ -14,9 +14,13 @@ var DEVICE_PRESENT = false,
     var currentUseCase = '';
 
     //todo: nullify and delete objects with references
-    var cfgService = new ConfigurationService(cfgSchema);
-    var deviceService = new DeviceService(cfgService);
-    var menuService = new MenuService(deviceService, cfgService);
+    var cfgService = new ConfigurationService(cfgSchema),
+            deviceService = new DeviceService(cfgService),
+            menuService = new MenuService(deviceService, cfgService),
+            boxService = cfgService.getValue('/services/box-service'),
+            boxServiceUuid = boxService.uuid,
+            parcelStoreUuid = boxService.characteristics['parcel-store'],
+            parcelStoreNotificationReceivedForLastWrite = true;
     //var slider = new PageSlider($('.page-content'));
     var slider;
 
@@ -30,7 +34,7 @@ var DEVICE_PRESENT = false,
         console.log('Setting global variable TRACE to: [%s]', mode);
         TRACE = mode;
     });
-    cfgService.reset();
+    // cfgService.reset();
     //cfgService.setValue('/blexee/debugMode', true);
     DEBUG = cfgService.getValue('/blexee/debugMode');
     TRACE = cfgService.getValue('/blexee/traceMode');
@@ -145,6 +149,24 @@ var DEVICE_PRESENT = false,
             $('body').html(menuService.logisticianDemoView.render().$el);
             componentHandler.upgradeAllRegistered();
             menuService.logisticianDemoView.registerModelControl(deviceService.getModelControl());
+            deviceService.startNotification(boxServiceUuid, parcelStoreUuid, function (buffer) {
+                var data = new Uint8Array(buffer);
+                if (DEBUG) {
+                    console.log("Notification received: [%s]", data[0]);
+                }
+                if (!parcelStoreNotificationReceivedForLastWrite) {
+                    //todo: do some notification
+                    if (data[0] !== 0x00) {
+                        alert('no success' + data[0]);
+                    } else {
+                        alert('success : ' + data[0] + ' : ' + data[1]);
+                    }
+                }
+                parcelStoreNotificationReceivedForLastWrite = true;
+            }, function (param) {
+                //todo: put some failure logic for notification start
+                console.log('ERROR :: failed to start notifications: %s', JSON.stringify(param));
+            });
         } else if (currentUseCase === 'CustomerDemoView') {
             $('body').html(menuService.customerDemoView.render().$el);
             componentHandler.upgradeAllRegistered();
@@ -164,6 +186,17 @@ var DEVICE_PRESENT = false,
     }, function () {
         //exit handler
         menuService.deviceServicesView.unregisterModelControl();
+        if (currentUseCase === 'LogisticianDemoView') {
+            deviceService.stopNotification(boxServiceUuid, parcelStoreUuid, function (p) {
+                //stop notification succeeded
+                if (TRACE) {
+                    console.log('Notification successfullt stopped: %s', JSON.stringify(p));
+                }
+            }, function (p) {
+                //stop notification failed
+                console.log('ERROR: notification could not be stopped: %s', JSON.stringify(p));
+            });
+        }
     });
 
     router.addRoute('disconnect', function () {
@@ -188,6 +221,26 @@ var DEVICE_PRESENT = false,
             //todo: cancelling barcode is not working
             //try: http://plugins.telerik.com/cordova/plugin/barcodescanner
             //todo: write barcode to ble address
+            if (DEBUG) {
+                console.log('Scanned barcode result is [%s]', JSON.stringify(result));
+            }
+            if (!result.cancelled || result.cancelled === 'false') {
+                var barcodeBuffer = new ArrayBuffer(result.text.length),
+                        barcodeBufferView = new Uint8Array(barcodeBuffer);
+                for (var i = 0; i < result.text.length; ++i) {
+                    barcodeBufferView[i] = result.text.charCodeAt(i);
+                }
+                parcelStoreNotificationReceivedForLastWrite = false;
+                deviceService.writeData(boxServiceUuid, parcelStoreUuid, barcodeBufferView.buffer, function () {
+                    //data was succesfully written
+                    if (DEBUG) {
+                        console.log('Data was successfully written.');
+                    }
+                }, function () {
+                    //data could not be written
+                    console.log('ERROR :: Data could not be written.');
+                });
+            }
             window.location.href = '#connected';
         }).fail(function (errMsg) {
             menuService.errView.setModel(errMsg);
@@ -197,6 +250,8 @@ var DEVICE_PRESENT = false,
             //menuService.deviceServicesView.unregisterModelControl();
         });
 
+    }, function () {
+        //leaving state
     });
 
     router.addRoute('pickup', function () {

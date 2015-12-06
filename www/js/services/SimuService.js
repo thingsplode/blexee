@@ -1,3 +1,5 @@
+/* global DEBUG */
+
 var SimuService = function (configService) {
 
     var simuData = {
@@ -5,6 +7,10 @@ var SimuService = function (configService) {
         'devices_available': true,
         'can_connect': true,
         'services_available': true
+    }, doSimulateNotifications = false;
+
+    this.setSimulateNotifications = function (bool) {
+        doSimulateNotifications = bool;
     };
 
     this.getSimuData = function () {
@@ -49,6 +55,22 @@ var SimuService = function (configService) {
                 finished();
             }
         }, 20);
+    };
+
+    this.simulateNotifications = function myself(onDataCallback) {
+        setTimeout(function () {
+            console.log("SIMU --> :  simulating notification callback with 0x00 0x19");
+            ab = new Uint8Array(2);
+            ab[0] = 0x00;
+            ab[1] = 0x19;
+            onDataCallback(ab.buffer);
+            if (doSimulateNotifications) {
+                if (DEBUG) {
+                    console.log('RESCHEDULING notifications.');
+                }
+                myself(onDataCallback);
+            }
+        }, 2000);
     };
 
     var simuDevices = [{"name": "TI SensorTag", "id": "BD922605-1B07-4D55-8D09-B66653E51BBA", "rssi": -79, "advertising": {

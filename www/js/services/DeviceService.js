@@ -236,7 +236,7 @@ var DeviceService = function (configService) {
         try {
             console.log("Entering approximation loop with devce id [" + devID + "] // stringified value: [" + JSON.stringify(devID) + "]");
             var aborted = false;
-            scanHardware(devID).done(function (providedRssi) {
+            scanBluetoothHardware(devID).done(function (providedRssi) {
                 try {
                     console.log("proximity [" + deviceModel.selectedDevice.proximity + "] at rssi [" + providedRssi + "]");
                     deviceModel.selectedDevice.proximity = getPercentFromRssi(providedRssi);
@@ -285,7 +285,7 @@ var DeviceService = function (configService) {
      * @param {type} devID
      * @returns {unresolved}
      */
-    function scanHardware(devID) {
+    function scanBluetoothHardware(devID) {
         var deferred = $.Deferred();
         ble.startScan([], function (device) {
             try {
@@ -366,7 +366,7 @@ var DeviceService = function (configService) {
 
 
     /**
-     * Disconnect from a connected bluetooth low energy device;
+     * Disconnects from a connected bluetooth low energy device;
      * @returns {undefined} JQuery deferred object to be used with done or fail methods
      */
     this.disconnect = function () {
@@ -400,7 +400,69 @@ var DeviceService = function (configService) {
         return deferred.promise();
     };
 
+    /**
+     * Starts the notification on the bluetooth low energy device. If simulation is started it will use the simu service for a fake 2 byte long notification;
+     * @param {type} serviceUuid the uuid of the GATT Service to start the notification on
+     * @param {type} characteristicUuid the uuid of the Characteristic of the GATT Service
+     * @param {type} onDataCallback the callback method will be called each time the BLE device sends a notification
+     * @param {type} failedCallback the callback method called when starting the notification failes
+     * @returns {undefined}
+     */
+    this.startNotification = function (serviceUuid, characteristicUuid, onDataCallback, failedCallback) {
+        if (deviceModel.connected && deviceModel.selectedDevice !== null) {
+            if (!configService.getValue('/blexee/simuMode')) {
+                ble.startNotification(deviceModel.selectedDevice.id, serviceUuid, characteristicUuid, onDataCallback, failedCallback);
+            } else {
+                //start notification simulation
+                console.log('SIMU :: Start notifications');
+                simuService.setSimulateNotifications(true);
+                simuService.simulateNotifications(onDataCallback);
+            }
+        }
+    };
 
+    /**
+     * 
+     * @param {type} serviceUuid
+     * @param {type} characteristicUuid
+     * @param {type} successCallback
+     * @param {type} failedCallback
+     * @returns {undefined}
+     */
+    this.stopNotification = function (serviceUuid, characteristicUuid, successCallback, failedCallback) {
+        if (deviceModel.connected && deviceModel.selectedDevice !== null) {
+            if (!configService.getValue('/blexee/simuMode')) {
+                ble.startNotification(deviceModel.selectedDevice.id, serviceUuid, characteristicUuid, successCallback, failedCallback);
+            } else {
+                //stop notification simulation
+                console.log('SIMU :: Stopping notifications');
+                simuService.setSimulateNotifications(false);
+            }
+        }
+    };
+
+    /**
+     * 
+     * @param {type} serviceUuid
+     * @param {type} characteristicUuid
+     * @param {type} success
+     * @param {type} failure
+     * @returns {undefined}
+     */
+    this.readData = function (serviceUuid, characteristicUuid, success, failure) {
+        if (deviceModel.connected && deviceModel.selectedDevice !== null) {
+            if (!configService.getValue('/blexee/simuMode')) {
+                ble.read(deviceModel.selectedDevice.id, serviceUuid, characteristicUuid, success, failure);
+            } else {
+                //stop notification simulation
+                console.log('SIMU :: Reading characteristic');
+                ab = new Uint8Array(2);
+                ab[0] = 0x00;
+                ab[1] = 0x19;
+                success(ab.buffer);
+            }
+        }
+    };
     /**
      * Write data to a GATT Characteristic found on a GATT service
      * @param {type} serviceUuid the unique ID of the service which contains the characteristic to be updated
@@ -411,6 +473,9 @@ var DeviceService = function (configService) {
      * @returns {undefined}
      */
     this.writeData = function (serviceUuid, characteristicUuid, arrayBufferData, success, failure) {
+        if (DEBUG) {
+            console.log(" -- called write data --> service [%s] characteristic [%s] and data as char array [%s] | byte array size [%s]", serviceUuid, characteristicUuid, bytesToString(arrayBufferData), arrayBufferData.byteLength);
+        }
         if (deviceModel.connected && deviceModel.selectedDevice !== null) {
             if (!configService.getValue('/blexee/simuMode')) {
                 ble.isConnected(deviceModel.selectedDevice.id, function () {
@@ -422,9 +487,7 @@ var DeviceService = function (configService) {
                     failure(new ErrorMessage("Device is not connected", "Please make sure that the device is connected first."));
                 });
             } else {
-                if (DEBUG) {
-                    console.log("SIMU :: -- write --> service [%s] characteristic [%s] + data as json [%s] | byte array size [%s]", serviceUuid, characteristicUuid, JSON.stringify(arrayBufferData), arrayBufferData.length);
-                }
+                console.log("SIMU :: -- write --> service [%s] characteristic [%s] and data as char array [%s]", serviceUuid, characteristicUuid, bytesToString(arrayBufferData));
                 success();
             }
         }
