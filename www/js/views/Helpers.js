@@ -1,4 +1,4 @@
-/* global Handlebars */
+/* global Handlebars, TRACE */
 
 Handlebars.registerHelper('search', function () {
     return new Handlebars.SafeString(
@@ -35,6 +35,18 @@ Handlebars.registerHelper('absolut_from_percentage', function (percentage, max) 
     return new Handlebars.SafeString(absolut);
 });
 
+Handlebars.registerHelper('json', function (obj) {
+    return JSON.stringify(obj);
+});
+
+Handlebars.registerHelper('each_when', function (list, k, v, opts) {
+    var i, result = '';
+    for (i = 0; i < list.length; ++i)
+        if (list[i][k] === v)
+            result = result + opts.fn(list[i]);
+    return result;
+});
+
 /**
  * Used to generate data fields
  */
@@ -43,16 +55,18 @@ Handlebars.registerHelper('generate_field', function (id, type, currentValue, va
 //            type = Handlebars.Utils.escapeExpression(this.type),
 //            currentValue = Handlebars.Utils.escapeExpression(this.value),
 //            valueSet = Handlebars.Utils.escapeExpression(this.valueset);
-    console.log('CALLED HELPER -> id: [' + id + '] tyep: [' + type + '] // [' + type.toUpperCase() + '] currentValue: [' + currentValue + '] valueset: [' + valueSet + ']');
+    if (TRACE) {
+        console.log('CALLED HELPER -> id: [' + id + '] tyep: [' + type + '] // [' + type.toUpperCase() + '] currentValue: [' + currentValue + '] valueset: [' + valueSet + ']');
+    }
     var fieldContent = null;
     if (type.toUpperCase() === 'BOOLEAN') {
         fieldContent = "<label class=\"mdl-switch mdl-js-switch mdl-js-ripple-effect\" for=\"" + id + "\">" +
-                "<input type=\"checkbox\" id=\"" + id + "\" class=\"mdl-switch__input config-field\" data-trigger-type=\"INPUT\" data-path=\"" + path + "\"" + (currentValue === true ? "checked" : "") + " data-key-id=\""+id+"\" />" +
+                "<input type=\"checkbox\" id=\"" + id + "\" class=\"mdl-switch__input config-field\" data-trigger-type=\"INPUT\" data-path=\"" + path + "\"" + (currentValue === true ? "checked" : "") + " data-key-id=\"" + id + "\" />" +
                 "<span class=\"mdl-switch__label\"></span>" +
                 "</label>";
 
     } else if (type.toUpperCase() === 'NUMERIC') {
-        fieldContent = "<form action=\"\" class=\"config-field\" data-trigger-type=\"FORM\" data-path=\"" + path + "\" data-field-id=\"" + id + "\">" +
+        fieldContent = "<form action=\"\" class=\"config-field\" data-trigger-type=\"FORM\" data-path=\"" + path + "\" data-key-id=\"" + id + "\">" +
                 "<div class=\"mdl-textfield mdl-js-textfield shorter\">" +
                 "<input class=\"mdl-textfield__input\" type=\"text\" pattern=\"-?[0-9]*(\.[0-9]+)?\" id=\"" + id + "\" />" +
                 "<label class=\"mdl-textfield__label\" for=\"" + id + "\">" + (currentValue ? currentValue : "Negative Number...") + "</label>" +

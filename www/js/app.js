@@ -1,54 +1,20 @@
-/* global HomeView, Handlebars, DeviceView, router */
+/* global HomeView, Handlebars, DeviceView, router, cfgSchema */
 "use strict";
 /**
  * Will be set to true by the Hardware Service if running on real phone
  */
-var DEVICE_PRESENT = false;
+
+//todo: reset configuration button
+
+var DEVICE_PRESENT = false,
+        TRACE = false,
+        DEBUG = false;
 
 (function () {
-    var cfgSchema = [
-        {
-            "path": "/blexee",
-            "caption": "General Config",
-            "keys": [
-                {
-                    "id": "simuMode",
-                    "caption": "Simulation",
-                    "type": "Boolean",
-                    "valueset": ["Simulation", "Real"],
-                    "value": true
-                },
-                {
-                    "id": "debugMode",
-                    "caption": "Debug Mode",
-                    "type": "Boolean",
-                    "value": false
-                },
-                {
-                    "id": "traceMode",
-                    "caption": "Trace Mode",
-                    "type": "Boolean",
-                    "value": false
-                },
-                {
-                    "id": "connectLimit",
-                    "caption": "Connect Limit",
-                    "type": "Numeric",
-                    "value": "-51"
-                }
-            ]
-        }
-    ],
-            blexeeServices = [
-                {"id": "logistician", "uuid": "833e65ce-4e2a-4b56-89a3-d7ba9aefa820", "characteristics": [{"deliver": "1a00"}, {"pickup": "1a01"}]},
-                {"id": "customer", "uuid": "91dd5587-075d-4db1-8004-a4ab255735ce", "characteristics": [{deliver: "2a00"}, {"pickup": "2a01"}]}
-            ],
-            deviceUuid = '291C9A2E-CCA3-1EF0-5C5C-E19E29973F16',
-            currentUseCase = '';
+    var currentUseCase = '';
 
     //todo: nullify and delete objects with references
     var cfgService = new ConfigurationService(cfgSchema);
-    //cfgService.reset();
     var deviceService = new DeviceService(cfgService);
     var menuService = new MenuService(deviceService, cfgService);
     //var slider = new PageSlider($('.page-content'));
@@ -56,10 +22,21 @@ var DEVICE_PRESENT = false;
 
     //initialization function
     cfgService.registerTriggerableFunction('consoleReplacement', '/blexee/debugMode', configureConsoleLog);
-    cfgService.setValue('/blexee/debugMode', true);
-    var dbgMode = cfgService.getValue('/blexee/debugMode');
-    console.log('DEBUG MODE: ' + dbgMode);
-    configureConsoleLog(dbgMode);
+    cfgService.registerTriggerableFunction('globalDebugSetter', '/blexee/debugMode', function (mode) {
+        console.log('Setting global variable DEBUG to: [%s]', mode);
+        DEBUG = mode;
+    });
+    cfgService.registerTriggerableFunction('globalTraceSetter', '/blexee/traceMode', function (mode) {
+        console.log('Setting global variable TRACE to: [%s]', mode);
+        TRACE = mode;
+    });
+    cfgService.reset();
+    //cfgService.setValue('/blexee/debugMode', true);
+    DEBUG = cfgService.getValue('/blexee/debugMode');
+    TRACE = cfgService.getValue('/blexee/traceMode');
+    console.log('DEBUG MODE: ' + DEBUG);
+    console.log('TRACE MODE: ' + TRACE);
+    configureConsoleLog(DEBUG);
 
 
     menuService.initialize().done(function () {
@@ -105,6 +82,7 @@ var DEVICE_PRESENT = false;
                     //if not connected yet -> search for devices
                     console.log(":: start searching for devices");
                     deviceService.scanForDevices().done(function (deviceModel) {
+                        var deviceUuid = cfgService.getValue('/device/connectable-deviceUuid');
                         if (currentUseCase === 'DeviceView') {
                             menuService.getMenuView('DeviceView').setModel(deviceModel);
                             menuService.getMenuView('DeviceView').render();
@@ -167,7 +145,7 @@ var DEVICE_PRESENT = false;
             $('body').html(menuService.logisticianDemoView.render().$el);
             componentHandler.upgradeAllRegistered();
             menuService.logisticianDemoView.registerModelControl(deviceService.getModelControl());
-        } else if (currentUseCase === 'CustomerDemoView'){
+        } else if (currentUseCase === 'CustomerDemoView') {
             $('body').html(menuService.customerDemoView.render().$el);
             componentHandler.upgradeAllRegistered();
             menuService.customerDemoView.registerModelControl(deviceService.getModelControl());
@@ -220,8 +198,8 @@ var DEVICE_PRESENT = false;
         });
 
     });
-    
-    router.addRoute('pickup', function(){
+
+    router.addRoute('pickup', function () {
         //todo: deliver barcode to ble address
         window.location.href = '#disconnect';
     });
@@ -250,7 +228,9 @@ var DEVICE_PRESENT = false;
                 values[field.name] = field.value;
             });
             //when there's no name attribute on the form, use: e.target[0].value
-            console.log('FORM SUBMITTED: ==> [' + JSON.stringify(values) + '] ' + bleService + ' ' + bleCharacteristic + " ");
+            if (DEBUG) {
+                console.log('FORM SUBMITTED: ==> [' + JSON.stringify(values) + '] ' + bleService + ' ' + bleCharacteristic + " ");
+            }
             deviceService.writeData(bleService, bleCharacteristic, deviceService.parseHexString(values['write-data']), function () {
                 target.remove();
             }, function (err) {

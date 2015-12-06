@@ -235,26 +235,27 @@
                 <span class="right" style="color:red">Program Error: no configuration data is found.</span>
             {{/unless}}
             {{#if this}}
-                {{#each this}}
+                {{#each_when this "display" true}}
                     <div class="service-card-wide mdl-card mdl-shadow--2dp">
                         <div class="mdl-card__title">
                             <h2 class="mdl-card__title-text caption">{{caption}}</h2>
                         </div>
                         <div class="mdl-card__supporting-text" style="margin: 0 auto;"> 
                         {{#if keys}}
-                            <table class="mdl-data-table mdl-data-table--selectable mdl-shadow--2dp box">
+                            <!-- <table class="mdl-data-table mdl-data-table--selectable mdl-shadow--2dp box"> -->
+                            <table class="box">
                                 <thead>
-                                    <tr>
+                                    <tr class="spacy">
                                         <th class="mdl-data-table__cell--non-numeric" style="text-align:left; vertical-align:middle">
                                             <i class="material-icons" style="vertical-align:middle">memory</i>
-                                            Configuration
+                                            {{caption}}
                                         </th>
                                         <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                 {{#each keys}}
-                                    <tr>
+                                    <tr class="spacy">
                                         <td class="mdl-data-table__cell--non-numeric">{{caption}}</td>
                                         <td>{{generate_field id type value valueset ../path}}</td>
                                     </tr>
@@ -264,7 +265,7 @@
                         {{/if}}
                         </div>
                     </div>
-                {{/each}}
+                {{/each_when}}
             {{/if}}
         </script>
         
@@ -397,6 +398,7 @@
         <script type="text/javascript" src="js/libs/PageSlider.js"></script>
         <script type="text/javascript" src="js/libs/Router.js"></script>
         <script type="text/javascript" src="js/core/Domains.js"></script>
+        <script type="text/javascript" src="js/core/ConfigSchema.js"></script>
         <script type="text/javascript" src="js/services/MenuService.js"></script>
         <script type="text/javascript" src="js/services/DeviceService.js"></script>
         <script type="text/javascript" src="js/views/Helpers.js"></script>

@@ -1,4 +1,4 @@
-/* global SIMULATION, simuData, ble, cordova */
+/* global SIMULATION, simuData, ble, cordova, TRACE, DEBUG */
 
 var DeviceService = function (configService) {
     var self = this, cancelApproximation = false;
@@ -384,7 +384,7 @@ var DeviceService = function (configService) {
                     deviceModel.connected = false;
                     deviceModel.selectedDevice = '';
                     deferred.resolve();
-                }, function(){
+                }, function () {
                     deferred.reject(new ErrorMessage('Bluetooth cannot disconnect', 'Generic error received while trying to disconnect from bluetooth device.'));
                 });
             }, function () {
@@ -422,7 +422,9 @@ var DeviceService = function (configService) {
                     failure(new ErrorMessage("Device is not connected", "Please make sure that the device is connected first."));
                 });
             } else {
-                console.log("SIMU :: -- write --> service [" + serviceUuid + "] characteristic [" + characteristicUuid + "] + data " + JSON.stringify(arrayBufferData));
+                if (DEBUG) {
+                    console.log("SIMU :: -- write --> service [%s] characteristic [%s] + data as json [%s] | byte array size [%s]", serviceUuid, characteristicUuid, JSON.stringify(arrayBufferData), arrayBufferData.length);
+                }
                 success();
             }
         }
@@ -435,7 +437,9 @@ var DeviceService = function (configService) {
 
     this.parseHexString = function (str) {
         str = str.replace(/ /g, '');
-        console.log('HEXX PARSER ::: original string [' + str + '] / string length [' + str.length + ']');
+        if (TRACE) {
+            console.log('HEXX PARSER ::: original string [' + str + '] / string length [' + str.length + ']');
+        }
         var result = new Uint8Array(str.length / 2);
         var index = 0;
         while (str.length >= 2) {
@@ -443,9 +447,11 @@ var DeviceService = function (configService) {
             str = str.substring(2, str.length);
             index++;
         }
-        console.log('HEXX PARSER ::: byte length [' + result.byteLength + ']');
-        console.log('HEXX PARSER ::: length [' + result.length + ']');
-        console.log('CHARS: ' + bytesToString(result.buffer));
+        if (TRACE) {
+            console.log('HEXX PARSER ::: byte length [' + result.byteLength + ']');
+            console.log('HEXX PARSER ::: length [' + result.length + ']');
+            console.log('buffer bytes to string: ' + bytesToString(result.buffer));
+        }
         return result.buffer;
     };
 

@@ -1,3 +1,5 @@
+/* global TRACE, DEBUG */
+
 /**
  * The configuration service provides:<br>
  * <ul>
@@ -42,20 +44,23 @@ var ConfigurationService = function (cfgSchema) {
                 path = $(this).attr('data-path'),
                 keyId = $(this).attr('data-key-id'),
                 triggerType = $(this).attr('data-trigger-type');
-        console.log('EVENT RECEIVED::: ' + path + ':' + keyId + ' value [' + target.val() + '] type [' + target[0].type + ']//Trigger Type[' + triggerType + ']');
+        if (TRACE) {
+            console.log('EVENT RECEIVED::: ' + path + ':' + keyId + ' value [' + target.val() + '] target[0].type [' + target[0].type + '] triggerType [' + triggerType + ']');
+        }
         if (triggerType.toUpperCase() === 'INPUT') {
             if (target[0].type.toUpperCase() === 'CHECKBOX') {
-                console.log('CHECKED STATE:' + target.prop("checked"));
-                if (target.prop("checked")) {
-                    self.setValue(path + '/' + keyId, true);
-                    target.prop("checked", true);
-                } else {
-                    self.setValue(path + '/' + keyId, false);
-                    target.prop("checked", false);
+                var pathValue = path + '/' + keyId, newValue = target.prop("checked");
+                if (DEBUG) {
+                    console.log('setting [%s] to [%s]', pathValue, newValue);
                 }
+                self.setValue(pathValue, newValue);
+                // target.prop("checked", newValue);
             }
         } else if (triggerType.toUpperCase() === 'FORM') {
             if (target[0].type.toUpperCase() === "TEXT") {
+                if (DEBUG){
+                    console.log('setting [%s] to [%s]', path + '/' + keyId, target.val());
+                }
                 self.setValue(path + '/' + keyId, target.val());
                 target[0].blur();
             }
@@ -70,16 +75,19 @@ var ConfigurationService = function (cfgSchema) {
      * @returns {undefined}
      */
     this.registerTriggerableFunction = function (funcID, path, func) {
-        found = false;
+        foundAndUpdated = false;
         if (functionStore.length > 0) {
             for (i = 0; i < functionStore.length; i++) {
                 if (functionStore[i].funcID === funcID) {
                     functionStore[i].path = path;
                     functionStore[i].func = func;
+                    foundAndUpdated = true;
                     return;
                 }
             }
-        } else if (functionStore.length === 0 || !found) {
+        }
+
+        if (!foundAndUpdated) {
             functionStore.push(new TriggerableFunction(funcID, path, func));
         }
     };
@@ -91,6 +99,10 @@ var ConfigurationService = function (cfgSchema) {
      * @returns {Array} all configured triggerable functions
      */
     function getFunctions(path) {
+        if (TRACE) {
+            console.log('triggerable function count for [%s] is [%s]', path, functionStore.length);
+            console.log('function store details: %s', JSON.stringify(functionStore));
+        }
         if (functionStore.length > 0) {
             return functionStore.filter(function (funcEntry) {
                 return funcEntry.path === path;
@@ -195,7 +207,7 @@ var ConfigurationService = function (cfgSchema) {
         }
         return false;
     };
-    
+
     /**
      * 
      * @returns the config schema
