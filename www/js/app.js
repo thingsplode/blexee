@@ -1,4 +1,4 @@
-/* global HomeView, Handlebars, DeviceView, router, cfgSchema */
+/* global HomeView, Handlebars, DeviceView, router, cfgSchema, ParcelAction, toastr */
 "use strict";
 /**
  * Will be set to true by the Hardware Service if running on real phone
@@ -12,15 +12,25 @@ var DEVICE_PRESENT = false,
 
 (function () {
     var currentUseCase = '';
-
+    //todo: background threading in the deffered: https://github.com/kmalakoff/background
+    ////or http://www.w3schools.com/html/html5_webworkers.asp webworker
     //todo: nullify and delete objects with references
     var cfgService = new ConfigurationService(cfgSchema),
             deviceService = new DeviceService(cfgService),
             menuService = new MenuService(deviceService, cfgService),
+            dispatchService = new DispatcherService(cfgService),
             boxService = cfgService.getValue('/services/box-service'),
             boxServiceUuid = boxService.uuid,
             parcelStoreUuid = boxService.characteristics['parcel-store'],
-            parcelStoreNotificationReceivedForLastWrite = true;
+            parcelReleaseUuid = boxService.characteristics['parcel-release'],
+            parcelStoreLastWrite = {'notificationReceived': true, 'barcode': ''},
+    parcelReleaseLastWrite = {'notificationReceived': true, 'barcode': ''};
+
+    toastr.options.newestOnTop = false;
+    toastr.options.positionClass = "toast-bottom-full-width";
+    toastr.options.preventDuplicates = false;
+    toastr.options.showDuration = 300;
+    toastr.options.hideDuration = 1000;
     //var slider = new PageSlider($('.page-content'));
     var slider;
 
@@ -34,7 +44,7 @@ var DEVICE_PRESENT = false,
         console.log('Setting global variable TRACE to: [%s]', mode);
         TRACE = mode;
     });
-    // cfgService.reset();
+    //cfgService.reset();
     //cfgService.setValue('/blexee/debugMode', true);
     DEBUG = cfgService.getValue('/blexee/debugMode');
     TRACE = cfgService.getValue('/blexee/traceMode');
@@ -154,15 +164,20 @@ var DEVICE_PRESENT = false,
                 if (DEBUG) {
                     console.log("Notification received: [%s]", data[0]);
                 }
-                if (!parcelStoreNotificationReceivedForLastWrite) {
-                    //todo: do some notification
-                    if (data[0] !== 0x00) {
-                        alert('no success' + data[0]);
-                    } else {
-                        alert('success : ' + data[0] + ' : ' + data[1]);
+                if (!parcelStoreLastWrite.notificationReceived) {
+                    if (data[0] === 0x00) {
+                        toastr.success('Barcode: ' + parcelStoreLastWrite.barcode, 'Parcel stored!');
+                        dispatchService.sendMessage(new ParcelActionRequest(ParcelAction.STORED, parcelStoreLastWrite.barcode, data[0]));
+                    } else if (data[0] === 0x01) {
+                        //slots not available
+                        toastr.warning('Slots are unavailable.');
+                    } else if (data[0] === 0x04 || data[0] === 0x05) {
+                        //invalid data or generic failure
+                        toastr.error('Unsuccesful: invalid data or generic error [' + data[0] + ']');
                     }
                 }
-                parcelStoreNotificationReceivedForLastWrite = true;
+                parcelStoreLastWrite.notificationReceived = true;
+                parcelStoreLastWrite.barcode = '';
             }, function (param) {
                 //todo: put some failure logic for notification start
                 console.log('ERROR :: failed to start notifications: %s', JSON.stringify(param));
@@ -230,7 +245,11 @@ var DEVICE_PRESENT = false,
                 for (var i = 0; i < result.text.length; ++i) {
                     barcodeBufferView[i] = result.text.charCodeAt(i);
                 }
-                parcelStoreNotificationReceivedForLastWrite = false;
+                parcelStoreLastWrite.notificationReceived = false;
+                parcelStoreLastWrite.barcode = result.text;
+//                $('#deliver-btn').prop('disabled', true);
+//                $('#deliver-btn').bind('click', false);
+//                componentHandler.upgradeAllRegistered();
                 deviceService.writeData(boxServiceUuid, parcelStoreUuid, barcodeBufferView.buffer, function () {
                     //data was succesfully written
                     if (DEBUG) {
@@ -255,8 +274,64 @@ var DEVICE_PRESENT = false,
     });
 
     router.addRoute('pickup', function () {
-        //todo: deliver barcode to ble address
-        window.location.href = '#disconnect';
+        var timerActive = false;
+
+        deviceService.startNotification(boxServiceUuid, parcelReleaseUuid, function (buffer) {
+            if (!parcelReleaseLastWrite.notificationReceived) {
+                timerActive = false;
+                var data = new Uint8Array(buffer);
+                if (data[0] === 0x02) {
+                    toastr.success('Barcode: ' + parcelReleaseLastWrite.barcode, 'Parcel released!');
+                    dispatchService.sendMessage(new ParcelActionRequest(ParcelAction.RELEASED, parcelStoreLastWrite.barcode, data[0]));
+                } else if (data[0] === 0x03) {
+                    toastr.warning('Parcel not found.');
+                } else if (data[0] === 0x04 || data[0] === 0x05) {
+                    //invalid data or generic failure
+                    toastr.error('Unsuccesful: invalid data or generic error [' + data[0] + ']');
+                } else {
+                    toastr.warning('Unexpected return code received.', 'Unknown result');
+                }
+                setTimeout(function () {
+                    window.location.href = '#disconnect';
+                }, getDisconnectWaitTime());
+            }
+            parcelReleaseLastWrite.notificationReceived = true;
+            parcelReleaseLastWrite.barcode = '';
+        }, function (param) {
+            //todo: put some failure logic for notification start
+            console.log('ERROR :: failed to start notifications: %s', JSON.stringify(param));
+        });
+        var notification = dispatchService.takeNextNotification();
+        //todo: prepare it for other notifications
+        if (notification) {
+            parcelReleaseLastWrite.notificationReceived = false;
+            parcelStoreLastWrite.barcode = notification.barcode;
+            //$('#pickup-btn').prop('disabled', true);
+            $('#pickup-btn').attr('disabled', true);
+            $('#pickup-btn').bind('click', false);
+            componentHandler.upgradeAllRegistered();
+            deviceService.writeData(boxServiceUuid, parcelReleaseUuid, notification.barcode, function () {
+                //data was succesfully written
+                if (DEBUG) {
+                    console.log('Data was successfully written.');
+                }
+            }, function () {
+                //data could not be written
+                console.log('ERROR :: Data could not be written.');
+            });
+            setTimeout(function () {
+                if (timerActive) {
+                    console.log('WARNING ::: we have time out with the relase! Disconnecting ... ');
+                    window.location.href = '#disconnect';
+                }
+            }, getDisconnectWaitTime());
+        } else {
+            toastr.warning('Parcels are not available.', 'Disconnecting');
+            setTimeout(function () {
+                window.location.href = '#disconnect';
+            }, getDisconnectWaitTime());
+        }
+
     });
 
     router.addRoute('reload/:view', function (view) {
@@ -345,5 +420,13 @@ var DEVICE_PRESENT = false,
             delete console.log;
             console.log('ENABLING -> console log functionality!');
         }
+    }
+
+    function getDisconnectWaitTime() {
+        var dcTime = cfgService.getValue('/device/disconnectWait');
+        if (!dcTime) {
+            dcTime = 2500;
+        }
+        return dcTime;
     }
 }());

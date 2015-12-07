@@ -57,11 +57,11 @@ var SimuService = function (configService) {
         }, 20);
     };
 
-    this.simulateNotifications = function myself(onDataCallback) {
+    this.simulateNotifications = function myself(onDataCallback, responseCode) {
         setTimeout(function () {
             console.log("SIMU --> :  simulating notification callback with 0x00 0x19");
             ab = new Uint8Array(2);
-            ab[0] = 0x00;
+            ab[0] = responseCode;
             ab[1] = 0x19;
             onDataCallback(ab.buffer);
             if (doSimulateNotifications) {

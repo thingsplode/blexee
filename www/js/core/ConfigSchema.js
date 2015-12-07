@@ -73,11 +73,19 @@ var cfgSchema = [
         "path": "/device",
         "caption": "Devices Related",
         "display": true,
-        "keys": [{
+        "keys": [
+            {
                 "id": "connectable-deviceUuid",
                 "caption": "UUID of connectable device",
                 "type": "Label",
                 "value": "291C9A2E-CCA3-1EF0-5C5C-E19E29973F16"
-            }]
+            },
+            {
+                "id": "disconnectWait",
+                "caption": "Wait time before disconnect",
+                "type": "Numeric",
+                "value": "2500"
+            }
+        ]
     }
 ];

@@ -415,8 +415,15 @@ var DeviceService = function (configService) {
             } else {
                 //start notification simulation
                 console.log('SIMU :: Start notifications');
-                simuService.setSimulateNotifications(true);
-                simuService.simulateNotifications(onDataCallback);
+                boxService = configService.getValue('/services/box-service');
+                if (characteristicUuid === boxService.characteristics['parcel-store']) {
+                    simuService.setSimulateNotifications(true);
+                    simuService.simulateNotifications(onDataCallback, 0x00);
+                } else {
+                    simuService.setSimulateNotifications(true);
+                    simuService.simulateNotifications(onDataCallback, 0x02);
+                }
+
             }
         }
     };
