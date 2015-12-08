@@ -19,9 +19,10 @@ var DEVICE_PRESENT = false,
     ////or http://www.w3schools.com/html/html5_webworkers.asp webworker
     //todo: nullify and delete objects with references
     var cfgService = new ConfigurationService(cfgSchema),
-            deviceService = new DeviceService(cfgService),
+            modelService = new DataModelService(),
+            deviceService = new DeviceService(cfgService, modelService),
             menuService = new MenuService(deviceService, cfgService),
-            dispatchService = new DispatcherService(cfgService),
+            dispatchService = new DispatcherService(cfgService, modelService),
             boxService = cfgService.getValue('/services/box-service'),
             boxServiceUuid = boxService.uuid,
             parcelStoreUuid = boxService.characteristics['parcel-store'],
@@ -85,7 +86,7 @@ var DEVICE_PRESENT = false,
             try {
                 //special handling required
                 console.log(":: check if bluetooth is enabled");
-                var deviceModel = deviceService.getDeviceModel();
+                var deviceModel = modelService.getModel();
                 if (!deviceService.bluetoothEnabled()) {
                     //if bluetooth is not enabled
                     menuService.errView.setModel(new ErrorMessage('Please enable your bluetooth device', 'Use the device settings to enable the bluetooth connection a retry the app functions.'));
@@ -136,7 +137,7 @@ var DEVICE_PRESENT = false,
         $('.page-content').html(menuService.connectView.render().$el);
         //componentHandler.upgradeAllRegistered();
         //slider.slidePage(menuService.connectView.render().$el);
-        menuService.connectView.registerModelControl(deviceService.getModelControl());
+        menuService.connectView.registerModelControl(modelService.getControl());
         deviceService.approximateAndConnectDevice(deviceId, function () {
             console.log("Successfully connected to device");
             menuService.connectView.unregisterModelControl();
@@ -157,11 +158,11 @@ var DEVICE_PRESENT = false,
         if (currentUseCase === 'DeviceView') {
             $('body').html(menuService.deviceServicesView.render().$el);
             componentHandler.upgradeAllRegistered();
-            menuService.deviceServicesView.registerModelControl(deviceService.getModelControl());
+            menuService.deviceServicesView.registerModelControl(modelService.getControl());
         } else if (currentUseCase === 'LogisticianDemoView') {
             $('body').html(menuService.logisticianDemoView.render().$el);
             componentHandler.upgradeAllRegistered();
-            menuService.logisticianDemoView.registerModelControl(deviceService.getModelControl());
+            menuService.logisticianDemoView.registerModelControl(modelService.getControl());
             deviceService.startNotification(boxServiceUuid, parcelStoreUuid, function (buffer) {
                 var data = new Uint8Array(buffer);
                 if (DEBUG) {
@@ -188,7 +189,7 @@ var DEVICE_PRESENT = false,
         } else if (currentUseCase === 'CustomerDemoView') {
             $('body').html(menuService.customerDemoView.render().$el);
             componentHandler.upgradeAllRegistered();
-            menuService.customerDemoView.registerModelControl(deviceService.getModelControl());
+            menuService.customerDemoView.registerModelControl(modelService.getControl());
         }
         deviceService.requestServices().done(function () {
             //menuService.deviceServicesView.setModel(deviceModel);

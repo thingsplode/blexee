@@ -5,11 +5,13 @@
  * @param {type} configService
  * @returns {undefined}
  */
-var DispatcherService = function (configService) {
-    var NOTIFICATION_STORAGE_KEY = "notifications", 
-            cfgService = configService, 
-            nqString = window.localStorage.getItem(NOTIFICATION_STORAGE_KEY), 
+var DispatcherService = function (configService, dataModelService) {
+    var NOTIFICATION_STORAGE_KEY = "notifications",
+            cfgService = configService,
+            nqString = window.localStorage.getItem(NOTIFICATION_STORAGE_KEY),
             notificationQueue = nqString ? JSON.parse(nqString) : [];
+
+    dataModelService.setModelData('notificationQueueSize', notificationQueue.length);
 
     this.sendMessage = function (message) {
         if (message instanceof ParcelActionRequest) {
@@ -24,6 +26,7 @@ var DispatcherService = function (configService) {
     this.storeNotification = function (notification) {
         notificationQueue.push(new ParcelNotification(notification.parcelAction, notification.barcode, notification.slotID));
         window.localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(notificationQueue));
+        dataModelService.setModelData('notificationQueueSize', notificationQueue.length);
     };
 
     this.takeNextNotification = function () {
