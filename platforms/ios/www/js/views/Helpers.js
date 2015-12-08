@@ -35,6 +35,9 @@ Handlebars.registerHelper('absolut_from_percentage', function (percentage, max) 
     return new Handlebars.SafeString(absolut);
 });
 
+/**
+ * Used to generate data fields
+ */
 Handlebars.registerHelper('generate_field', function (id, type, currentValue, valueSet, path) {
 //    var id = Handlebars.Utils.escapeExpression(this.id),
 //            type = Handlebars.Utils.escapeExpression(this.type),
@@ -44,7 +47,7 @@ Handlebars.registerHelper('generate_field', function (id, type, currentValue, va
     var fieldContent = null;
     if (type.toUpperCase() === 'BOOLEAN') {
         fieldContent = "<label class=\"mdl-switch mdl-js-switch mdl-js-ripple-effect\" for=\"" + id + "\">" +
-                "<input type=\"checkbox\" id=\"" + id + "\" class=\"mdl-switch__input config-field\" data-trigger-type=\"INPUT\" data-path=\"" + path + "\"" + (currentValue === true ? "checked" : "") + " data-field-id=\""+id+"\" />" +
+                "<input type=\"checkbox\" id=\"" + id + "\" class=\"mdl-switch__input config-field\" data-trigger-type=\"INPUT\" data-path=\"" + path + "\"" + (currentValue === true ? "checked" : "") + " data-key-id=\""+id+"\" />" +
                 "<span class=\"mdl-switch__label\"></span>" +
                 "</label>";
 

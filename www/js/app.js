@@ -1,5 +1,8 @@
 /* global HomeView, Handlebars, DeviceView, router, cfgSchema, ParcelAction, toastr */
 "use strict";
+
+//todo: entering into approximation loop without bluetooth with no error
+//once device are found in simulation mode, it will not search for new ones
 /**
  * Will be set to true by the Hardware Service if running on real phone
  */

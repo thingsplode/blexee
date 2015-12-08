@@ -9,13 +9,13 @@
     Cordova writing to file: https://dzone.com/articles/cordova-example-writing-file
 
     What's the best platform to install apps
-    https://fueled.com/blog/whats-best-framework-building-mobile-apps/ 
+    https://fueled.com/blog/whats-best-framework-building-mobile-apps/
 
     Todo:
+        http://plugins.telerik.com/cordova/plugin/barcodescanner
         https://www.npmjs.com/package/cordova-plugin-vibration
         https://www.npmjs.com/package/cordova-plugin-splashscreen
         https://www.npmjs.com/package/cordova-plugin-device
-        https://www.npmjs.com/package/phonegap-plugin-barcodescanner
         https://www.npmjs.com/package/cordova-plugin-barcodescanner
         https://www.npmjs.com/package/cordova-plugin-actionsheet
         https://www.npmjs.com/package/cordova-plugin-ios-longpress-fix
@@ -188,7 +188,7 @@
                                     </div>
                                     <div class="mdl-card__supporting-text">
                                         {{#if characteristics}}
-                                            <table class="mdl-data-table mdl-data-table--selectable mdl-shadow--2dp box">
+                                            <table class="mdl-data-table mdl-shadow--2dp box">
                                             <thead>
                                                 <th class="mdl-data-table__cell--non-numeric" style="text-align:left; vertical-align:middle">
                                                     <i class="material-icons" style="vertical-align:middle">memory</i>
@@ -229,7 +229,7 @@
             </div>
         </div>
         </script>
-        
+
         <script id="settings-tpl" type="text/template">
             {{#unless this}}
                 <span class="right" style="color:red">Program Error: no configuration data is found.</span>
@@ -240,34 +240,83 @@
                         <div class="mdl-card__title">
                             <h2 class="mdl-card__title-text caption">{{caption}}</h2>
                         </div>
-                        <div class="mdl-card__supporting-text" style="margin: 0 auto;"> 
+                        <div class="mdl-card__supporting-text" style="margin: 0 auto;">
                         {{#if keys}}
-                            <table class="mdl-data-table mdl-data-table--selectable mdl-shadow--2dp box">
-                                <thead>
-                                    <tr>
-                                        <th class="mdl-data-table__cell--non-numeric" style="text-align:left; vertical-align:middle">
-                                            <i class="material-icons" style="vertical-align:middle">memory</i>
-                                            Configuration
-                                        </th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                {{#each keys}}
-                                    <tr>
-                                        <td class="mdl-data-table__cell--non-numeric">{{caption}}</td>
-                                        <td>{{generate_field id type value valueset ../path}}</td>
-                                    </tr>
-                                {{/each}}
-                                </tbody>
-                            </table>
+                        <table class="mdl-data-table mdl-data-table--selectable mdl-shadow--2dp box">
+                            <thead>
+                                <tr>
+                                    <th class="mdl-data-table__cell--non-numeric" style="text-align:left; vertical-align:middle">
+                                        <i class="material-icons" style="vertical-align:middle">memory</i>
+                                        Configuration
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {{#each keys}}
+                                <tr>
+                                    <td class="">{{caption}}</td>
+                                    <td>{{generate_field id type value valueset ../path}}</td>
+                                </tr>
+                            {{/each}}
+                            </tbody>
+                        </table>
                         {{/if}}
                         </div>
                     </div>
                 {{/each}}
             {{/if}}
         </script>
-        
+
+        <script id="customer-tpl" type="text/template">
+            <div class="mdl-layout__container">
+            <div id="device_page" class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+                <header class="mdl-layout__header">
+                    <div class="mdl-layout__drawer-button">
+                        <a class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon" href="#disconnect">
+                            <i class="material-icons">navigate_before</i>
+                        </a>
+                    </div>
+                    <div class="mdl-layout__header-row">
+                        <!-- Title -->
+                        <span class="mdl-layout-title">Delivery and Pickup</span>
+                        <!-- Add spacer, to align navigation to the right -->
+                        <div class="mdl-layout-spacer"></div>
+                        <a id='service-notification-badge' href="#events" class="mdl-badge material-icons" data-badge="5">alarm</a>
+                    </div>
+                </header>
+                <main class="mdl-layout__content">
+                    <div class="page-content">
+                        <!-- Your content goes here -->
+                        {{#unless this}}
+                            {{search}}
+                        {{/unless}}
+                        {{#if this}}
+                            {{#if requestingServices}}
+                                {{search}}
+                            {{else}}
+                                {{#if services}}
+                                <div class="service-card-wide mdl-card mdl-shadow--2dp">
+                                    <div class="mdl-card__title">
+                                        <h2 class="mdl-card__title-text caption">Actions</h2>
+                                    </div>
+                                    <div class="mdl-card__supporting-text">
+                                        <a id="pickup-btn" href="#pickup" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent right">
+                                            Pickup
+                                        </a>
+                                    </div>
+                                </div>
+                                {{else}}
+                                    <span class="right" style="color:red">Program Error: no services are found.</span>
+                                {{/if}}
+                            {{/if}}
+                        {{/if}}
+                    </div>
+                </main>
+            </div>
+        </div>
+        </script>
+
         <script id="logistician-tpl" type="text/template">
             <div class="mdl-layout__container">
             <div id="device_page" class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
@@ -316,7 +365,7 @@
             </div>
         </div>
         </script>
-        
+
         <script id="not-implemented-tpl" type="text/template">
             <div class="title">Empty</div>
             <span class="right" style="color:red">Not implemented yet</span>
@@ -354,7 +403,7 @@
         <script type="text/javascript" src="js/views/GenericView.js"></script>
         <script type="text/javascript" src="js/services/SimuService.js"></script>
         <script type="text/javascript" src="js/services/ConfigurationService.js"></script>
-        <script type="text/javascript" src="js/services/HardwareService.js"></script>
+        <script type="text/javascript" src="js/services/HandheldService.js"></script>
         <script type="text/javascript" src="js/app.js"></script>
     </body>
 </html>

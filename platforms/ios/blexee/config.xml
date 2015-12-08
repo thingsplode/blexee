@@ -36,12 +36,15 @@
     </feature>
     <allow-intent href="itms:*" />
     <allow-intent href="itms-apps:*" />
+    <preference name="BackupWebStorage" value="local" />
+    <preference name="SuppressesIncrementalRendering" value="true" />
+    <icon density="mdpi" height="57" src="www/img/cake.png" width="57" />
     <name>blexee</name>
     <description>
         A bluetooth low energy test application
     </description>
-    <author email="dev@cordova.apache.org" href="http://cordova.io">
-        Apache Cordova Team
+    <author email="tamas.csaba@gmail.com" href="http://cordova.io">
+        Csaba Tamas
     </author>
     <content src="index.html" />
     <access origin="*" />
@@ -51,7 +54,12 @@
     <allow-intent href="sms:*" />
     <allow-intent href="mailto:*" />
     <allow-intent href="geo:*" />
+    <preference name="Fullscreen" value="true" />
+    <preference name="WebViewBounce" value="true" />
+    <preference name="DisallowOverscroll" value="true" />
+    <preference name="BackgroundColor" value="#9E9E9E" />
+    <preference name="HideKeyboardFormAccessoryBar" value="true" />
     <preference name="StatusBarOverlaysWebView" value="false" />
-    <preference name="StatusBarBackgroundColor" value="#3F51B5" />
+    <preference name="StatusBarBackgroundColor" value="#4CAF50" />
     <preference name="StatusBarStyle" value="lightcontent" />
 </widget>

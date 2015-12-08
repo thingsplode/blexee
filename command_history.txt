@@ -1,0 +1,268 @@
+    1  ls -al
+    2  mkdir dev
+    3  cd dev
+    4  npm install 
+    5  man npm
+    6  man --help
+    7  npm install --help
+    8  npm install -g cordova
+    9  sudo npm install --help
+   10  sudo npm install --help
+   11  sudo npm install -g cordova
+   12  cd dev/
+   13  cordova create workshop com.thingsplode.workshop Workshop
+   14  ls -a;
+   15  ls -al
+   16  cd workshop/
+   17  ls -al
+   18  cordova plugin add org.apache.cordova.device
+   19  cordova plugin add org.apache.cordova.console
+   20  df -h
+   21  cd ~/dev/
+   22  mkdir /tmp
+   23  mkdir ./tmp
+   24  cd tmp/
+   25  git 
+   26  sudo git 
+   27  pwd
+   28  git clone https://github.com/ccoenraets/cordova-tutorial
+   29  sudo git clone https://github.com/ccoenraets/cordova-tutorial
+   30  pwd
+   31  cd ../workshop/
+   32  ls -al
+   33  cordova platforms add ios
+   34  cordova plugins add org.apache.cordova.device
+   35  cordova plugins add org.apache.cordova.console
+   36  cordova build uis
+   37  cordova build ios
+   38  npm install -g ios-sim
+   39  sudo npm install -g ios-sim
+   40  cordova emulate ios
+   41  cordova emulate ios
+   42  cordova build ios
+   43  cordova emulate ios
+   44  nano ~/.atom/config.cson 
+   45  nano ~/.atom/config.cson 
+   46  nano ~/.atom/config.cson 
+   47  cordova build ios
+   48  cordova emulate ios
+   49  cordova emulate ios
+   50  cordova emulate ios
+   51  cordova build ios
+   52  cordova emulate ios
+   53  cordova plugin add org.apache.cordova.dialogs
+   54  cordova build ios
+   55  cordova emulate ios
+   56  cordova build ios
+   57  cordova emulate ios
+   58  cordova build ios
+   59  cordova build ios
+   60  cordova emulate ios
+   61  cordova build ios
+   62  cordova plugins add org.apache.cordova.statusbar
+   63  cordova build ios
+   64  cordova build ios
+   65  dir
+   66  ls
+   67  ls apps/
+   68  ls dev/
+   69  cd dev/
+   70  git clone https://tamas-csaba@github.com/tamas-csaba/blexee.git
+   71  ls
+   72  cd blexee/
+   73  cordova platforms add ios
+   74  cordova plugin add org.apache.cordova.device
+   75  cordova plugin add org.apache.cordova.console
+   76  cordova build ios
+   77  logout
+   78  pwd
+   79  cd dev/blexee/
+   80  git
+   81  git update
+   82  git cgeckout
+   83  git checkout
+   84  git checkout
+   85  cordova build ios
+   86  git update
+   87  git pull
+   88  cordova build ios
+   89  git pull
+   90  pwd
+   91  cordova plugins add org.apache.cordova.statusbar
+   92  cordova build ios
+   93  cordova emulate ios
+   94  cordova plugins add org.apache.cordova.statusbar
+   95  cordova plugin rm org.apache.cordova.statusbar
+   96  cordova plugin add cordova-plugin-statusbar
+   97  cordova emulate ios
+   98  cordova emulate ios
+   99  cordova emulate ios
+  100  cordova emulate ios
+  101  cordova emulate ios
+  102  cordova emulate ios
+  103  cordova emulate ios
+  104  cordova build ios
+  105  cordova emulate ios
+  106  cordova emulate ios
+  107  cordova emulate ios
+  108  cordova emulate ios
+  109  cordova emulate ios
+  110  cordova emulate ios
+  111  cordova help
+  112  cordova -v
+  113  cordova plugin add org.apache.cordova.Device
+  114  cordova plugin add org.apache.cordova.App
+  115  cordova emulate ios
+  116  cordova emulate ios
+  117  cordova emulate ios
+  118  cordova emulate ios
+  119  cordova emulate ios
+  120  cordova emulate ios
+  121  pwd
+  122  cd www/js/libs/
+  123  wget https://raw.githubusercontent.com/ftlabs/fastclick/master/lib/fastclick.js
+  124  curl -O https://raw.githubusercontent.com/ftlabs/fastclick/master/lib/fastclick.js
+  125  ls -al
+  126  cd ../..
+  127  pwd
+  128  cd ..
+  129  pwd
+  130  cordova emulate ios
+  131  cordova build ios
+  132  cordova plugin add org.apache.cordova.dialogs
+  133  cordova plugin rm org.apache.cordova.dialogs
+  134  cordova plugin add cordova-plugin-dialogs
+  135  cordova build ios
+  136  git commit -a
+  137  git push
+  138  pwd
+  139  cordova plugin add cordova-plugin-ble-central
+  140  git add .
+  141  git commit -a
+  142  clear
+  143  sajdclear
+  144  ps -A
+  145  killall vi
+  146  git add -A
+  147  git commit
+  148  git commit -m "Added hardware dependencies"
+  149  git push git push origin master
+  150  git push origin master
+  151  git commit -m "Added hardware dependencies"
+  152  git commit -m "Added hardware dependencies"
+  153  git commit -am "Added hardware dependencies"
+  154  git config --global --edit
+  155  git commit --amend --reset-author
+  156  git commit --amend --reset-author -m "adding hardware components""
+  157  git commit --amend --reset-author -m "adding hardware components""
+  158  git commit --amend --reset-author -m "adding hardware components"
+  159  git push origin master
+  160  git pull
+  161  git pull
+  162  cordova build ios
+  163  git pull
+  164  cordova build ios
+  165  cordova build ios
+  166  git pull
+  167  git pull
+  168  git merge
+  169  mc
+  170  nano www/js/services/DeviceService.js 
+  171  git pull origin
+  172  git merge origin/master
+  173  git pull --rebase 
+  174  git pull --rebase 
+  175  git pull --rebase 
+  176  git status
+  177  git log
+  178  git fetch --all
+  179  git reset --hard origin/master
+  180  exit
+  181  history 
+  182  pwd
+  183  history > codova_commands
+  184  git fetch --all
+  185  git reset --hard origin/master
+  186  cd dev/blexee/
+  187  git fetch --all
+  188  git reset --hard origin/master
+  189  cd ../
+  190  mkdir blexee2
+  191  cd blexee2/
+  192  cd ../blexee
+  193  git checkout master
+  194  git reset --hard HEAD
+  195  git pull
+  196  git clean -f 0d
+  197  git clean -f -d
+  198  git pull
+  199  git status
+  200  git fetch origin
+  201  git reset --hard origin/master
+  202  git clean
+  203  git clean -
+  204  git reset --hard origin/master
+  205  git fetch origin
+  206  git merge
+  207  cd ../blexee2/
+  208  git checkout https://github.com/tamas-csaba/blexee.git
+  209  git clone https://github.com/tamas-csaba/blexee.git
+  210  cd ../blexee
+  211  git pull
+  212  git pull
+  213  cordova build ios
+  214  cordova build ios
+  215  cordova build ios
+  216  cordova build ios
+  217  cordova build ios
+  218  cordova build ios
+  219  cordova build ios
+  220  cordova build ios
+  221  cordova build ios
+  222  cordova build ios
+  223  cordova build ios
+  224  cordova build ios
+  225  cordova build ios
+  226  cordova build ios
+  227  cordova build ios
+  228  cordova build ios
+  229  cordova build ios
+  230  cordova build ios
+  231  cordova build ios
+  232  cordova build ios
+  233  cordova build ios
+  234  cordova build ios
+  235  git commit -am "hardware integration: almost there"
+  236  git push origin/master
+  237  git push origin
+  238  git pull
+  239  cordova build ios
+  240  git commit -am "service object"
+  241  git push origin
+  242  git pull
+  243  cordova build ios
+  244  cordova build ios
+  245  cordova build ios
+  246  cordova build ios
+  247  cordova build ios
+  248  git commit -am "hw integration..."
+  249  git push origin
+  250  git push origin
+  251  git pull
+  252  cordova build ios
+  253  cordova build ios
+  254  cordova build ios
+  255  git commit -am "hw integration /m1 finished"
+  256  git push origin
+  257  git pull
+  258  cordova build ios
+  259  git commit -am "hw integration /m1 finished"
+  260  git push origin
+  261  git pull
+  262  cordova build ios
+  263  clear
+  264  git pull
+  265  sudo git pull
+  266  pwd
+  267  cordova plugin add cordova-plugin-barcodescanner
+  268  history 

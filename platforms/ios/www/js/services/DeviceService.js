@@ -1,7 +1,7 @@
-/* global SIMULATION, simuData, ble */
+/* global SIMULATION, simuData, ble, cordova */
 
 var DeviceService = function (configService) {
-    var self = this;
+    var self = this, cancelApproximation = false;
     var deviceModel = {
         /**
          * true is bluetooth device is enabled
@@ -77,6 +77,7 @@ var DeviceService = function (configService) {
         } else {
             //real mode
             cordova.plugins.barcodeScanner.scan(function (result) {
+                console.log('deviceService :: barcode scanned: [' + result.text + "] of type [" + result.format + "] / status: [" + result.cancelled + "]");
                 deferred.resolve(result);
             }, function (error) {
                 deferred.reject(new ErrorMessage('Scanning failed', error));
@@ -232,7 +233,6 @@ var DeviceService = function (configService) {
      * @returns {undefined}
      */
     function approximationLoop(devID, succeeded, failed) {
-        //todo: stop approximation loop if the user switches to a new screen while approximation is running
         try {
             console.log("Entering approximation loop with devce id [" + devID + "] // stringified value: [" + JSON.stringify(devID) + "]");
             var aborted = false;
@@ -245,9 +245,14 @@ var DeviceService = function (configService) {
                         //todo: sometimes the rssi is very high (eg +127), so a double check is needed
                         console.log("HW --> the device is not close enough, rescanning...");
                         setTimeout(function () {
-                            approximationLoop(devID, succeeded, failed);
-                        }, 1000);
+                            if (!cancelApproximation) {
+                                approximationLoop(devID, succeeded, failed);
+                            } else {
+                                cancelApproximation = false;
+                            }
+                        }, 500);
                     } else {
+                        //todo: make a second check here...
                         console.log("HW --> Device is close enough to connect / provided rssi [" + providedRssi + "]");
                         ble.connect(devID, succeeded, failed);
                     }
@@ -269,6 +274,10 @@ var DeviceService = function (configService) {
             failed("Exception caught", err);
         }
     }
+
+    this.breakApproximation = function () {
+        cancelApproximation = true;
+    };
 
     /**
      * Scan for bluetooth hardware
@@ -358,11 +367,10 @@ var DeviceService = function (configService) {
 
     /**
      * Disconnect from a connected bluetooth low energy device;
-     * @param {type} success function called upon successfull disconnect
-     * @param {type} failure function called if there's an error
-     * @returns {undefined} nothing
+     * @returns {undefined} JQuery deferred object to be used with done or fail methods
      */
-    this.disconnect = function (success, failure) {
+    this.disconnect = function () {
+        var deferred = $.Deferred();
         deviceModel.searching = false;
         deviceModel.devices = [];
         deviceModel.services = [];
@@ -375,8 +383,10 @@ var DeviceService = function (configService) {
                     deviceModel.connecting = false;
                     deviceModel.connected = false;
                     deviceModel.selectedDevice = '';
-                    success();
-                }, failure);
+                    deferred.resolve();
+                }, function(){
+                    deferred.reject(new ErrorMessage('Bluetooth cannot disconnect', 'Generic error received while trying to disconnect from bluetooth device.'));
+                });
             }, function () {
                 //was not connected
                 console.log('HW --> Device [' + deviceModel.selectedDevice.id + '] was not connected.');
@@ -385,18 +395,19 @@ var DeviceService = function (configService) {
             //simu mode
             console.log('SIMU :: --> Disconnecting from [' + deviceModel.selectedDevice.id + '].');
             deviceModel.selectedDevice = '';
-            success();
+            deferred.resolve();
         }
+        return deferred.promise();
     };
 
 
     /**
-     * Write data to a GATT Characteristic
-     * @param {type} serviceUuid
-     * @param {type} characteristicUuid
-     * @param {type} arrayBufferData
-     * @param {type} success
-     * @param {type} failure
+     * Write data to a GATT Characteristic found on a GATT service
+     * @param {type} serviceUuid the unique ID of the service which contains the characteristic to be updated
+     * @param {type} characteristicUuid the unique ID of the characteristics to be updated
+     * @param {type} arrayBufferData the data to be written
+     * @param {type} success function called once the data writing has succeeded
+     * @param {type} failure function called if data could not be written
      * @returns {undefined}
      */
     this.writeData = function (serviceUuid, characteristicUuid, arrayBufferData, success, failure) {
@@ -411,19 +422,10 @@ var DeviceService = function (configService) {
                     failure(new ErrorMessage("Device is not connected", "Please make sure that the device is connected first."));
                 });
             } else {
-                console.log("SIMU :: -- write --> service [" + serviceUuid + "] characteristic [" + characteristicUuid + "] + data " + arrayBufferData);
+                console.log("SIMU :: -- write --> service [" + serviceUuid + "] characteristic [" + characteristicUuid + "] + data " + JSON.stringify(arrayBufferData));
                 success();
             }
         }
-    };
-
-    // ASCII only
-    this.stringToBytes = function stringToBytes(string) {
-        var array = new Uint8Array(string.length);
-        for (var i = 0, l = string.length; i < l; i++) {
-            array[i] = string.charCodeAt(i);
-        }
-        return array.buffer;
     };
 
     // ASCII only

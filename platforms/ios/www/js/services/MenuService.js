@@ -35,7 +35,7 @@ var MenuService = function (deviceService, configService) {
             return '';
         });
         //deviceDemoView.registerModelControl(deviceService.getModelControl());
-        
+
         this.deviceServicesView = new GenericView('DeviceServicesView', Handlebars.compile($("#device-services-tpl").html()), function (view) {
             return '';
         });
@@ -44,7 +44,7 @@ var MenuService = function (deviceService, configService) {
             return '';
         });
 
-        this.customerDemoView = new GenericView('CustomerDemoView', Handlebars.compile($("#not-implemented-tpl").html()), function (view) {
+        this.customerDemoView = new GenericView('CustomerDemoView', Handlebars.compile($("#customer-tpl").html()), function (view) {
             return '';
         });
 
