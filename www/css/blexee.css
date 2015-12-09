@@ -34,7 +34,7 @@ tr.spacy > th  {
 }
 
 .shorter {
-    width: 2em;
+    width: 3em;
 }
 .title {
     color: #607D8B;
@@ -87,6 +87,7 @@ p.small {
     position: relative;
     top: 50%;
     transform: translateY(30%);
+    vertical-align: central;
     //border: 1px solid red;
 }
 
