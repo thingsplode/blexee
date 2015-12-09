@@ -58,7 +58,7 @@ var ConfigurationService = function (cfgSchema) {
             }
         } else if (triggerType.toUpperCase() === 'FORM') {
             if (target[0].type.toUpperCase() === "TEXT") {
-                if (DEBUG){
+                if (DEBUG) {
                     console.log('setting [%s] to [%s]', path + '/' + keyId, target.val());
                 }
                 self.setValue(path + '/' + keyId, target.val());
@@ -167,11 +167,15 @@ var ConfigurationService = function (cfgSchema) {
         }
         var key = pathArray.pop();
         var schemaPath = pathArray.join('/');
-        return cfgSchema.filter(function (schemaEntry) {
-            return schemaEntry.path === schemaPath;
-        })[0].keys.filter(function (keyEntry) {
-            return keyEntry.id === key;
-        })[0].value;
+        if (cfgSchema) {
+            return cfgSchema.filter(function (schemaEntry) {
+                return schemaEntry.path === schemaPath;
+            })[0].keys.filter(function (keyEntry) {
+                return keyEntry.id === key;
+            })[0].value;
+        } else {
+            return null;
+        }
     };
 
     /**
