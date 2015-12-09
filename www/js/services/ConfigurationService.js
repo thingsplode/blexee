@@ -18,6 +18,14 @@ var ConfigurationService = function (cfgSchema) {
     var self = this;
 
     var functionStore = [];
+
+    initialize();
+
+    function initialize() {
+        loadConfiguration();
+        save();
+    }
+
     //initializer: once an element with config-field class is changed, the updateField function is called
     $(document).ready(function () {
         $(document).on('change', '.config-field', updateField);
