@@ -48,7 +48,7 @@ var DEVICE_PRESENT = false,
         console.log('Setting global variable TRACE to: [%s]', mode);
         TRACE = mode;
     });
-    //cfgService.reset();
+    //
     //cfgService.setValue('/blexee/debugMode', true);
     DEBUG = cfgService.getValue('/blexee/debugMode');
     TRACE = cfgService.getValue('/blexee/traceMode');

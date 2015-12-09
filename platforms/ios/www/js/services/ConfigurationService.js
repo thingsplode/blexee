@@ -12,12 +12,20 @@
  * [{"path": "/some_path","caption": "General Config","keys": [{"id": "someConfigId","caption": "Some Caption Text","type": "Boolean","valueset": ["True", "False"],"value": true}}]
  * @returns {ConfigurationService}
  */
-var ConfigurationService = function (cfgSchema) {
+var ConfigurationService = function me(cfgSchema) {
     var SCHEMA_STORAGE_KEY = "config_schemas";
     var dirty = true;
     var self = this;
 
     var functionStore = [];
+
+    this.initialize = function (cfg) {
+        loadConfiguration();
+        //resetConfiguration();
+        save();
+    }
+    self.initialize();
+
     //initializer: once an element with config-field class is changed, the updateField function is called
     $(document).ready(function () {
         $(document).on('change', '.config-field', updateField);
@@ -69,7 +77,7 @@ var ConfigurationService = function (cfgSchema) {
 
     /**
      * Register a function to be called when the coresponding keyid value is changed on the path;
-     * @param {type} funcID the unique id of the function which will indentify it during calls 
+     * @param {type} funcID the unique id of the function which will indentify it during calls
      * @param {type} path the configuration path (in the form: /some_path/configurationKeyId) upon the change the function will be triggered
      * @param {type} func the reference to the function which will be triggered if the configuration key changes
      * @returns {undefined}
@@ -129,7 +137,7 @@ var ConfigurationService = function (cfgSchema) {
      * @private
      * @returns {undefined}
      */
-    this.reset = function () {
+    function resetConfiguration() {
         window.localStorage.removeItem(SCHEMA_STORAGE_KEY);
         window.localStorage.clear();
         console.log('//' + window.localStorage.getItem(SCHEMA_STORAGE_KEY) + '//');
@@ -213,7 +221,7 @@ var ConfigurationService = function (cfgSchema) {
     };
 
     /**
-     * 
+     *
      * @returns the config schema
      */
     this.getConfigSchemas = function () {
