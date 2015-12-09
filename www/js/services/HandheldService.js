@@ -5,6 +5,8 @@
  */
 (function () {
     document.addEventListener('deviceready', function () {
+        //if (DEBUG)
+        console.log('DEVICE ready');
         console.log(StatusBar);
         //StatusBar.backgroundColorByHexString('#ffffff');
         //StatusBar.styleDefault();
