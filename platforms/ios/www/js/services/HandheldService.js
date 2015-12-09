@@ -27,5 +27,6 @@
         }
         //alert('device ready');
         DEVICE_PRESENT = true;
+        console.log('DEVICE ready and configured...');
     }, false);
 }());

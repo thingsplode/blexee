@@ -14,7 +14,9 @@ var DEVICE_PRESENT = false,
         DEBUG = false;
 
 (function () {
+    console.log('Initializing Blexee App');
     var currentUseCase = '';
+    var oldConsoleHandler;
     //todo: background threading in the deffered: https://github.com/kmalakoff/background
     ////or http://www.w3schools.com/html/html5_webworkers.asp webworker
     //todo: nullify and delete objects with references
@@ -204,7 +206,14 @@ var DEVICE_PRESENT = false,
         });
     }, function () {
         //exit handler
+        if (TRACE) {
+            console.log('leaving connected state at use case: ' + currentUseCase);
+        }
         menuService.deviceServicesView.unregisterModelControl();
+    });
+
+    router.addRoute('disconnect', function () {
+        //todo: the disconnect has a slow effect / would be more interesting to redirect first, than disconnect ?? <- to be tested
         if (currentUseCase === 'LogisticianDemoView') {
             deviceService.stopNotification(boxServiceUuid, parcelStoreUuid, function (p) {
                 //stop notification succeeded
@@ -215,11 +224,18 @@ var DEVICE_PRESENT = false,
                 //stop notification failed
                 console.log('ERROR: notification could not be stopped: %s', JSON.stringify(p));
             });
+        } else if (currentUseCase === 'CustomerDemoView') {
+            deviceService.stopNotification(boxServiceUuid, parcelReleaseUuid, function (p) {
+                //stop notification succeeded
+                if (TRACE) {
+                    console.log('Notification successfullt stopped: %s', JSON.stringify(p));
+                }
+            }, function (p) {
+                //stop notification failed
+                console.log('ERROR: notification could not be stopped: %s', JSON.stringify(p));
+            });
         }
-    });
 
-    router.addRoute('disconnect', function () {
-        //todo: the disconnect has a slow effect / would be more interesting to redirect first, than disconnect ?? <- to be tested
         deviceService.disconnect().done(function () {
             //success
             console.log('diconnected form BLE device.');
@@ -230,9 +246,9 @@ var DEVICE_PRESENT = false,
             componentHandler.upgradeAllRegistered();
 
         });
-        window.location.href = '';
+        window.location.href = '#';
     }, function () {
-        console.log('...leaving disconnect state;');
+        console.log('leaving disconnect state at use case: ' + currentUseCase);
     });
 
     router.addRoute('deliver', function () {
@@ -244,17 +260,12 @@ var DEVICE_PRESENT = false,
                 console.log('Scanned barcode result is [%s]', JSON.stringify(result));
             }
             if (!result.cancelled || result.cancelled === 'false') {
-                var barcodeBuffer = new ArrayBuffer(result.text.length),
-                        barcodeBufferView = new Uint8Array(barcodeBuffer);
-                for (var i = 0; i < result.text.length; ++i) {
-                    barcodeBufferView[i] = result.text.charCodeAt(i);
-                }
                 parcelStoreLastWrite.notificationReceived = false;
                 parcelStoreLastWrite.barcode = result.text;
 //                $('#deliver-btn').prop('disabled', true);
 //                $('#deliver-btn').bind('click', false);
 //                componentHandler.upgradeAllRegistered();
-                deviceService.writeData(boxServiceUuid, parcelStoreUuid, barcodeBufferView.buffer, function () {
+                deviceService.writeData(boxServiceUuid, parcelStoreUuid, prepareBarcodeBuffer(result.text), function () {
                     //data was succesfully written
                     if (DEBUG) {
                         console.log('Data was successfully written.');
@@ -314,7 +325,7 @@ var DEVICE_PRESENT = false,
             $('#pickup-btn').attr('disabled', true);
             $('#pickup-btn').bind('click', false);
             componentHandler.upgradeAllRegistered();
-            deviceService.writeData(boxServiceUuid, parcelReleaseUuid, notification.barcode, function () {
+            deviceService.writeData(boxServiceUuid, parcelReleaseUuid, prepareBarcodeBuffer(notification.barcode), function () {
                 //data was succesfully written
                 if (DEBUG) {
                     console.log('Data was successfully written.');
@@ -322,6 +333,10 @@ var DEVICE_PRESENT = false,
             }, function () {
                 //data could not be written
                 console.log('ERROR :: Data could not be written.');
+                toastr.warning('ERROR...', 'Data could not be written!');
+                setTimeout(function () {
+                    window.location.href = '#disconnect';
+                }, getDisconnectWaitTime());
             });
             setTimeout(function () {
                 if (timerActive) {
@@ -330,7 +345,7 @@ var DEVICE_PRESENT = false,
                 }
             }, getDisconnectWaitTime());
         } else {
-            toastr.warning('Parcels are not available.', 'Disconnecting');
+            toastr.warning('Disconnecting...', 'No available parcel!');
             setTimeout(function () {
                 window.location.href = '#disconnect';
             }, getDisconnectWaitTime());
@@ -375,6 +390,17 @@ var DEVICE_PRESENT = false,
         });
     });
 
+    function prepareBarcodeBuffer(barcodeText) {
+        var brcLen = barcodeText.length;
+        var barcodeBuffer = new ArrayBuffer(brcLen),
+                barcodeBufferView = new Uint8Array(barcodeBuffer);
+        for (var i = 0; i < brcLen; ++i) {
+            barcodeBufferView[i] = barcodeText.charCodeAt(i);
+        }
+        return barcodeBufferView.buffer;
+
+    }
+
     /**
      * Depending on the type of the characteristic various write, read and/or notify actions can be triggered
      * @param {type} callingElement
@@ -415,16 +441,26 @@ var DEVICE_PRESENT = false,
     function configureConsoleLog(dbgMode) {
         if (!dbgMode) {
             console.log('WARNING -> Removing console log functionality!');
+            oldConsoleHandler = console.log;
             console = console || {};
             console.log = function () {
             };
+            console.log('DEBUG OVERWRITE due to -> %s', dbgMode);
         } else {
             console.log = null;
             console.log;         // null
             delete console.log;
+            if (oldConsoleHandler) {
+                console.log = oldConsoleHandler;
+            }
+            console.log('DEBUG RESTORE due to --> %s', dbgMode);
             console.log('ENABLING -> console log functionality!');
         }
     }
+
+    window.onerror = function (message, url, lineNumber) {
+        console.log("Error: {" + message + "} in {" + url + "} at line [" + lineNumber + "]");
+    };
 
     function getDisconnectWaitTime() {
         var dcTime = cfgService.getValue('/device/disconnectWait');

@@ -5,8 +5,6 @@
  */
 (function () {
     document.addEventListener('deviceready', function () {
-        //if (DEBUG)
-        console.log('DEVICE ready');
         console.log(StatusBar);
         //StatusBar.backgroundColorByHexString('#ffffff');
         //StatusBar.styleDefault();
@@ -29,5 +27,6 @@
         }
         //alert('device ready');
         DEVICE_PRESENT = true;
+        console.log('DEVICE ready and configured...');
     }, false);
 }());

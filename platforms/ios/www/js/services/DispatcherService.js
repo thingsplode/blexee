@@ -3,6 +3,7 @@
 /**
  * External communciation service
  * @param {type} configService
+ * @param {type} name dataModelService 
  * @returns {undefined}
  */
 var DispatcherService = function (configService, dataModelService) {

@@ -472,7 +472,7 @@ var DeviceService = function (configService, mdlService) {
      */
     this.writeData = function (serviceUuid, characteristicUuid, arrayBufferData, success, failure) {
         if (DEBUG) {
-            console.log(" -- called write data --> service [%s] characteristic [%s] and data as char array [%s] | byte array size [%s]", serviceUuid, characteristicUuid, bytesToString(arrayBufferData), arrayBufferData.byteLength);
+            //console.log(" -- called write data --> service [%s] characteristic [%s] and data as char array [%s] | byte array size [%s]", serviceUuid, characteristicUuid, bytesToString(arrayBufferData.buffer), arrayBufferData.length);
         }
         if (mdlService.getModelData('connected') && mdlService.getModelData('selectedDevice') !== null) {
             if (!configService.getValue('/blexee/simuMode')) {

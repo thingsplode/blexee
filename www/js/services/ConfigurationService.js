@@ -19,11 +19,12 @@ var ConfigurationService = function me(cfgSchema) {
 
     var functionStore = [];
 
-    this.initialize = function (cfg) {
+    this.initialize = function () {
         loadConfiguration();
         //resetConfiguration();
         save();
-    }
+    };
+    
     self.initialize();
 
     //initializer: once an element with config-field class is changed, the updateField function is called

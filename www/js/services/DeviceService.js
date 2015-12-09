@@ -386,6 +386,8 @@ var DeviceService = function (configService, mdlService) {
             //simu mode
             console.log('SIMU :: --> Disconnecting from [' + mdlService.getModelData('selectedDevice')['id'] + '].');
             mdlService.setModelData('selectedDevice', '');
+            mdlService.setModelData('connecting', false);
+            mdlService.setModelData('connected', false);
             deferred.resolve();
         }
         return deferred.promise();
@@ -408,9 +410,11 @@ var DeviceService = function (configService, mdlService) {
                 console.log('SIMU :: Start notifications');
                 boxService = configService.getValue('/services/box-service');
                 if (characteristicUuid === boxService.characteristics['parcel-store']) {
+                    console.log('SIMU :: Start notifications for PARCEL STORE');
                     simuService.setSimulateNotifications(true);
                     simuService.simulateNotifications(onDataCallback, 0x00);
                 } else {
+                    console.log('SIMU :: Start notifications for PARCEL RELEASE');
                     simuService.setSimulateNotifications(true);
                     simuService.simulateNotifications(onDataCallback, 0x02);
                 }
@@ -472,7 +476,7 @@ var DeviceService = function (configService, mdlService) {
      */
     this.writeData = function (serviceUuid, characteristicUuid, arrayBufferData, success, failure) {
         if (DEBUG) {
-            console.log(" -- called write data --> service [%s] characteristic [%s] and data as char array [%s] | byte array size [%s]", serviceUuid, characteristicUuid, bytesToString(arrayBufferData), arrayBufferData.byteLength);
+            //console.log(" -- called write data --> service [%s] characteristic [%s] and data as char array [%s] | byte array size [%s]", serviceUuid, characteristicUuid, bytesToString(arrayBufferData.buffer), arrayBufferData.length);
         }
         if (mdlService.getModelData('connected') && mdlService.getModelData('selectedDevice') !== null) {
             if (!configService.getValue('/blexee/simuMode')) {
