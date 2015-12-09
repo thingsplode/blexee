@@ -22,12 +22,19 @@ td {
     text-align: left;
 }
 
+tr.spacy > td  {
+    padding-bottom: 1.2em;
+}
+
+tr.spacy > th  {
+    padding-bottom: 2em;
+}
 .short {
     width: 150px;
 }
 
 .shorter {
-    width: 2em;
+    width: 3em;
 }
 .title {
     color: #607D8B;
@@ -80,6 +87,7 @@ p.small {
     position: relative;
     top: 50%;
     transform: translateY(30%);
+    vertical-align: central;
     //border: 1px solid red;
 }
 

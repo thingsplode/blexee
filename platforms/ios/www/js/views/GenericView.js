@@ -1,6 +1,8 @@
+/* global TRACE, DEBUG */
+
 var GenericView = function (viewName, template, dataProvider) {
 
-    var mdl, modelCtrl;
+    var mdl, modelCtrl, configService;
 
     this.initialize = function () {
         this.$el = $('<div id="generic_view"/>');
@@ -13,8 +15,12 @@ var GenericView = function (viewName, template, dataProvider) {
         var view = this;
         modelCtrl = modelControl;
         modelCtrl.on('modup', function (e, data) {
-            console.log(viewName + ' :: Model updated -> [event] ' + JSON.stringify(e) + '[model data] ' + JSON.stringify(data));
-            console.log(viewName + ' :: Model updated -> [event] ' + JSON.stringify(e));
+            if (TRACE) {
+                console.log(viewName + ' :: Model updated -> [event] ' + JSON.stringify(e) + '[model data] ' + JSON.stringify(data));
+            }
+            if (DEBUG) {
+                console.log(viewName + ' :: Model updated -> [event] ' + JSON.stringify(e));
+            }
             view.setModel(data);
             view.render();
         });
@@ -36,10 +42,12 @@ var GenericView = function (viewName, template, dataProvider) {
 
     this.render = function () {
         try {
-            console.log(viewName + ' :: rendering with [modeldata]--> ' + JSON.stringify(mdl));
+            if (TRACE) {
+                console.log(viewName + ' :: rendering with [modeldata]--> ' + JSON.stringify(mdl));
+            }
             this.$el.html(template(mdl));
         } catch (err) {
-            console.log("ERROR: rendering error --> " + err + '\n' + err.stack);
+            console.log("ERROR: rendering error --> " + err + '\n' + this.err.stack);
             this.$el.html(err);
         }
         return this;
