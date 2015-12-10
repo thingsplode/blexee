@@ -1,4 +1,4 @@
-/* global DEBUG */
+/* global DEBUG, TRACE */
 
 var SimuService = function (configService) {
 
@@ -33,33 +33,9 @@ var SimuService = function (configService) {
         return bigPeripheralObj;
     };
 
-    /**
-     *
-     * @param {type} i loop count (should be -100)
-     * @param {type} deviceModel the model whihc contains all the devices
-     * @param {type} modelControl the model control which needs to be updated
-     * @param {type} finished finish method
-     * @returns {undefined}
-     */
-    this.approximationSimuLoop = function myself(i, deviceModel, modelControl, finished) {
-        setTimeout(function () {
-            var x = 100 - (i * -1);
-            console.log("SIMU --> proximity value: " + x + " [at rssi: ]" + i);
-            deviceModel.selectedDevice.proximity = x;
-            modelControl.update(i);
-            i++;
-            if (i < 0) {
-                myself(i, deviceModel, modelControl, finished);
-            } else {
-                console.log(" ---> " + JSON.stringify(finished));
-                finished();
-            }
-        }, 20);
-    };
-
     this.simulateNotifications = function myself(onDataCallback, responseCode) {
         setTimeout(function () {
-            console.log("SIMU --> :  simulating notification callback with 0x00 0x19");
+            console.log("SIMU --> :  simulating notification callback with " + responseCode + " 0x19");
             ab = new Uint8Array(2);
             ab[0] = responseCode;
             ab[1] = 0x19;

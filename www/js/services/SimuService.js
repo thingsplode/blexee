@@ -6,7 +6,7 @@ var SimuService = function (configService) {
         'bluetooth_enabled': true,
         'devices_available': true,
         'can_connect': true,
-        'services_available': false
+        'services_available': true
     }, doSimulateNotifications = false;
 
     this.setSimulateNotifications = function (bool) {
@@ -31,32 +31,6 @@ var SimuService = function (configService) {
 
     this.getBigPeripheralObj = function () {
         return bigPeripheralObj;
-    };
-
-    /**
-     *
-     * @param {type} i loop count (should be -100)
-     * @param {type} deviceModel the model whihc contains all the devices
-     * @param {type} modelControl the model control which needs to be updated
-     * @param {type} finished finish method
-     * @returns {undefined}
-     */
-    this.approximationSimuLoop = function myself(i, deviceModel, modelControl, finished) {
-        setTimeout(function () {
-            var x = 100 - (i * -1);
-            if (TRACE) {
-                console.log("SIMU --> proximity value: " + x + " [at rssi: ]" + i);
-            }
-            deviceModel.selectedDevice.proximity = x;
-            modelControl.update(i);
-            i++;
-            if (i < 0) {
-                myself(i, deviceModel, modelControl, finished);
-            } else {
-                console.log(" ---> " + JSON.stringify(finished));
-                finished();
-            }
-        }, 20);
     };
 
     this.simulateNotifications = function myself(onDataCallback, responseCode) {

@@ -2,8 +2,8 @@
 
 /**
  * External communciation service
- * @param {type} configService
- * @param {type} name dataModelService 
+ * @param {ConfigurationService} configService
+ * @param {DataModelService} name dataModelService 
  * @returns {undefined}
  */
 var DispatcherService = function (configService, dataModelService) {
@@ -28,13 +28,20 @@ var DispatcherService = function (configService, dataModelService) {
         notificationQueue.push(new ParcelNotification(notification.parcelAction, notification.barcode, notification.slotID));
         window.localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(notificationQueue));
         dataModelService.setModelData('notificationQueueSize', notificationQueue.length);
+        dataModelService.updateControl();
     };
 
-    this.takeNextNotification = function () {
+    this.pollNotification = function () {
+        return notificationQueue.length > 0 ? notificationQueue[0] : null;
+    };
+
+    this.removeNotification = function () {
         notification = notificationQueue.length > 0 ? notificationQueue.shift() : null;
         if (notification) {
             window.localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(notificationQueue));
         }
+        dataModelService.setModelData('notificationQueueSize', notificationQueue.length);
+        dataModelService.updateControl();
         return notification;
     };
 };

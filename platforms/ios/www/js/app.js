@@ -15,7 +15,6 @@ var DEVICE_PRESENT = false,
 
 (function () {
     console.log('Initializing Blexee App');
-    var currentUseCase = '';
     var oldConsoleHandler;
     //todo: background threading in the deffered: https://github.com/kmalakoff/background
     ////or http://www.w3schools.com/html/html5_webworkers.asp webworker
@@ -31,6 +30,8 @@ var DEVICE_PRESENT = false,
             parcelReleaseUuid = boxService.characteristics['parcel-release'],
             parcelStoreLastWrite = {'notificationReceived': true, 'barcode': ''},
     parcelReleaseLastWrite = {'notificationReceived': true, 'barcode': ''};
+
+    modelService.setModelData('currentUseCase', '');
 
     toastr.options.newestOnTop = false;
     toastr.options.positionClass = "toast-bottom-full-width";
@@ -66,8 +67,9 @@ var DEVICE_PRESENT = false,
     });
     router.addRoute('', function () {
         $('body').html(menuService.appContainerView.render().$el);
-        $('.page-content').html(menuService.optionsView.render().$el);
-        componentHandler.upgradeAllRegistered();
+        //$('.page-content').html(menuService.optionsView.render().$el);
+        menuService.homeView.display();
+        //componentHandler.upgradeAllRegistered();
     });
 //    router.addRoute('start', function () {
 //        console.log('View :: OptionsView');
@@ -83,87 +85,101 @@ var DEVICE_PRESENT = false,
 
     router.addRoute('jump/:view', function (view) {
         console.log('Routing View :: ' + view);
-        currentUseCase = view;
-        if (view === 'DeviceView' || view === 'LogisticianDemoView' || view === 'CustomerDemoView') {
+        modelService.setModelData('currentUseCase', view);
+        if (view === 'HomeView'){
+            window.location.href = '#';
+        } else if (view === 'DeviceView' || view === 'LogisticianDemoView' || view === 'CustomerDemoView') {
             try {
                 //special handling required
-                console.log(":: check if bluetooth is enabled");
                 var deviceModel = modelService.getModel();
-                if (!deviceService.bluetoothEnabled()) {
-                    //if bluetooth is not enabled
-                    menuService.errView.setModel(new ErrorMessage('Please enable your bluetooth device', 'Use the device settings to enable the bluetooth connection a retry the app functions.'));
-                    $('.page-content').html(menuService.errView.render().$el);
-                    componentHandler.upgradeAllRegistered();
-                    //slider.slidePage(menuService.errView.render().$el);
-                } else if (deviceModel.connected) {
-                    //redirect to: #connected/device_id
-                    window.location.href = '#connected/' + deviceModel.selectedDevice.id;
-                } else {
-                    //if not connected yet -> search for devices
-                    console.log(":: start searching for devices");
-                    deviceService.scanForDevices().done(function (deviceModel) {
-                        var deviceUuid = cfgService.getValue('/device/connectable-deviceUuid');
-                        if (currentUseCase === 'DeviceView') {
-                            menuService.getMenuView('DeviceView').setModel(deviceModel);
-                            menuService.getMenuView('DeviceView').render();
-                        } else if (currentUseCase === 'LogisticianDemoView' || currentUseCase === 'CustomerDemoView') {
-                            if ($.inArray(deviceUuid, deviceModel.devices)) {
-                                window.location.href = '#connect/' + deviceUuid;
-                            }
-                        }
-                    });
-                    menuService.getMenuView('DeviceView').setModel(deviceModel);
-                    $('.page-content').html(menuService.getMenuView('DeviceView').render().$el);
-                    componentHandler.upgradeAllRegistered();
-                    //slider.slidePage(menuService.getMenuView(view).render().$el);
+                if (TRACE) {
+                    console.log(":: check if bluetooth is enabled");
                 }
+                deviceService.bluetoothEnabled().done(function (bEnabled) {
+                    if (!bEnabled) {
+                        //if bluetooth is not enabled
+                        menuService.errView.setModel(new ErrorMessage('Please enable your bluetooth device', 'Use the device settings to enable the bluetooth connection a retry the app functions.'));
+                        menuService.errView.display();
+                        //componentHandler.upgradeAllRegistered();
+                        //slider.slidePage(menuService.errView.render().$el);
+                    } else if (bEnabled && deviceModel.connected) {
+                        //redirect to: #connected/device_id
+                        window.location.href = '#connected/' + deviceModel.selectedDevice.id;
+                    } else {
+                        //if not connected yet -> search for devices
+                        if (TRACE) {
+                            console.log(":: start searching for devices");
+                        }
+                        deviceService.scanForDevices().done(function (deviceModel) {
+                            var deviceUuid = cfgService.getValue('/device/connectable-deviceUuid');
+                            if (modelService.getModelData('currentUseCase') === 'DeviceView') {
+                                menuService.getMenuView('DeviceView').setModel(deviceModel);
+                                menuService.getMenuView('DeviceView').display();
+                            } else if (modelService.getModelData('currentUseCase') === 'LogisticianDemoView' || modelService.getModelData('currentUseCase') === 'CustomerDemoView') {
+                                if (deviceService.isDeviceAvailable(deviceUuid)) {
+                                    //device found
+                                    window.location.href = '#connect/' + deviceUuid;
+                                } else {
+                                    //device not found
+                                    menuService.getMenuView('DeviceView').setModel(deviceModel);
+                                    menuService.getMenuView('DeviceView').display();
+                                }
+                            }
+                        });
+                        menuService.getMenuView('DeviceView').setModel(deviceModel);
+                        menuService.getMenuView('DeviceView').display();
+                        //slider.slidePage(menuService.getMenuView(view).render().$el);
+                    }
+                    ;
+                });
             } catch (error) {
-                console.log('ERROR: ' + error);
+                console.log('ERROR in jump/:view : %s' + error);
                 menuService.errView.setModel(new ErrorMessage('Program error', error.toString()));
-                //$('.page-content').html(menuService.errView.render().$el);
-                $('body').html(menuService.errView.render().$el);
+                //$('body').html(menuService.errView.render().$el);
+                menuService.errView.displayIn('body');
             }
         } else if (view === 'SettingsView') {
             menuService.getMenuView(view).setModel(cfgService.getConfigSchemas());
-            $('.page-content').html(menuService.getMenuView(view).render().$el);
-            componentHandler.upgradeAllRegistered();
+            //$('.page-content').html(menuService.getMenuView(view).render().$el);
+            menuService.getMenuView(view).display();
+            //componentHandler.upgradeAllRegistered();
         } else {
-            $('.page-content').html(menuService.getMenuView(view).render().$el);
-            componentHandler.upgradeAllRegistered();
-            //slider.slidePage(menuService.getMenuView(view).render().$el);
+            menuService.getMenuView(view).display();
         }
     });
 
     router.addRoute('connect/:deviceId', function (deviceId) {
-        console.log('Trying to connect-> ' + deviceId);
-        $('.page-content').html(menuService.connectView.render().$el);
-        //componentHandler.upgradeAllRegistered();
+        if (TRACE) {
+            console.log('Trying to connect-> ' + deviceId);
+        }
+        menuService.connectView.display();
         //slider.slidePage(menuService.connectView.render().$el);
         menuService.connectView.registerModelControl(modelService.getControl());
         deviceService.approximateAndConnectDevice(deviceId, function () {
-            console.log("Successfully connected to device");
+            console.log("Successfully connected to device [%s]", deviceId);
             menuService.connectView.unregisterModelControl();
             window.location.href = '#connected';
         }, function (error) {
             menuService.errView.setModel(error);
-            $('.page-content').html(menuService.errView.render().$el);
-            componentHandler.upgradeAllRegistered();
-            //slider.slidePage(menuService.errView.render().$el);
+            menuService.errView.display();
         });
     }, function () {
         //break approximation and stop scanning
+        if (DEBUG) {
+            console.log('leaving connected state at use case: {%s}', modelService.getModelData('currentUseCase'));
+        }
         deviceService.breakApproximation();
         menuService.connectView.unregisterModelControl();
     });
+
     router.addRoute('connected', function () {
         //entry handler
-        if (currentUseCase === 'DeviceView') {
-            $('body').html(menuService.deviceServicesView.render().$el);
-            componentHandler.upgradeAllRegistered();
-            menuService.deviceServicesView.registerModelControl(modelService.getControl());
-        } else if (currentUseCase === 'LogisticianDemoView') {
-            $('body').html(menuService.logisticianDemoView.render().$el);
-            componentHandler.upgradeAllRegistered();
+        menuService.deviceServicesView.registerModelControl(modelService.getControl());
+        if (modelService.getModelData('currentUseCase') === 'DeviceView') {
+            menuService.deviceServicesView.resetModel();//workaround for being set the model by somebody else
+            menuService.deviceServicesView.displayIn('body');
+        } else if (modelService.getModelData('currentUseCase') === 'LogisticianDemoView') {
+            menuService.logisticianDemoView.displayIn('body');
             menuService.logisticianDemoView.registerModelControl(modelService.getControl());
             deviceService.startNotification(boxServiceUuid, parcelStoreUuid, function (buffer) {
                 var data = new Uint8Array(buffer);
@@ -188,9 +204,10 @@ var DEVICE_PRESENT = false,
                 //todo: put some failure logic for notification start
                 console.log('ERROR :: failed to start notifications: %s', JSON.stringify(param));
             });
-        } else if (currentUseCase === 'CustomerDemoView') {
-            $('body').html(menuService.customerDemoView.render().$el);
-            componentHandler.upgradeAllRegistered();
+        } else if (modelService.getModelData('currentUseCase') === 'CustomerDemoView') {
+            //$('body').html(menuService.customerDemoView.render().$el);
+            //componentHandler.upgradeAllRegistered();
+            menuService.customerDemoView.displayIn('body');
             menuService.customerDemoView.registerModelControl(modelService.getControl());
         }
         deviceService.requestServices().done(function () {
@@ -199,15 +216,21 @@ var DEVICE_PRESENT = false,
             //slider.slidePage(menuService.deviceServicesView.render().$el);
         }).fail(function (errMsg) {
             menuService.errView.setModel(errMsg);
-            $('.page-content').html(menuService.errView.render().$el);
-            componentHandler.upgradeAllRegistered();
-            //slider.slidePage(menuService.errView.render().$el);
+            menuService.errView.display();
             menuService.deviceServicesView.unregisterModelControl();
         });
     }, function () {
         //exit handler
+        if (DEBUG) {
+            console.log('leaving connected state at use case: {%s}', modelService.getModelData('currentUseCase'));
+        }
+        menuService.deviceServicesView.resetModel();
         menuService.deviceServicesView.unregisterModelControl();
-        if (currentUseCase === 'LogisticianDemoView') {
+    });
+
+    router.addRoute('disconnect', function () {
+        //todo: the disconnect has a slow effect / would be more interesting to redirect first, than disconnect ?? <- to be tested
+        if (modelService.getModelData('currentUseCase') === 'LogisticianDemoView') {
             deviceService.stopNotification(boxServiceUuid, parcelStoreUuid, function (p) {
                 //stop notification succeeded
                 if (TRACE) {
@@ -217,27 +240,35 @@ var DEVICE_PRESENT = false,
                 //stop notification failed
                 console.log('ERROR: notification could not be stopped: %s', JSON.stringify(p));
             });
+        } else if (modelService.getModelData('currentUseCase') === 'CustomerDemoView') {
+            deviceService.stopNotification(boxServiceUuid, parcelReleaseUuid, function (p) {
+                //stop notification succeeded
+                if (TRACE) {
+                    console.log('Notification successfullt stopped: %s', JSON.stringify(p));
+                }
+            }, function (p) {
+                //stop notification failed
+                console.log('ERROR: notification could not be stopped: %s', JSON.stringify(p));
+            });
         }
-    });
 
-    router.addRoute('disconnect', function () {
-        //todo: the disconnect has a slow effect / would be more interesting to redirect first, than disconnect ?? <- to be tested
         deviceService.disconnect().done(function () {
             //success
+            deviceService.reset();
             console.log('diconnected form BLE device.');
         }).fail(function () {
             //failure
             menuService.errView.setModel(new ErrorMessage('Could not disconnect', 'This is a yet unhandled failure.'));
-            $('.page-content').html(menuService.errView.render().$el);
-            componentHandler.upgradeAllRegistered();
+            menuService.errView.display();
 
         });
         window.location.href = '#';
     }, function () {
-        console.log('...leaving disconnect state;');
+        console.log('leaving disconnect state at use case: {%s}', modelService.getModelData('currentUseCase'));
     });
 
     router.addRoute('deliver', function () {
+        menuService.deviceServicesView.registerModelControl(modelService.getControl());
         deviceService.scanBarcode().done(function (result) {
             //todo: cancelling barcode is not working
             //try: http://plugins.telerik.com/cordova/plugin/barcodescanner
@@ -264,25 +295,28 @@ var DEVICE_PRESENT = false,
             window.location.href = '#connected';
         }).fail(function (errMsg) {
             menuService.errView.setModel(errMsg);
-            $('.page-content').html(menuService.errView.render().$el);
-            componentHandler.upgradeAllRegistered();
-            //slider.slidePage(menuService.errView.render().$el);
-            //menuService.deviceServicesView.unregisterModelControl();
+            menuService.errView.display();
         });
 
     }, function () {
         //leaving state
+        menuService.deviceServicesView.unregisterModelControl();
+        menuService.deviceServicesView.resetModel();
     });
 
     router.addRoute('pickup', function () {
+        menuService.deviceServicesView.registerModelControl(modelService.getControl());
         var timerActive = false;
-
         deviceService.startNotification(boxServiceUuid, parcelReleaseUuid, function (buffer) {
             if (!parcelReleaseLastWrite.notificationReceived) {
                 timerActive = false;
                 var data = new Uint8Array(buffer);
                 if (data[0] === 0x02) {
                     toastr.success('Barcode: ' + parcelReleaseLastWrite.barcode, 'Parcel released!');
+                    var removedNotification = dispatchService.removeNotification();
+                    if (removedNotification.barcode !== parcelReleaseLastWrite.barcode) {
+                        console.log("WARNING :: the removed notification barcode [" + removedNotification.barcode + "] is not the same like the last written one [" + parcelReleaseLastWrite.barcode + "].");
+                    }
                     dispatchService.sendMessage(new ParcelActionRequest(ParcelAction.RELEASED, parcelStoreLastWrite.barcode, data[0]));
                 } else if (data[0] === 0x03) {
                     toastr.warning('Parcel not found.');
@@ -302,7 +336,7 @@ var DEVICE_PRESENT = false,
             //todo: put some failure logic for notification start
             console.log('ERROR :: failed to start notifications: %s', JSON.stringify(param));
         });
-        var notification = dispatchService.takeNextNotification();
+        var notification = dispatchService.pollNotification();
         //todo: prepare it for other notifications
         if (notification) {
             parcelReleaseLastWrite.notificationReceived = false;
@@ -337,6 +371,9 @@ var DEVICE_PRESENT = false,
             }, getDisconnectWaitTime());
         }
 
+    }, function () {
+        menuService.deviceServicesView.unregisterModelControl();
+        menuService.deviceServicesView.resetModel();
     });
 
     router.addRoute('reload/:view', function (view) {
@@ -370,8 +407,7 @@ var DEVICE_PRESENT = false,
                 target.remove();
             }, function (err) {
                 menuService.errView.setModel(err);
-                $('.page-content').html(menuService.errView.render().$el);
-                componentHandler.upgradeAllRegistered();
+                menuService.errView.display();
             });
         });
     });
@@ -445,6 +481,8 @@ var DEVICE_PRESENT = false,
     }
 
     window.onerror = function (message, url, lineNumber) {
+        menuService.errView.setModel(new ErrorMessage('Generic Error', message));
+        menuService.errView.display();
         console.log("Error: {" + message + "} in {" + url + "} at line [" + lineNumber + "]");
     };
 

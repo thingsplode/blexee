@@ -7,40 +7,45 @@
  */
 var DeviceService = function (configService, mdlService) {
     var self = this, cancelApproximation = false, mdlControl = mdlService.getControl();
-    /**
-     * true is bluetooth device is enabled
-     */
-    mdlService.setModelData('bluetooth', true);
-    /**
-     * true while searching for bluetooth low energy devices
-     */
-    mdlService.setModelData('searching', false);
-    /**    
-     * true while approximating and connecting to a ble device
-     */
-    mdlService.setModelData('connecting', false);
-    /**
-     * True while requesting gatt services from a connected ble device
-     */
-    mdlService.setModelData('requestingServices', false);
-    /**
-     * true when connected to a ble device
-     */
-    mdlService.setModelData('connected', false);
-    /**
-     * the details of the ble device which we are going to connect to or which we have connected to
-     */
-    mdlService.setModelData('selectedDevice', '');
-    /**
-     * all available devices found by the scanning operation
-     */
-    mdlService.setModelData('devices', []);
-    /**
-     * the gatt services of devices
-     */
-    mdlService.setModelData('services', []);
 
-    mdlService.setModelData('proximity', 0);
+    this.reset = function () {
+        /**
+         * true is bluetooth device is enabled
+         */
+        mdlService.setModelData('bluetooth', true);
+        /**
+         * true while searching for bluetooth low energy devices
+         */
+        mdlService.setModelData('searching', false);
+        /**    
+         * true while approximating and connecting to a ble device
+         */
+        mdlService.setModelData('connecting', false);
+        /**
+         * True while requesting gatt services from a connected ble device
+         */
+        mdlService.setModelData('requestingServices', false);
+        /**
+         * true when connected to a ble device
+         */
+        mdlService.setModelData('connected', false);
+        /**
+         * the details of the ble device which we are going to connect to or which we have connected to
+         */
+        mdlService.setModelData('selectedDevice', '');
+        /**
+         * all available devices found by the scanning operation
+         */
+        mdlService.setModelData('devices', []);
+        /**
+         * the gatt services of devices
+         */
+        mdlService.setModelData('services', []);
+
+        mdlService.setModelData('proximity', 0);
+    };
+
+    this.reset();
 
     /**
      * Initializer function
@@ -70,8 +75,29 @@ var DeviceService = function (configService, mdlService) {
             deferred.resolve({'text': 'abcdefgh', 'format': 'CODE_128', 'cancelled': 'false'});
         } else {
             //real mode
+            window.plugins.flashlight.available(
+                    function (isAvailable) {
+                        if (isAvailable) {
+                            window.plugins.flashlight.switchOn(null, function (errMsg) {
+                                console.log("ERROR switching ON the flashlight %s", errMsg);
+                            });
+                        }
+                    }
+            );
             cordova.plugins.barcodeScanner.scan(function (result) {
                 console.log('deviceService :: barcode scanned: [' + result.text + "] of type [" + result.format + "] / status: [" + result.cancelled + "]");
+                window.plugins.flashlight.available(
+                        function (isAvailable) {
+                            if (isAvailable) {
+                                window.plugins.flashlight.switchOff(null, function (errMsg) {
+                                    console.log("ERROR switching OFF the flashlight %s", errMsg);
+                                });
+                            }
+                        }
+                );
+                if (navigator && navigator.notification) {
+                    navigator.notification.vibrate(500);
+                }
                 deferred.resolve(result);
             }, function (error) {
                 deferred.reject(new ErrorMessage('Scanning failed', error));
@@ -198,7 +224,7 @@ var DeviceService = function (configService, mdlService) {
                         console.log("SIMU :: --> simulating approximation process");
                     }
                     if (simuService.getSimuData().can_connect) {
-                        simuService.approximationSimuLoop(-100, mdlService.getModel(), mdlControl, function () {
+                        approximationSimuLoop(-100, mdlService.getModel(), mdlControl, function () {
                             mdlService.setModelData('connecting', false);
                             mdlService.setModelData('connected', true);
                             mdlService.setModelData('searching', false);
@@ -269,7 +295,7 @@ var DeviceService = function (configService, mdlService) {
                 try {
                     var selectedDevice = mdlService.getModelData('selectedDevice');
                     if (providedRssi < -100) {
-                        providedRssi = -100;
+                        providedRssi = -99;
                     }
                     selectedDevice.proximity = getPercentFromRssi(providedRssi);
                     if (DEBUG) {
@@ -288,9 +314,11 @@ var DeviceService = function (configService, mdlService) {
                             }
                         }, 500);
                     } else {
-                        //todo: make a second check here...
                         console.log("HW --> Device is close enough to connect / provided rssi [" + providedRssi + "]");
+                        //todo: make a second check here...
                         ble.connect(devID, succeeded, failed);
+                        //While connecting make a completion animation
+                        approximationSimuLoop(selectedDevice.proximity, mdlService.getModel(), mdlControl, null);
                     }
                 } catch (err) {
                     console.log("Approximation loop :: error caugth:" + err);
@@ -307,13 +335,20 @@ var DeviceService = function (configService, mdlService) {
             });
 
         } catch (err) {
-            console.log("Error catched while approximating the device:" + err);
+            console.log("Error catched while approximating the device:" + JSON.stringify(err));
             failed("Exception caught", err);
         }
     }
 
     this.breakApproximation = function () {
-        cancelApproximation = true;
+        var connecting = mdlService.getModelData('connecting');
+
+        if (cancelApproximation && connecting) {
+            cancelApproximation = false;
+        }
+        if (connecting) {
+            cancelApproximation = true;
+        }
     };
 
     /**
@@ -665,6 +700,36 @@ var DeviceService = function (configService, mdlService) {
             console.log("WARNING: peripheral object seems to be undefined.");
         }
         return gattSrvs;
+    };
+
+    /**
+     *
+     * @param {type} i loop count (should be -100)
+     * @param {type} deviceModel the model whihc contains all the devices
+     * @param {type} modelControl the model control which needs to be updated
+     * @param {type} finished finish method
+     * @returns {undefined}
+     */
+    approximationSimuLoop = function myself(i, deviceModel, modelControl, finished) {
+        setTimeout(function () {
+            var x = 100 - (i * -1);
+            if (TRACE) {
+                console.log("SIMU --> proximity value: " + x + " [at rssi: ]" + i);
+            }
+            deviceModel.selectedDevice.proximity = x;
+            modelControl.update(i);
+            i++;
+            if (i < 0) {
+                myself(i, deviceModel, modelControl, finished);
+            } else {
+                if (TRACE) {
+                    console.log(" --->  simu loop finished");
+                }
+                if (finished) {
+                    finished();
+                }
+            }
+        }, 20);
     };
 
     var simuService;

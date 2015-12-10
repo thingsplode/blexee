@@ -68,7 +68,7 @@ var DEVICE_PRESENT = false,
     router.addRoute('', function () {
         $('body').html(menuService.appContainerView.render().$el);
         //$('.page-content').html(menuService.optionsView.render().$el);
-        menuService.optionsView.display();
+        menuService.homeView.display();
         //componentHandler.upgradeAllRegistered();
     });
 //    router.addRoute('start', function () {
@@ -86,7 +86,9 @@ var DEVICE_PRESENT = false,
     router.addRoute('jump/:view', function (view) {
         console.log('Routing View :: ' + view);
         modelService.setModelData('currentUseCase', view);
-        if (view === 'DeviceView' || view === 'LogisticianDemoView' || view === 'CustomerDemoView') {
+        if (view === 'HomeView'){
+            window.location.href = '#';
+        } else if (view === 'DeviceView' || view === 'LogisticianDemoView' || view === 'CustomerDemoView') {
             try {
                 //special handling required
                 var deviceModel = modelService.getModel();
@@ -252,6 +254,7 @@ var DEVICE_PRESENT = false,
 
         deviceService.disconnect().done(function () {
             //success
+            deviceService.reset();
             console.log('diconnected form BLE device.');
         }).fail(function () {
             //failure

@@ -66,7 +66,8 @@ var GenericView = function (viewName, reusableModel, template, dataProvider) {
             }
             this.$el.html(template(mdl));
         } catch (err) {
-            console.log("ERROR: rendering error --> " + err + '\n' + this.err.stack);
+            console.log("ERROR: rendering error --> " + JSON.stringify(err));
+                    //+ '\n' + err ? JSON.stringify(err.stack) : "no stack");
             this.$el.html(err);
         }
         return this;

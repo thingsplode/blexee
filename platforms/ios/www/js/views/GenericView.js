@@ -1,6 +1,6 @@
 /* global TRACE, DEBUG */
 
-var GenericView = function (viewName, template, dataProvider) {
+var GenericView = function (viewName, reusableModel, template, dataProvider) {
 
     var mdl, modelCtrl, configService;
 
@@ -19,7 +19,7 @@ var GenericView = function (viewName, template, dataProvider) {
                 console.log(viewName + ' :: Model updated -> [event] ' + JSON.stringify(e) + '[model data] ' + JSON.stringify(data));
             }
             if (DEBUG) {
-                console.log(viewName + ' :: Model updated -> [event] ' + JSON.stringify(e));
+                console.log(viewName + ' :: Model updated {' + viewName + '} ');
             }
             view.setModel(data);
             view.render();
@@ -40,6 +40,25 @@ var GenericView = function (viewName, template, dataProvider) {
         return viewName;
     };
 
+    this.resetModel = function () {
+        mdl = '';
+    };
+
+    this.displayIn = function (jquerySelector) {
+        $(jquerySelector).html(this.render().$el);
+        componentHandler.upgradeAllRegistered();
+        if (!reusableModel) {
+            mdl = '';
+        }
+    };
+
+    this.display = function (model) {
+        if (model) {
+            this.setModel(model);
+        }
+        this.displayIn('.page-content');
+    };
+
     this.render = function () {
         try {
             if (TRACE) {
@@ -47,7 +66,8 @@ var GenericView = function (viewName, template, dataProvider) {
             }
             this.$el.html(template(mdl));
         } catch (err) {
-            console.log("ERROR: rendering error --> " + err + '\n' + this.err.stack);
+            console.log("ERROR: rendering error --> " + JSON.stringify(err));
+                    //+ '\n' + err ? JSON.stringify(err.stack) : "no stack");
             this.$el.html(err);
         }
         return this;

@@ -36,6 +36,8 @@
     <preference name="StatusBarBackgroundColor" value="#4CAF50" />
     <preference name="StatusBarStyle" value="lightcontent" />
     <preference name="prerendered-icon" value="false" />
-
+    <feature name="Media">
+        <param name="ios-package" value="CDVSound" />
+    </feature>
 
 </widget>

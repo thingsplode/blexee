@@ -110,12 +110,16 @@ p.small {
     margin-left: 1em;
     z-index: 999;
 }
+
+.ctrlbutton > a {
+    margin-top: 1em;
+}
 /*
 The device card styles, which are used when devices are listed
 */
 .device-card.mdl-card {
     width: 200px;
-    height: 165px;
+    height: 65px;
     //background: #46B6AC;
     background: #9E9E9E;
 }
@@ -141,7 +145,7 @@ The device card styles, which are used when devices are listed
 
 .device-card-square.mdl-card {
     width: 280px;
-    height: 220px;
+    height: 10px;
 }
 .device-card-square > .mdl-card__title {
     color: #fff;

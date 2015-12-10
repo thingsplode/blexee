@@ -31,8 +31,18 @@ Handlebars.registerHelper('device_list', function () {
 });
 
 Handlebars.registerHelper('absolut_from_percentage', function (percentage, max) {
+    if (!percentage || percentage === '' || isNaN(percentage)){
+        percentage = 0;
+    }
     var absolut = percentage * max / 100;
     return new Handlebars.SafeString(absolut);
+});
+
+Handlebars.registerHelper('sanitize_number', function (value) {
+    if (!value || value === '' || isNaN(value)){
+        value = 0;
+    }
+    return new Handlebars.SafeString(value);
 });
 
 Handlebars.registerHelper('json', function (obj) {
@@ -47,6 +57,13 @@ Handlebars.registerHelper('each_when', function (list, k, v, opts) {
     return result;
 });
 
+Handlebars.registerHelper('each_when_not', function (list, k, v, opts) {
+    var i, result = '';
+    for (i = 0; i < list.length; ++i)
+        if (list[i][k] !== v)
+            result = result + opts.fn(list[i]);
+    return result;
+});
 /**
  * Used to generate data fields
  */
