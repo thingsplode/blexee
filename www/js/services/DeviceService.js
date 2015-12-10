@@ -35,6 +35,8 @@ var DeviceService = function (configService, mdlService) {
      */
     mdlService.setModelData('services', []);
 
+    mdlService.setModelData('proximity', 0);
+
     /**
      * Initializer function
      * @returns {unresolved} a promise which you can refer with done()
@@ -85,10 +87,14 @@ var DeviceService = function (configService, mdlService) {
                 if (configService.getValue('/blexee/simuMode')) {
                     //simulation mode
                     setTimeout(function () {
-                        console.log('--> device service timeout simulation triggered');
-                        console.log("SIMU --> devices: " + simuService.getSimuData().devices_available);
+                        if (TRACE) {
+                            console.log('--> device service timeout simulation triggered');
+                            console.log("SIMU --> devices: " + simuService.getSimuData().devices_available);
+                        }
                         if (simuService.getSimuData().devices_available) {
                             mdlService.setModelData('devices', simuService.getSimuDevices());
+                        } else {
+                            mdlService.setModelData('devices', []);
                         }
                         mdlService.setModelData('bluetooth', true);
                         mdlService.setModelData('searching', false);
@@ -164,12 +170,16 @@ var DeviceService = function (configService, mdlService) {
                         break;
                     }
                 }
-                console.log("--> found device to connect to: " + JSON.stringify(mdlService.getModelData('selectedDevice')));
+                if (DEBUG) {
+                    console.log("--> found device to connect to: " + JSON.stringify(mdlService.getModelData('selectedDevice')));
+                }
             }
 
             if (mdlService.getModelData('selectedDevice') !== null && mdlService.getModelData('connecting')) {
                 if (configService.getValue('/blexee/simuMode')) {
-                    console.log("SIMU :: --> simulating approximation process");
+                    if (DEBUG) {
+                        console.log("SIMU :: --> simulating approximation process");
+                    }
                     if (simuService.getSimuData().can_connect) {
                         simuService.approximationSimuLoop(-100, mdlService.getModel(), mdlControl, function () {
                             mdlService.setModelData('connecting', false);
@@ -183,7 +193,9 @@ var DeviceService = function (configService, mdlService) {
                 } else {
                     //in REAL hardware mode
                     //rssi to be expected between -100 and -26
-                    console.log("HW --> starting approximation and connection procedure.");
+                    if (TRACE) {
+                        console.log("HW --> starting approximation and connection procedure.");
+                    }
                     var rssi = -100;
                     mdlService.setModelData('proximity', getPercentFromRssi(rssi));
 
@@ -196,21 +208,30 @@ var DeviceService = function (configService, mdlService) {
                         mdlService.setModelData('connected', true);
                         mdlService.setModelData('searching', false);
                         mdlService.setModelData('services', getGattServices(peripheralObject));
-                        console.log('HW --> Connection was succesfull; peripheral object: ' + JSON.stringify(peripheralObject));
+                        mdlService.setModelData('proximity', 0);
+                        if (DEBUG) {
+                            console.log('HW --> Connection was succesfull; peripheral object: ' + JSON.stringify(peripheralObject));
+                        }
                         success();
                     }, function (title, text) {
                         //failed
+                        mdlService.setModelData('connecting', false);
+                        mdlService.setModelData('connected', false);
+                        mdlService.setModelData('searching', false);
                         console.log("HW --> failed to connect to device [" + title + "] [" + text + "]");
                         failure(new ErrorMessage(title, text));
                     });
                 }
             } else {
                 console.log("Cannot connect, because there's no selected device [" + mdlService.getModelData('selectedDevice') !== null + "] or not connecting [" + mdlService.getModelData('connecting') + "]");
-                failure("Cannot connect", "No device was selected and it is not in connecting mode.");
+                failure(new ErrorMessage("Cannot connect", "No device was selected and it is not in connecting mode."));
             }
         } catch (err) {
-            console.log("ERROR: " + err);
-            failure(err);
+            console.log("ERROR: %s", err);
+            mdlService.setModelData('searching', false);
+            mdlService.setModelData('connected', false);
+            mdlService.setModelData('connecting', false);
+            failure(new ErrorMessage("Failed to conect", "err"));
         }
     };
 
@@ -223,7 +244,9 @@ var DeviceService = function (configService, mdlService) {
      */
     function approximationLoop(devID, succeeded, failed) {
         try {
-            console.log("Entering approximation loop with devce id [" + devID + "] // stringified value: [" + JSON.stringify(devID) + "]");
+            if (TRACE) {
+                console.log("Entering approximation loop with devce id [" + devID + "] // stringified value: [" + JSON.stringify(devID) + "]");
+            }
             var aborted = false;
             scanBluetoothHardware(devID).done(function (providedRssi) {
                 try {
@@ -252,6 +275,7 @@ var DeviceService = function (configService, mdlService) {
                     failed("Error in Approximation Loop", err);
                 }
             }).fail(function (title, text) {
+                //todo: currently not called by the scanBluetoothHardware
                 console.log('HW --> failed to approximate and loop');
                 aborted = true;
                 disconnect(function () {
@@ -281,13 +305,17 @@ var DeviceService = function (configService, mdlService) {
         ble.startScan([], function (device) {
             try {
                 //todo: never times out the scanning / therefore if somebody goes out of the region while scanning, the app will hang |> switch to time based stop implementation
-                console.log("HW --> Device found: " + JSON.stringify(device));
-                console.log("HW --> requested device id [" + devID + "] / found ID: [" + device.id + "]");
+                if (DEBUG) {
+                    console.log("HW --> Device found: " + JSON.stringify(device));
+                    console.log("HW --> requested device id [" + devID + "] / found ID: [" + device.id + "]");
+                }
                 if (device.id === devID) {
-                    console.log("stopping scanning.");
+                    if (TRACE) {
+                        console.log("requested device ID found, stopping scanning.");
+                    }
                     ble.stopScan(function () {
                         console.log("Scanning stopped for device id [" + device.id + "] with rssi [" + device.rssi + "]");
-                        deferred.resolve(device.rssi);
+                        deferred.resolve(device.rssi ? device.rssi : -100);
                     }, function () {
                         //failing to stop scanning
                         deferred.reject("Could not stop scaning", "The device was scanned, but scanning could not be stopped.");
