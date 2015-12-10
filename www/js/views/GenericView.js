@@ -18,7 +18,7 @@ var GenericView = function (viewName, template, dataProvider) {
             if (TRACE) {
                 console.log(viewName + ' :: Model updated -> [event] ' + JSON.stringify(e) + '[model data] ' + JSON.stringify(data));
             }
-            if (DEBUG) {
+            if (TRACE) {
                 console.log(viewName + ' :: Model updated -> [event] ' + JSON.stringify(e));
             }
             view.setModel(data);
@@ -38,6 +38,18 @@ var GenericView = function (viewName, template, dataProvider) {
 
     this.getViewName = function () {
         return viewName;
+    };
+
+    this.displayIn = function (jquerySelector) {
+        $(jquerySelector).html(this.render().$el);
+        componentHandler.upgradeAllRegistered();
+    };
+    
+    this.display = function (model) {
+        if (model) {
+            this.setModel(model);
+        }
+        this.displayIn('.page-content');
     };
 
     this.render = function () {
