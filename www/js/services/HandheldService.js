@@ -1,11 +1,13 @@
-/* global StatusBar */
+/* global StatusBar, TRACE */
 /**
  * Represents the phone or tablet, configures the hardware specific aspects;
  * @returns {undefined}
  */
 (function () {
     document.addEventListener('deviceready', function () {
-        console.log(StatusBar);
+        if (TRACE) {
+            console.log('status bar status: %s', StatusBar);
+        }
         //StatusBar.backgroundColorByHexString('#ffffff');
         //StatusBar.styleDefault();
         //StatusBar.styleBlackTranslucent();
