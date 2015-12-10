@@ -30,7 +30,7 @@ var DEVICE_PRESENT = false,
             parcelReleaseUuid = boxService.characteristics['parcel-release'],
             parcelStoreLastWrite = {'notificationReceived': true, 'barcode': ''},
     parcelReleaseLastWrite = {'notificationReceived': true, 'barcode': ''};
-    
+
     modelService.setModelData('currentUseCase', '');
 
     toastr.options.newestOnTop = false;
@@ -114,7 +114,7 @@ var DEVICE_PRESENT = false,
                                 menuService.getMenuView('DeviceView').setModel(deviceModel);
                                 menuService.getMenuView('DeviceView').display();
                             } else if (modelService.getModelData('currentUseCase') === 'LogisticianDemoView' || modelService.getModelData('currentUseCase') === 'CustomerDemoView') {
-                                if ($.inArray(deviceUuid, deviceModel.devices) !== -1) {
+                                if (deviceService.isDeviceAvailable(deviceUuid)) {
                                     //device found
                                     window.location.href = '#connect/' + deviceUuid;
                                 } else {
@@ -163,15 +163,19 @@ var DEVICE_PRESENT = false,
         });
     }, function () {
         //break approximation and stop scanning
+        if (DEBUG) {
+            console.log('leaving connected state at use case: {%s}', modelService.getModelData('currentUseCase'));
+        }
         deviceService.breakApproximation();
         menuService.connectView.unregisterModelControl();
     });
 
     router.addRoute('connected', function () {
         //entry handler
+        menuService.deviceServicesView.registerModelControl(modelService.getControl());
         if (modelService.getModelData('currentUseCase') === 'DeviceView') {
+            menuService.deviceServicesView.resetModel();//workaround for being set the model by somebody else
             menuService.deviceServicesView.displayIn('body');
-            menuService.deviceServicesView.registerModelControl(modelService.getControl());
         } else if (modelService.getModelData('currentUseCase') === 'LogisticianDemoView') {
             menuService.logisticianDemoView.displayIn('body');
             menuService.logisticianDemoView.registerModelControl(modelService.getControl());
@@ -215,9 +219,10 @@ var DEVICE_PRESENT = false,
         });
     }, function () {
         //exit handler
-        if (TRACE) {
+        if (DEBUG) {
             console.log('leaving connected state at use case: {%s}', modelService.getModelData('currentUseCase'));
         }
+        menuService.deviceServicesView.resetModel();
         menuService.deviceServicesView.unregisterModelControl();
     });
 
@@ -260,6 +265,7 @@ var DEVICE_PRESENT = false,
     });
 
     router.addRoute('deliver', function () {
+        menuService.deviceServicesView.registerModelControl(modelService.getControl());
         deviceService.scanBarcode().done(function (result) {
             //todo: cancelling barcode is not working
             //try: http://plugins.telerik.com/cordova/plugin/barcodescanner
@@ -287,22 +293,27 @@ var DEVICE_PRESENT = false,
         }).fail(function (errMsg) {
             menuService.errView.setModel(errMsg);
             menuService.errView.display();
-            //menuService.deviceServicesView.unregisterModelControl();
         });
 
     }, function () {
         //leaving state
+        menuService.deviceServicesView.unregisterModelControl();
+        menuService.deviceServicesView.resetModel();
     });
 
     router.addRoute('pickup', function () {
+        menuService.deviceServicesView.registerModelControl(modelService.getControl());
         var timerActive = false;
-
         deviceService.startNotification(boxServiceUuid, parcelReleaseUuid, function (buffer) {
             if (!parcelReleaseLastWrite.notificationReceived) {
                 timerActive = false;
                 var data = new Uint8Array(buffer);
                 if (data[0] === 0x02) {
                     toastr.success('Barcode: ' + parcelReleaseLastWrite.barcode, 'Parcel released!');
+                    var removedNotification = dispatchService.removeNotification();
+                    if (removedNotification.barcode !== parcelReleaseLastWrite.barcode) {
+                        console.log("WARNING :: the removed notification barcode [" + removedNotification.barcode + "] is not the same like the last written one [" + parcelReleaseLastWrite.barcode + "].");
+                    }
                     dispatchService.sendMessage(new ParcelActionRequest(ParcelAction.RELEASED, parcelStoreLastWrite.barcode, data[0]));
                 } else if (data[0] === 0x03) {
                     toastr.warning('Parcel not found.');
@@ -322,7 +333,7 @@ var DEVICE_PRESENT = false,
             //todo: put some failure logic for notification start
             console.log('ERROR :: failed to start notifications: %s', JSON.stringify(param));
         });
-        var notification = dispatchService.takeNextNotification();
+        var notification = dispatchService.pollNotification();
         //todo: prepare it for other notifications
         if (notification) {
             parcelReleaseLastWrite.notificationReceived = false;
@@ -357,6 +368,9 @@ var DEVICE_PRESENT = false,
             }, getDisconnectWaitTime());
         }
 
+    }, function () {
+        menuService.deviceServicesView.unregisterModelControl();
+        menuService.deviceServicesView.resetModel();
     });
 
     router.addRoute('reload/:view', function (view) {

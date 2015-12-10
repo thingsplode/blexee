@@ -29,14 +29,18 @@ function DataModelService() {
         return model[property];
     };
 
+    this.updateControl = function () {
+        modelControl.update();
+    };
     /**
      * Returns a reference to the model control, which will update the view with the device model:
      * { bluetooth: boolean, searching: boolean, connecting: boolean, requestingServices: boolean, connected: boolean, selectedDevice: deviceID, devices: [], services:[]}
-     * @returns {Object|mdlControle.modelControl}
+     * @returns {Object|DataModelService.modelControl}
      */
     this.getControl = function () {
         return modelControl;
     };
+
     this.getModel = function () {
         return model;
     };

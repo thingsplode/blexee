@@ -12,6 +12,7 @@
     https://fueled.com/blog/whats-best-framework-building-mobile-apps/
 
     Todo:
+        cordova plugin add org.apache.cordova.dialogs
         http://plugins.telerik.com/cordova/plugin/barcodescanner
         https://www.npmjs.com/package/cordova-plugin-vibration
         https://www.npmjs.com/package/cordova-plugin-splashscreen
@@ -69,7 +70,7 @@
                 <span class="mdl-layout-title">blexee</span>
                 <nav class="mdl-navigation">
                     {{#each this}}
-                        <a class="mdl-navigation__link" href="#jump/{{view_name}}" onClick="toggle_drawer()">{{menu_name}}</a>
+                        <a class="mdl-navigation__link btn" href="#jump/{{view_name}}" onClick="toggle_drawer()">{{menu_name}}</a>
                     {{/each}}
                 </nav>
             </div>
@@ -93,7 +94,7 @@
                         {{this.description}}
                     </div>
                     <div class="mdl-card__actions mdl-card--border">
-                        <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" href="#jump/{{view_name}}">
+                        <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect btn" href="#jump/{{view_name}}">
                         BEGIN
                         </a>
                     </div>
@@ -112,9 +113,15 @@
                                 {{device_list}}
                             {{else}}
                                 <span class="right" style="color:red">No device was found, please rescan.</span>
-                                <a class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored ctrlbutton" href="#reload/DeviceView">
-                                <i class="material-icons">settings_remote</i>
-                                </a>
+                                <span class="ctrlbutton">
+                                    <a class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored btn" href="#reload/{{currentUseCase}}">
+                                        <i class="material-icons">settings_remote</i>
+                                    </a>
+                                    <br>
+                                    <a class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect btn" href="#">
+                                        <i class="material-icons">home</i>
+                                    </a>
+                                </span>
                             {{/each}}
                         {{/if}}
                     {{/unless}}
@@ -150,7 +157,6 @@
                 <circle class="pie_circle" r="60" cx="100" cy="100" /></circle>
             </svg>
         {{else}}
-            <div class="title">Searching for device</div>
             {{search}}
         {{/if}}
         </script>
@@ -160,7 +166,7 @@
             <div id="device_page" class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
                 <header class="mdl-layout__header">
                     <div class="mdl-layout__drawer-button">
-                        <a class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon" href="#disconnect">
+                        <a class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon btn" href="#disconnect">
                             <i class="material-icons">navigate_before</i>
                         </a>
                     </div>
@@ -170,7 +176,7 @@
                         <!-- Add spacer, to align navigation to the right -->
                         <div class="mdl-layout-spacer"></div>
                         {{#if this}}
-                        <a id='service-notification-badge' href="#events" class="mdl-badge material-icons" data-badge="{{notificationQueueSize}}">alarm</a>
+                        <a id='service-notification-badge' href="#events" class="mdl-badge material-icons btn" data-badge="{{notificationQueueSize}}">alarm</a>
                         {{/if}}
                     </div>
                 </header>
@@ -210,7 +216,7 @@
                                                     </td>
                                                     <td align="right">
                                                         <button id="btn-{{uuid}}"
-                                                            class="mdl-button mdl-js-button mdl-button--icon ble-characteristic-button"
+                                                            class="mdl-button mdl-js-button mdl-button--icon ble-characteristic-button btn"
                                                             data-characteristic='{"id":"{{../uuid}}-{{uuid}}","serviceUuid":"{{../uuid}}","charUuid":"{{uuid}}","flags":"{{flags}}","descriptor":"{{descriptor}}"}'
                                                         >
                                                             <i class="material-icons">crop_free</i>
@@ -277,7 +283,7 @@
             <div id="device_page" class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
                 <header class="mdl-layout__header">
                     <div class="mdl-layout__drawer-button">
-                        <a class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon" href="#disconnect">
+                        <a class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon btn" href="#disconnect">
                             <i class="material-icons">navigate_before</i>
                         </a>
                     </div>
@@ -287,7 +293,7 @@
                         <!-- Add spacer, to align navigation to the right -->
                         <div class="mdl-layout-spacer"></div>
                         {{#if this}}
-                        <a id='service-notification-badge' href="#events" class="mdl-badge material-icons" data-badge="{{notificationQueueSize}}">alarm</a>
+                        <a id='service-notification-badge' href="#events" class="mdl-badge material-icons btn" data-badge="{{notificationQueueSize}}">alarm</a>
                         {{/if}}
                     </div>
                 </header>
@@ -307,7 +313,7 @@
                                         <h2 class="mdl-card__title-text caption">Actions</h2>
                                     </div>
                                     <div class="mdl-card__supporting-text">
-                                        <a id="pickup-btn" href="#pickup" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent right">
+                                        <a id="pickup-btn" href="#pickup" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent btn right">
                                             Pickup
                                         </a>
                                     </div>
@@ -328,7 +334,7 @@
             <div id="device_page" class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
                 <header class="mdl-layout__header">
                     <div class="mdl-layout__drawer-button">
-                        <a class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon" href="#disconnect">
+                        <a class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon btn" href="#disconnect">
                             <i class="material-icons">navigate_before</i>
                         </a>
                     </div>
@@ -338,7 +344,7 @@
                         <!-- Add spacer, to align navigation to the right -->
                         <div class="mdl-layout-spacer"></div>
                         {{#if this}}
-                        <a id='service-notification-badge' href="#events" class="mdl-badge material-icons" data-badge="{{notificationQueueSize}}">alarm</a>
+                        <a id='service-notification-badge' href="#events" class="mdl-badge material-icons btn" data-badge="{{notificationQueueSize}}">alarm</a>
                         {{/if}}
                     </div>
                 </header>
@@ -358,7 +364,7 @@
                                         <h2 class="mdl-card__title-text caption">Actions</h2>
                                     </div>
                                     <div class="mdl-card__supporting-text">
-                                        <a id="deliver-btn" href="#deliver" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent right">
+                                        <a id="deliver-btn" href="#deliver" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent right btn">
                                             Deliver
                                         </a>
                                     </div>
@@ -386,7 +392,7 @@
             {{/unless}}
             <div class="title">{{title}}</div>
             <span class="right" style="color:red">{{message}}</span>
-            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-button--raised ctrlbutton" href="#">
+            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-button--raised btn ctrlbutton" href="#">
             <i class="material-icons">cached</i>
             Return
             </a>

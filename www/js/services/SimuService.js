@@ -1,4 +1,4 @@
-/* global DEBUG */
+/* global DEBUG, TRACE */
 
 var SimuService = function (configService) {
 
@@ -44,7 +44,9 @@ var SimuService = function (configService) {
     this.approximationSimuLoop = function myself(i, deviceModel, modelControl, finished) {
         setTimeout(function () {
             var x = 100 - (i * -1);
-            console.log("SIMU --> proximity value: " + x + " [at rssi: ]" + i);
+            if (TRACE) {
+                console.log("SIMU --> proximity value: " + x + " [at rssi: ]" + i);
+            }
             deviceModel.selectedDevice.proximity = x;
             modelControl.update(i);
             i++;
@@ -59,7 +61,7 @@ var SimuService = function (configService) {
 
     this.simulateNotifications = function myself(onDataCallback, responseCode) {
         setTimeout(function () {
-            console.log("SIMU --> :  simulating notification callback with "+ responseCode +" 0x19");
+            console.log("SIMU --> :  simulating notification callback with " + responseCode + " 0x19");
             ab = new Uint8Array(2);
             ab[0] = responseCode;
             ab[1] = 0x19;

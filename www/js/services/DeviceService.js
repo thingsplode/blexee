@@ -1,5 +1,10 @@
 /* global SIMULATION, simuData, ble, cordova, TRACE, DEBUG, scanBluetoothHardware */
-
+/**
+ * 
+ * @param {ConfigurationService} configService
+ * @param {DataModelService} mdlService
+ * @returns {DeviceService}
+ */
 var DeviceService = function (configService, mdlService) {
     var self = this, cancelApproximation = false, mdlControl = mdlService.getControl();
     /**
@@ -142,6 +147,18 @@ var DeviceService = function (configService, mdlService) {
         return deferred.promise();
     };
 
+    this.isDeviceAvailable = function (deviceUuid) {
+        if (!deviceUuid || !mdlService.getModel().devices) {
+            return false;
+        } else if (mdlService.getModel().devices.length === 0) {
+            return false;
+        } else {
+            return mdlService.getModel().devices.some(function (device, index, array) {
+                return device && device.id && device.id === deviceUuid;
+            });
+        }
+    };
+
     /**
      * Serarches for a devices and once reached the preconfigured proximity limit it connects to it.
      * @param {type} deviceID the device id to connect to
@@ -251,8 +268,13 @@ var DeviceService = function (configService, mdlService) {
             scanBluetoothHardware(devID).done(function (providedRssi) {
                 try {
                     var selectedDevice = mdlService.getModelData('selectedDevice');
-                    console.log("proximity [" + selectedDevice.proximity + "] at rssi [" + providedRssi + "]");
+                    if (providedRssi < -100) {
+                        providedRssi = -100;
+                    }
                     selectedDevice.proximity = getPercentFromRssi(providedRssi);
+                    if (DEBUG) {
+                        console.log("proximity [" + selectedDevice.proximity + "] at rssi [" + providedRssi + "]");
+                    }
                     mdlService.setModelData('selectedDevice', selectedDevice);
                     mdlControl.update(providedRssi);
                     if (providedRssi < configService.getValue('/blexee/connectLimit') && !aborted) {
@@ -304,7 +326,7 @@ var DeviceService = function (configService, mdlService) {
         var deferred = $.Deferred();
         ble.startScan([], function (device) {
             try {
-                //todo: never times out the scanning / therefore if somebody goes out of the region while scanning, the app will hang |> switch to time based stop implementation
+                //todo: never times out the scanning / therefore if somebody goes out of the range while scanning, the app will hang |> switch to time based stop implementation
                 if (DEBUG) {
                     console.log("HW --> Device found: " + JSON.stringify(device));
                     console.log("HW --> requested device id [" + devID + "] / found ID: [" + device.id + "]");

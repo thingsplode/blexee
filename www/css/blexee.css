@@ -110,6 +110,10 @@ p.small {
     margin-left: 1em;
     z-index: 999;
 }
+
+.ctrlbutton > a {
+    margin-top: 1em;
+}
 /*
 The device card styles, which are used when devices are listed
 */

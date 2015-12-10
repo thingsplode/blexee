@@ -28,6 +28,11 @@
             };
         }
         //alert('device ready');
+        $(document).on('click', '.btn', function () {
+            if (navigator) {
+                navigator.notification.beep(1);
+            }
+        });
         DEVICE_PRESENT = true;
         console.log('DEVICE ready and configured...');
     }, false);
