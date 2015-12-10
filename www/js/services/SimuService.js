@@ -6,7 +6,7 @@ var SimuService = function (configService) {
         'bluetooth_enabled': true,
         'devices_available': true,
         'can_connect': true,
-        'services_available': true
+        'services_available': false
     }, doSimulateNotifications = false;
 
     this.setSimulateNotifications = function (bool) {
