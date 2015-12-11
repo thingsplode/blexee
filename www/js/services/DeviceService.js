@@ -180,13 +180,24 @@ var DeviceService = function (configService, mdlService) {
     };
 
     this.isDeviceAvailable = function (deviceUuid) {
+        if (TRACE) {
+            console.log('isDeviceAvailable :: deviceUUID {%s}', deviceUuid);
+        }
         if (!deviceUuid || !mdlService.getModel().devices) {
             return false;
         } else if (mdlService.getModel().devices.length === 0) {
             return false;
         } else {
             return mdlService.getModel().devices.some(function (device, index, array) {
-                return device && device.id && device.id === deviceUuid;
+                var found = device && device.id && device.id === deviceUuid;
+                if (TRACE) {
+                    if (!found) {
+                        console.log('isDeviceAvailable :: device.id {%s} - FALSE',device.id);
+                    } else {
+                        console.log('isDeviceAvailable :: returning found TRUE');
+                    }
+                }
+                return found;
             });
         }
     };

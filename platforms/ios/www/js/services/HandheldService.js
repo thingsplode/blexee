@@ -4,9 +4,6 @@
  * @returns {undefined}
  */
 (function () {
-
-
-
     document.addEventListener('deviceready', function () {
         if (TRACE) {
             console.log('status bar status: %s', StatusBar);

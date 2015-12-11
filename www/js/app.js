@@ -118,9 +118,15 @@ var DEVICE_PRESENT = false,
                             } else if (modelService.getModelData('currentUseCase') === 'LogisticianDemoView' || modelService.getModelData('currentUseCase') === 'CustomerDemoView') {
                                 if (deviceService.isDeviceAvailable(deviceUuid)) {
                                     //device found
+                                    if (TRACE){
+                                        console.log('ble device identified by uuid %s is available;', deviceUuid);
+                                    }
                                     window.location.href = '#connect/' + deviceUuid;
                                 } else {
                                     //device not found
+                                    if (TRACE){
+                                        console.log('ble device identified by uuid %s is not available;', deviceUuid);
+                                    }
                                     menuService.getMenuView('DeviceView').setModel(deviceModel);
                                     menuService.getMenuView('DeviceView').display();
                                 }
