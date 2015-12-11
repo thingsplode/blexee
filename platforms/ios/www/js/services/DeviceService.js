@@ -43,6 +43,8 @@ var DeviceService = function (configService, mdlService) {
         mdlService.setModelData('services', []);
 
         mdlService.setModelData('proximity', 0);
+
+        mdlService.setModelData('flashing', false);
     };
 
     this.reset();
@@ -75,28 +77,32 @@ var DeviceService = function (configService, mdlService) {
             deferred.resolve({'text': 'abcdefgh', 'format': 'CODE_128', 'cancelled': 'false'});
         } else {
             //real mode
-            window.plugins.flashlight.available(
-                    function (isAvailable) {
-                        if (isAvailable) {
-                            window.plugins.flashlight.switchOn(null, function (errMsg) {
-                                console.log("ERROR switching ON the flashlight %s", errMsg);
-                            });
-                        }
+            if (configService.getValue('/blexee/useFlashForBarcode')) {
+                window.plugins.flashlight.available(function (isAvailable) {
+                    if (isAvailable) {
+                        window.plugins.flashlight.switchOn(function () {
+                            mdlService.setModelData('flashing', true);
+                        }, function (errMsg) {
+                            console.log("ERROR switching ON the flashlight %s", errMsg);
+                        });
                     }
-            );
+                });
+            }
             cordova.plugins.barcodeScanner.scan(function (result) {
                 console.log('deviceService :: barcode scanned: [' + result.text + "] of type [" + result.format + "] / status: [" + result.cancelled + "]");
-                window.plugins.flashlight.available(
-                        function (isAvailable) {
-                            if (isAvailable) {
-                                window.plugins.flashlight.switchOff(null, function (errMsg) {
-                                    console.log("ERROR switching OFF the flashlight %s", errMsg);
-                                });
-                            }
+                if (mdlService.getModelData('flashing')) {
+                    window.plugins.flashlight.available(function (isAvailable) {
+                        if (isAvailable) {
+                            window.plugins.flashlight.switchOff(null, function (errMsg) {
+                                console.log("ERROR switching OFF the flashlight %s", errMsg);
+                            });
                         }
-                );
-                if (navigator && navigator.notification) {
-                    navigator.notification.vibrate(500);
+                    });
+                }
+                if (!result.cancelled) {
+                    if (navigator && navigator.notification) {
+                        navigator.notification.vibrate(500);
+                    }
                 }
                 deferred.resolve(result);
             }, function (error) {

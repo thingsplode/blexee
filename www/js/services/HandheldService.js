@@ -53,8 +53,23 @@
 
         if (window.cordova && window.cordova.plugins.Keyboard) {
             cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
-            cordova.plugins.Keyboard.disableScroll(true);
         }
+
+        document.addEventListener("volumeupbutton", function () {
+            if (DEBUG){
+                console.log('volume up button even received.');
+            }
+            window.plugins.flashlight.available(
+                    function (isAvailable) {
+                        if (isAvailable) {
+                            window.plugins.flashlight.toggle(null, function (errMsg) {
+                                console.log("ERROR TOOGLE-ing the flashlight %s", errMsg);
+                            });
+                        }
+                    }
+            );
+        }, false);
+
         DEVICE_PRESENT = true;
         console.log('DEVICE ready and configured...');
     }, false);

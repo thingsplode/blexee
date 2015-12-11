@@ -24,6 +24,12 @@ var cfgSchema = [
                 "value": true
             },
             {
+                "id": "useFlashForBarcode",
+                "caption": "Flaslight for Barcode",
+                "type": "Boolean",
+                "value": true
+            },
+            {
                 "id": "connectLimit",
                 "caption": "Connect Limit",
                 "type": "Numeric",
