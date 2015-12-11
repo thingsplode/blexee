@@ -86,7 +86,7 @@ var DEVICE_PRESENT = false,
     router.addRoute('jump/:view', function (view) {
         console.log('Routing View :: ' + view);
         modelService.setModelData('currentUseCase', view);
-        if (view === 'HomeView'){
+        if (view === 'HomeView') {
             window.location.href = '#';
         } else if (view === 'DeviceView' || view === 'LogisticianDemoView' || view === 'CustomerDemoView') {
             try {
@@ -207,18 +207,24 @@ var DEVICE_PRESENT = false,
         } else if (modelService.getModelData('currentUseCase') === 'CustomerDemoView') {
             //$('body').html(menuService.customerDemoView.render().$el);
             //componentHandler.upgradeAllRegistered();
-            menuService.customerDemoView.displayIn('body');
-            menuService.customerDemoView.registerModelControl(modelService.getControl());
+
+            //menuService.customerDemoView.displayIn('body');
+            //menuService.customerDemoView.registerModelControl(modelService.getControl());
+            window.location.href = '#pickup';
         }
-        deviceService.requestServices().done(function () {
-            //menuService.deviceServicesView.setModel(deviceModel);
-            //$('.page-content').html(menuService.deviceServicesView.render().$el);
-            //slider.slidePage(menuService.deviceServicesView.render().$el);
-        }).fail(function (errMsg) {
-            menuService.errView.setModel(errMsg);
-            menuService.errView.display();
-            menuService.deviceServicesView.unregisterModelControl();
-        });
+
+        if (modelService.getModelData('currentUseCase') !== 'CustomerDemoView') {
+            //todo: this block is only needed above at the end of DeviceView, only some screen rendering trick requires it for the Logistician as well
+            deviceService.requestServices().done(function () {
+                //menuService.deviceServicesView.setModel(deviceModel);
+                //$('.page-content').html(menuService.deviceServicesView.render().$el);
+                //slider.slidePage(menuService.deviceServicesView.render().$el);
+            }).fail(function (errMsg) {
+                menuService.errView.setModel(errMsg);
+                menuService.errView.display();
+                menuService.deviceServicesView.unregisterModelControl();
+            });
+        }
     }, function () {
         //exit handler
         if (DEBUG) {
