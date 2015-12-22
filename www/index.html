@@ -1,47 +1,5 @@
 <!DOCTYPE html>
 <!--
-    Google Icons
-    https://www.google.com/design/icons/
-
-    Nice animation: https://css-tricks.com/add-page-transitions-css-smoothstate-js/
-
-    Cordova: writing to a file: http://www.raymondcamden.com/2014/11/05/Cordova-Example-Writing-to-a-file
-    Cordova writing to file: https://dzone.com/articles/cordova-example-writing-file
-
-    What's the best platform to install apps
-    https://fueled.com/blog/whats-best-framework-building-mobile-apps/
-
-    Todo:
-        cordova plugin add cordova-plugin-vibration
-        cordova plugin add cordova-plugin-media
-        cordova plugin add org.apache.cordova.dialogs
-        git add plugins/com.phonegap.plugins.barcodescanner/
-        cordova plugin add cordova-plugin-ios-longpress-fix
-        cordova plugin add https://github.com/Telerik-Verified-Plugins/Flashlight
-
-        http://materializecss.com/getting-started.html
-        http://fezvrasta.github.io/bootstrap-material-design/bootstrap-elements.html
-        http://fezvrasta.github.io/bootstrap-material-design/#radio-button
-        https://elements.polymer-project.org/browse?package=paper-elements
-        ratchet
-
-        http://plugins.telerik.com/cordova/plugin/barcodescanner
-        https://www.npmjs.com/package/cordova-plugin-vibration
-        https://www.npmjs.com/package/cordova-plugin-splashscreen
-        https://www.npmjs.com/package/cordova-plugin-device
-        https://www.npmjs.com/package/cordova-plugin-barcodescanner
-        https://www.npmjs.com/package/cordova-plugin-actionsheet
-        https://www.npmjs.com/package/cordova-plugin-ios-longpress-fix
-        https://www.npmjs.com/package/cordova-plugin-ble-central
-        https://www.npmjs.com/package/cordova-plugin-app-preferences
-        https://www.npmjs.com/package/cordova-plugin-native-transitions
-        https://www.npmjs.com/package/cordova-plugin-websocket
-        https://www.npmjs.com/package/cordova-plugin-barcode-scanner2
-        https://www.npmjs.com/package/cordova-plugin-auth-dialog
-        https://www.npmjs.com/package/cordovapush
-
-        https://www.npmjs.com/package/cordova-plugin-chrome-apps-sockets-udp
-        https://www.npmjs.com/package/cordova-plugin-chrome-apps-socket
 
 -->
 <html>
@@ -61,7 +19,7 @@
         <link rel="stylesheet" type="text/css" href="css/toastr.min.css"/>
         <link rel="stylesheet" type="text/css" href="css/blexee.css">
 <!--        <link rel="stylesheet" type="text/css" href="css/pageslider.css">-->
-        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <link rel="stylesheet" href="css/material_icons.css" type="text/css">
         <link rel="stylesheet" href="css/fonts.css" type="text/css">
         <script src="css/mdl/material.js"></script>
         <title>blexee control</title>
@@ -81,9 +39,9 @@
             <div class="mdl-layout__drawer">
                 <span class="mdl-layout-title">blexee</span>
                 <nav class="mdl-navigation">
-                    {{#each this}}
-                        <a class="mdl-navigation__link btn" href="#jump/{{view_name}}" onClick="toggle_drawer()">        
-                            <i class="material-icons">{{menu_icon}}</i> {{menu_name}}
+                    {{#each systemMenu}}
+                        <a class="mdl-navigation__link btn" href="#jump/{{id}}" onClick="toggle_drawer()">        
+                            <i class="material-icons">{{menu_icon}}</i> {{caption}}
                         </a>
                     {{/each}}
                 </nav>
@@ -98,6 +56,20 @@
         </script>
 
         <script id="home-menu-tpl" type="text/template">
+            {{#if this}}
+            {{#each_when_not this "menu_name" "Home"}}
+                <div class="device-card-square mdl-card mdl-shadow--2dp right">
+                    <a class="mdl-card__title mdl-card--expand mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--colored btn" href="#jump/{{id}}">
+                        <h2 class="mdl-card__title-text">{{this.caption}}</h2>
+                    </a>
+                    <div class="mdl-card__supporting-text">
+                        {{this.description}}
+                    </div>                    
+                </div>
+            {{/each_when_not}}
+            {{/if}}
+        </script>
+        <script id="app-list-tpl" type="text/template">
             {{#if this}}
             {{#each_when_not this "menu_name" "Home"}}
                 <div class="device-card-square mdl-card mdl-shadow--2dp right">
@@ -404,6 +376,10 @@
         <script id="not-implemented-tpl" type="text/template">
             <div class="title">Empty</div>
             <span class="right" style="color:red">Not implemented yet</span>
+            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect mdl-button--raised btn ctrlbutton" href="#">
+                <i class="material-icons">cached</i>
+                Return
+            </a>
         </script>
 
         <script id="err-tpl" type="text/template">
@@ -434,6 +410,8 @@
         <script type="text/javascript" src="js/libs/toastr.min.js"></script>
         <script type="text/javascript" src="js/core/Domains.js"></script>
         <script type="text/javascript" src="js/core/ConfigSchema.js"></script>
+        <script type="text/javascript" src="js/core/MenuSchema.js"></script>
+        <script type="text/javascript" src="js/views/ViewRepo.js"></script>
         <script type="text/javascript" src="js/services/MenuService.js"></script>
         <script type="text/javascript" src="js/services/DeviceService.js"></script>
         <script type="text/javascript" src="js/services/DataModelService.js"></script>

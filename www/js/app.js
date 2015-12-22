@@ -1,4 +1,4 @@
-/* global HomeView, Handlebars, DeviceView, router, cfgSchema, ParcelAction, toastr */
+/* global HomeView, Handlebars, DeviceView, router, cfgSchema, ParcelAction, toastr, menuSchema */
 "use strict";
 
 //todo: entering into approximation loop without bluetooth with no error
@@ -24,6 +24,7 @@ var DEVICE_PRESENT = false,
             deviceService = new DeviceService(cfgService, modelService),
             menuService = new MenuService(deviceService, cfgService),
             dispatchService = new DispatcherService(cfgService, modelService),
+            views = new ViewRepo(),
             boxService = cfgService.getValue('/services/box-service'),
             boxServiceUuid = boxService.uuid,
             parcelStoreUuid = boxService.characteristics['parcel-store'],
@@ -60,15 +61,14 @@ var DEVICE_PRESENT = false,
     configureConsoleLog(DEBUG);
 
 
-    menuService.initialize().done(function () {
-        //$('body').html(menuService.appContainerView.render().$el);
-        //slider.slidePage(menuService.appContainerView.render().$el);
-        //$('.page-content').html(menuService.optionsView.render().$el);
-    });
+    menuService.initialize(menuSchema);
+
     router.addRoute('', function () {
-        $('body').html(menuService.appContainerView.render().$el);
+        views.appContainerView.displayIn('body');
+        
         //$('.page-content').html(menuService.optionsView.render().$el);
-        menuService.homeView.display();
+        menuService.getSystemMenuView('HomeView').setModel(menuSchema.systemMenu);
+        menuService.getSystemMenuView('HomeView').display();
         //componentHandler.upgradeAllRegistered();
     });
 //    router.addRoute('start', function () {
@@ -98,8 +98,8 @@ var DEVICE_PRESENT = false,
                 deviceService.bluetoothEnabled().done(function (bEnabled) {
                     if (!bEnabled) {
                         //if bluetooth is not enabled
-                        menuService.errView.setModel(new ErrorMessage('Please enable your bluetooth device', 'Use the device settings to enable the bluetooth connection a retry the app functions.'));
-                        menuService.errView.display();
+                        views.errView.setModel(new ErrorMessage('Please enable your bluetooth device', 'Use the device settings to enable the bluetooth connection a retry the app functions.'));
+                        views.errView.display();
                         //componentHandler.upgradeAllRegistered();
                         //slider.slidePage(menuService.errView.render().$el);
                     } else if (bEnabled && deviceModel.connected) {
@@ -113,44 +113,44 @@ var DEVICE_PRESENT = false,
                         deviceService.scanForDevices().done(function (deviceModel) {
                             var deviceUuid = cfgService.getValue('/device/connectable-deviceUuid');
                             if (modelService.getModelData('currentUseCase') === 'DeviceView') {
-                                menuService.getMenuView('DeviceView').setModel(deviceModel);
-                                menuService.getMenuView('DeviceView').display();
+                                menuService.getSystemMenuView('DeviceView').setModel(deviceModel);
+                                menuService.getSystemMenuView('DeviceView').display();
                             } else if (modelService.getModelData('currentUseCase') === 'LogisticianDemoView' || modelService.getModelData('currentUseCase') === 'CustomerDemoView') {
                                 if (deviceService.isDeviceAvailable(deviceUuid)) {
                                     //device found
-                                    if (TRACE){
+                                    if (TRACE) {
                                         console.log('ble device identified by uuid %s is available;', deviceUuid);
                                     }
                                     window.location.href = '#connect/' + deviceUuid;
                                 } else {
                                     //device not found
-                                    if (TRACE){
+                                    if (TRACE) {
                                         console.log('ble device identified by uuid %s is not available;', deviceUuid);
                                     }
-                                    menuService.getMenuView('DeviceView').setModel(deviceModel);
-                                    menuService.getMenuView('DeviceView').display();
+                                    menuService.getSystemMenuView('DeviceView').setModel(deviceModel);
+                                    menuService.getSystemMenuView('DeviceView').display();
                                 }
                             }
                         });
-                        menuService.getMenuView('DeviceView').setModel(deviceModel);
-                        menuService.getMenuView('DeviceView').display();
-                        //slider.slidePage(menuService.getMenuView(view).render().$el);
+                        menuService.getSystemMenuView('DeviceView').setModel(deviceModel);
+                        menuService.getSystemMenuView('DeviceView').display();
+                        //slider.slidePage(menuService.getSystemMenuView(view).render().$el);
                     }
                     ;
                 });
             } catch (error) {
                 console.log('ERROR in jump/:view : %s' + error);
-                menuService.errView.setModel(new ErrorMessage('Program error', error.toString()));
+                views.errView.setModel(new ErrorMessage('Program error', error.toString()));
                 //$('body').html(menuService.errView.render().$el);
-                menuService.errView.displayIn('body');
+                views.errView.displayIn('body');
             }
         } else if (view === 'SettingsView') {
-            menuService.getMenuView(view).setModel(cfgService.getConfigSchemas());
-            //$('.page-content').html(menuService.getMenuView(view).render().$el);
-            menuService.getMenuView(view).display();
+            menuService.getSystemMenuView(view).setModel(cfgService.getConfigSchemas());
+            //$('.page-content').html(menuService.getSystemMenuView(view).render().$el);
+            menuService.getSystemMenuView(view).display();
             //componentHandler.upgradeAllRegistered();
         } else {
-            menuService.getMenuView(view).display();
+            menuService.getSystemMenuView(view).display();
         }
     });
 
@@ -158,16 +158,16 @@ var DEVICE_PRESENT = false,
         if (TRACE) {
             console.log('Trying to connect-> ' + deviceId);
         }
-        menuService.connectView.display();
+        views.connectView.display();
         //slider.slidePage(menuService.connectView.render().$el);
-        menuService.connectView.registerModelControl(modelService.getControl());
+        views.connectView.registerModelControl(modelService.getControl());
         deviceService.approximateAndConnectDevice(deviceId, function () {
             console.log("Successfully connected to device [%s]", deviceId);
-            menuService.connectView.unregisterModelControl();
+            views.connectView.unregisterModelControl();
             window.location.href = '#connected';
         }, function (error) {
-            menuService.errView.setModel(error);
-            menuService.errView.display();
+            views.errView.setModel(error);
+            views.errView.display();
         });
     }, function () {
         //break approximation and stop scanning
@@ -175,18 +175,18 @@ var DEVICE_PRESENT = false,
             console.log('leaving connected state at use case: {%s}', modelService.getModelData('currentUseCase'));
         }
         deviceService.breakApproximation();
-        menuService.connectView.unregisterModelControl();
+        views.connectView.unregisterModelControl();
     });
 
     router.addRoute('connected', function () {
         //entry handler
-        menuService.deviceServicesView.registerModelControl(modelService.getControl());
+        views.deviceServicesView.registerModelControl(modelService.getControl());
         if (modelService.getModelData('currentUseCase') === 'DeviceView') {
-            menuService.deviceServicesView.resetModel();//workaround for being set the model by somebody else
-            menuService.deviceServicesView.displayIn('body');
+            views.deviceServicesView.resetModel();//workaround for being set the model by somebody else
+            views.deviceServicesView.displayIn('body');
         } else if (modelService.getModelData('currentUseCase') === 'LogisticianDemoView') {
-            menuService.logisticianDemoView.displayIn('body');
-            menuService.logisticianDemoView.registerModelControl(modelService.getControl());
+            menuService.getSystemMenuView('LogisticianDemoView').displayIn('body');
+            menuService.getSystemMenuView('LogisticianDemoView').registerModelControl(modelService.getControl());
             deviceService.startNotification(boxServiceUuid, parcelStoreUuid, function (buffer) {
                 var data = new Uint8Array(buffer);
                 if (DEBUG) {
@@ -226,9 +226,9 @@ var DEVICE_PRESENT = false,
                 //$('.page-content').html(menuService.deviceServicesView.render().$el);
                 //slider.slidePage(menuService.deviceServicesView.render().$el);
             }).fail(function (errMsg) {
-                menuService.errView.setModel(errMsg);
-                menuService.errView.display();
-                menuService.deviceServicesView.unregisterModelControl();
+                views.errView.setModel(errMsg);
+                views.errView.display();
+                views.deviceServicesView.unregisterModelControl();
             });
         }
     }, function () {
@@ -236,8 +236,8 @@ var DEVICE_PRESENT = false,
         if (DEBUG) {
             console.log('leaving connected state at use case: {%s}', modelService.getModelData('currentUseCase'));
         }
-        menuService.deviceServicesView.resetModel();
-        menuService.deviceServicesView.unregisterModelControl();
+        views.deviceServicesView.resetModel();
+        views.deviceServicesView.unregisterModelControl();
     });
 
     router.addRoute('disconnect', function () {
@@ -270,8 +270,8 @@ var DEVICE_PRESENT = false,
             console.log('diconnected form BLE device.');
         }).fail(function () {
             //failure
-            menuService.errView.setModel(new ErrorMessage('Could not disconnect', 'This is a yet unhandled failure.'));
-            menuService.errView.display();
+            views.errView.setModel(new ErrorMessage('Could not disconnect', 'This is a yet unhandled failure.'));
+            views.errView.display();
 
         });
         window.location.href = '#';
@@ -280,7 +280,7 @@ var DEVICE_PRESENT = false,
     });
 
     router.addRoute('deliver', function () {
-        menuService.deviceServicesView.registerModelControl(modelService.getControl());
+        views.deviceServicesView.registerModelControl(modelService.getControl());
         deviceService.scanBarcode().done(function (result) {
             //todo: cancelling barcode is not working
             //try: http://plugins.telerik.com/cordova/plugin/barcodescanner
@@ -306,18 +306,18 @@ var DEVICE_PRESENT = false,
             }
             window.location.href = '#connected';
         }).fail(function (errMsg) {
-            menuService.errView.setModel(errMsg);
-            menuService.errView.display();
+            views.errView.setModel(errMsg);
+            views.errView.display();
         });
 
     }, function () {
         //leaving state
-        menuService.deviceServicesView.unregisterModelControl();
-        menuService.deviceServicesView.resetModel();
+        views.deviceServicesView.unregisterModelControl();
+        views.deviceServicesView.resetModel();
     });
 
     router.addRoute('pickup', function () {
-        menuService.deviceServicesView.registerModelControl(modelService.getControl());
+        views.deviceServicesView.registerModelControl(modelService.getControl());
         var timerActive = false;
         deviceService.startNotification(boxServiceUuid, parcelReleaseUuid, function (buffer) {
             if (!parcelReleaseLastWrite.notificationReceived) {
@@ -384,8 +384,8 @@ var DEVICE_PRESENT = false,
         }
 
     }, function () {
-        menuService.deviceServicesView.unregisterModelControl();
-        menuService.deviceServicesView.resetModel();
+        views.deviceServicesView.unregisterModelControl();
+        views.deviceServicesView.resetModel();
     });
 
     router.addRoute('reload/:view', function (view) {
@@ -418,8 +418,8 @@ var DEVICE_PRESENT = false,
             deviceService.writeData(bleService, bleCharacteristic, deviceService.parseHexString(values['write-data']), function () {
                 target.remove();
             }, function (err) {
-                menuService.errView.setModel(err);
-                menuService.errView.display();
+                views.errView.setModel(err);
+                views.errView.display();
             });
         });
     });
@@ -493,8 +493,8 @@ var DEVICE_PRESENT = false,
     }
 
     window.onerror = function (message, url, lineNumber) {
-        menuService.errView.setModel(new ErrorMessage('Generic Error', message));
-        menuService.errView.display();
+        views.errView.setModel(new ErrorMessage('Generic Error', message));
+        views.errView.display();
         console.log("Error: {" + message + "} in {" + url + "} at line [" + lineNumber + "]");
     };
 

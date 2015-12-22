@@ -1,12 +1,21 @@
 /* global TRACE, DEBUG */
-
-var GenericView = function (viewName, reusableModel, template, dataProvider) {
+/**
+ * 
+ * @param {type} viewName the unique name of the view as text
+ * @param {Boolean} reusableModel if reusable, the model added once to the view will not be cleaned up upon rendering
+ * @param {type} template the id of the handlebar template used for generating the content
+ * @param {type} modelProviderFunction the function which generates the model
+ * @returns {GenericView}
+ */
+var GenericView = function (viewName, reusableModel, template, modelProviderFunction) {
 
     var mdl, modelCtrl, configService;
 
     this.initialize = function () {
         this.$el = $('<div id="generic_view"/>');
-        mdl = dataProvider(this);
+        if (modelProviderFunction) {
+            mdl = modelProviderFunction(this);
+        }
         this.render(mdl);
         console.log(viewName + ' :: initialized');
     };
@@ -44,11 +53,16 @@ var GenericView = function (viewName, reusableModel, template, dataProvider) {
         mdl = '';
     };
 
+    /**
+     * Renders the view content in a specific dom element
+     * @param {type} jquerySelector a dom expression (eg. 'body' or '.myClass' or '#myId'
+     * @returns {undefined}
+     */
     this.displayIn = function (jquerySelector) {
         $(jquerySelector).html(this.render().$el);
         componentHandler.upgradeAllRegistered();
         if (!reusableModel) {
-            mdl = '';
+            this.resetModel();
         }
     };
 
@@ -67,7 +81,7 @@ var GenericView = function (viewName, reusableModel, template, dataProvider) {
             this.$el.html(template(mdl));
         } catch (err) {
             console.log("ERROR: rendering error --> " + JSON.stringify(err));
-                    //+ '\n' + err ? JSON.stringify(err.stack) : "no stack");
+            //+ '\n' + err ? JSON.stringify(err.stack) : "no stack");
             this.$el.html(err);
         }
         return this;

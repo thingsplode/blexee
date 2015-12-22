@@ -145,12 +145,14 @@ var DeviceService = function (configService, mdlService) {
                     mdlService.setModelData('services', []);
                     ble.startScan([], function (device) {
                         //found a device
-                        console.log('HW --> device found: ' + JSON.stringify(device));
+                        if (DEBUG) {
+                            console.log('HW --> device found: ' + JSON.stringify(device));
+                        }
                         mdlService.pushIntoModelArray('devices', device);
                         mdlControl.update();
                     }, function () {
                         //failure while searching for a device
-                        console.log('HW --> failure while scanning for device.');
+                        console.log('ERROR :: HW --> failure while scanning for device.');
                     });
                     setTimeout(ble.stopScan,
                             //todo: this will hang until the timeout is not passed, better would be an advertisement based hangup of the scanning
@@ -192,7 +194,7 @@ var DeviceService = function (configService, mdlService) {
                 var found = device && device.id && device.id === deviceUuid;
                 if (TRACE) {
                     if (!found) {
-                        console.log('isDeviceAvailable :: device.id {%s} - FALSE',device.id);
+                        console.log('isDeviceAvailable :: device.id {%s} - FALSE', device.id);
                     } else {
                         console.log('isDeviceAvailable :: returning found TRUE');
                     }
