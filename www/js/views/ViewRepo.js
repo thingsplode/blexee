@@ -1,10 +1,15 @@
 /* global menuSchema, Handlebars */
 
-var ViewRepo = function () {
+/**
+ * 
+ * @param {MenuService} menuService
+ * @returns {ViewRepo}
+ */
+var ViewRepo = function (menuService) {
     this.appContainerView = new GenericView('ContainerView', true, Handlebars.compile($("#app-container-tpl").html()), function (view) {
-        return menuSchema;
+        return menuService.getMenuSchema();
     });
-
+    
     this.deviceServicesView = new GenericView('DeviceServicesView', false, Handlebars.compile($("#device-services-tpl").html()), function (view) {
         return '';
     });

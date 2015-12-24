@@ -1,5 +1,9 @@
 /* global TRACE, DEBUG */
-
+var TriggerableFunction = function (funcID, path, func) {
+    this.funcID = funcID;
+    this.path = path;
+    this.func = func;
+};
 /**
  * The configuration service provides:<br>
  * <ul>
@@ -8,11 +12,10 @@
  * <li> observer for widgets (once a widget status is changed, it will change the value of the attached variable)
  * </ul>
  * The configuration will be persisted on the local storage within the user's browser;
- * @param {type} cfgSchema the structure of the config schema must be:
  * [{"path": "/some_path","caption": "General Config","keys": [{"id": "someConfigId","caption": "Some Caption Text","type": "Boolean","valueset": ["True", "False"],"value": true}}]
  * @returns {ConfigurationService}
  */
-var ConfigurationService = function me(cfgSchema) {
+var ConfigurationService = function me() {
     var SCHEMA_STORAGE_KEY = "config_schemas";
     var dirty = true;
     var self = this;
@@ -24,7 +27,7 @@ var ConfigurationService = function me(cfgSchema) {
         //resetConfiguration();
         save();
     };
-    
+
     self.initialize();
 
     //initializer: once an element with config-field class is changed, the updateField function is called
@@ -142,7 +145,8 @@ var ConfigurationService = function me(cfgSchema) {
         window.localStorage.removeItem(SCHEMA_STORAGE_KEY);
         window.localStorage.clear();
         console.log('//' + window.localStorage.getItem(SCHEMA_STORAGE_KEY) + '//');
-    };
+    }
+    ;
 
     /**
      * Loads the initial configuration from the local storage
@@ -235,10 +239,104 @@ var ConfigurationService = function me(cfgSchema) {
         deferred.resolve();
         return deferred.promise();
     };
+
+    var cfgSchema = [
+        {
+            "path": "/blexee",
+            "caption": "General Config",
+            "display": true,
+            "keys": [
+                {
+                    "id": "simuMode",
+                    "caption": "Simulation",
+                    "type": "Boolean",
+                    "valueset": ["Simulation", "Real"],
+                    "value": true
+                },
+                {
+                    "id": "debugMode",
+                    "caption": "Debug Mode",
+                    "type": "Boolean",
+                    "value": true
+                },
+                {
+                    "id": "traceMode",
+                    "caption": "Trace Mode",
+                    "type": "Boolean",
+                    "value": true
+                },
+                {
+                    "id": "useFlashForBarcode",
+                    "caption": "Flaslight for Barcode",
+                    "type": "Boolean",
+                    "value": true
+                },
+                {
+                    "id": "connectLimit",
+                    "caption": "Connect Limit",
+                    "type": "Numeric",
+                    "value": "-51"
+                }
+            ]
+        },
+        {
+            "path": "/services",
+            "caption": "Connectable Services",
+            "display": false,
+            "keys": [
+                {
+                    "id": "box-service",
+                    "caption": "The Locker Manager Service",
+                    "type": "Object",
+                    "value": {"uuid": "8fad8bdd-d619-4bd9-b3c1-816129f417ca",
+                        "characteristics": {
+                            "parcel-store": "f76e76fc-a36a-49ab-85d3-9ac389b12ef8",
+                            "parcel-release": "e8dbd220-6391-4498-a19b-33adb3543a33"
+                        }
+                    }
+                },
+                {
+                    "id": "system",
+                    "caption": "System Monitoring Service",
+                    "type": "Object",
+                    "value": {"uuid": "5d2ade4e-5f83-4c49-b5c9-8d9e2f9db41a",
+                        "characteristics": {
+                            "memory-percentage": "b03eef61-bce5-4849-aaa3-9cc5f652cf03",
+                            "cpu-percentage": "b0cf5f03-e079-4c77-8e1b-7763e734e5f4"
+                        }
+                    }
+                },
+                {
+                    "id": "io-service",
+                    "caption": "IO Automation Service",
+                    "type": "Object",
+                    "value": {"uuid": "1815",
+                        "characteristics": {"automation-io": "2A56", "pickup": "2a01"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "path": "/device",
+            "caption": "Devices Related",
+            "display": true,
+            "keys": [
+                {
+                    "id": "connectable-deviceUuid",
+                    "caption": "UUID of connectable device",
+                    "type": "Label",
+                    "value": "291C9A2E-CCA3-1EF0-5C5C-E19E29973F16"
+                },
+                {
+                    "id": "disconnectWait",
+                    "caption": "Wait time before disconnect",
+                    "type": "Numeric",
+                    "value": "2500"
+                }
+            ]
+        }
+    ];
+
 };
 
-var TriggerableFunction = function (funcID, path, func) {
-    this.funcID = funcID;
-    this.path = path;
-    this.func = func;
-};

@@ -20,7 +20,7 @@ var GenericView = function (viewName, reusableModel, template, modelProviderFunc
         console.log(viewName + ' :: initialized');
     };
 
-    this.registerModelControl = function (modelControl) {
+    this.registerModelControl = function (modelControl, updateFunction) {
         var view = this;
         modelCtrl = modelControl;
         modelCtrl.on('modup', function (e, data) {
@@ -32,6 +32,9 @@ var GenericView = function (viewName, reusableModel, template, modelProviderFunc
             }
             view.setModel(data);
             view.render();
+            if (updateFunction) {
+                updateFunction();
+            }
         });
     };
 
@@ -82,7 +85,12 @@ var GenericView = function (viewName, reusableModel, template, modelProviderFunc
         } catch (err) {
             console.log("ERROR: rendering error --> " + JSON.stringify(err));
             //+ '\n' + err ? JSON.stringify(err.stack) : "no stack");
-            this.$el.html(err);
+            if (!err) {
+                err = 'Unknown.';
+            }
+            if (this.$el ) {
+                this.$el.html(err);
+            }
         }
         return this;
     };

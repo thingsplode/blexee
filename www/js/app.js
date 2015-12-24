@@ -19,12 +19,12 @@ var DEVICE_PRESENT = false,
     //todo: background threading in the deffered: https://github.com/kmalakoff/background
     ////or http://www.w3schools.com/html/html5_webworkers.asp webworker
     //todo: nullify and delete objects with references
-    var cfgService = new ConfigurationService(cfgSchema),
+    var cfgService = new ConfigurationService(),
             modelService = new DataModelService(),
             deviceService = new DeviceService(cfgService, modelService),
             menuService = new MenuService(deviceService, cfgService),
             dispatchService = new DispatcherService(cfgService, modelService),
-            views = new ViewRepo(),
+            views = new ViewRepo(menuService),
             boxService = cfgService.getValue('/services/box-service'),
             boxServiceUuid = boxService.uuid,
             parcelStoreUuid = boxService.characteristics['parcel-store'],
@@ -61,13 +61,13 @@ var DEVICE_PRESENT = false,
     configureConsoleLog(DEBUG);
 
 
-    menuService.initialize(menuSchema);
+    menuService.initialize();
 
     router.addRoute('', function () {
         views.appContainerView.displayIn('body');
-        
+
         //$('.page-content').html(menuService.optionsView.render().$el);
-        menuService.getSystemMenuView('HomeView').setModel(menuSchema.systemMenu);
+        menuService.getSystemMenuView('HomeView').setModel(menuService.getSystemMenu());
         menuService.getSystemMenuView('HomeView').display();
         //componentHandler.upgradeAllRegistered();
     });
@@ -83,12 +83,14 @@ var DEVICE_PRESENT = false,
 //        $('.page-content').html(menuService.optionsView.render().$el);
 //    });
 
-    router.addRoute('jump/:view', function (view) {
-        console.log('Routing View :: ' + view);
-        modelService.setModelData('currentUseCase', view);
-        if (view === 'HomeView') {
+    router.addRoute('jump/:menuId', function (menuId) {
+        console.log('Routing View :: ' + menuId);
+        modelService.setModelData('currentUseCase', menuId);
+        if (menuId === 'HomeView') {
             window.location.href = '#';
-        } else if (view === 'DeviceView' || view === 'LogisticianDemoView' || view === 'CustomerDemoView') {
+        } else if (menuId === 'DeviceView' ||
+                menuId === 'LogisticianDemo' ||
+                menuId === 'CustomerDemoView') {
             try {
                 //special handling required
                 var deviceModel = modelService.getModel();
@@ -115,7 +117,8 @@ var DEVICE_PRESENT = false,
                             if (modelService.getModelData('currentUseCase') === 'DeviceView') {
                                 menuService.getSystemMenuView('DeviceView').setModel(deviceModel);
                                 menuService.getSystemMenuView('DeviceView').display();
-                            } else if (modelService.getModelData('currentUseCase') === 'LogisticianDemoView' || modelService.getModelData('currentUseCase') === 'CustomerDemoView') {
+                            } else if (modelService.getModelData('currentUseCase') === 'LogisticianDemo' ||
+                                    modelService.getModelData('currentUseCase') === 'CustomerDemoView') {
                                 if (deviceService.isDeviceAvailable(deviceUuid)) {
                                     //device found
                                     if (TRACE) {
@@ -144,13 +147,13 @@ var DEVICE_PRESENT = false,
                 //$('body').html(menuService.errView.render().$el);
                 views.errView.displayIn('body');
             }
-        } else if (view === 'SettingsView') {
-            menuService.getSystemMenuView(view).setModel(cfgService.getConfigSchemas());
+        } else if (menuId === 'SettingsView') {
+            menuService.getSystemMenuView(menuId).setModel(cfgService.getConfigSchemas());
             //$('.page-content').html(menuService.getSystemMenuView(view).render().$el);
-            menuService.getSystemMenuView(view).display();
+            menuService.getSystemMenuView(menuId).display();
             //componentHandler.upgradeAllRegistered();
         } else {
-            menuService.getSystemMenuView(view).display();
+            menuService.getSystemMenuView(menuId).display();
         }
     });
 
@@ -180,13 +183,18 @@ var DEVICE_PRESENT = false,
 
     router.addRoute('connected', function () {
         //entry handler
-        views.deviceServicesView.registerModelControl(modelService.getControl());
         if (modelService.getModelData('currentUseCase') === 'DeviceView') {
+            views.deviceServicesView.registerModelControl(modelService.getControl());
             views.deviceServicesView.resetModel();//workaround for being set the model by somebody else
             views.deviceServicesView.displayIn('body');
-        } else if (modelService.getModelData('currentUseCase') === 'LogisticianDemoView') {
-            menuService.getSystemMenuView('LogisticianDemoView').displayIn('body');
-            menuService.getSystemMenuView('LogisticianDemoView').registerModelControl(modelService.getControl());
+        } else if (modelService.getModelData('currentUseCase') === 'LogisticianDemo') {
+            menuService.getSystemMenuView('LogisticianDemo').displayIn('body');
+            menuService.getSystemMenuView('LogisticianDemo').registerModelControl(modelService.getControl(), function () {
+                console.log('calling upgrade all registered on update.');
+                componentHandler.upgradeAllRegistered();
+            });
+            modelService.setModelData('logistician_tabs', [{'caption': 'Delivery', 'active': 'is-active', 'link': 'delivery'}, {'caption': 'Service Menu', 'active': '', 'link': 'service_menu'}]);
+            modelService.setModelData('apps', menuService.getApps());
             deviceService.startNotification(boxServiceUuid, parcelStoreUuid, function (buffer) {
                 var data = new Uint8Array(buffer);
                 if (DEBUG) {
@@ -211,11 +219,6 @@ var DEVICE_PRESENT = false,
                 console.log('ERROR :: failed to start notifications: %s', JSON.stringify(param));
             });
         } else if (modelService.getModelData('currentUseCase') === 'CustomerDemoView') {
-            //$('body').html(menuService.customerDemoView.render().$el);
-            //componentHandler.upgradeAllRegistered();
-
-            //menuService.customerDemoView.displayIn('body');
-            //menuService.customerDemoView.registerModelControl(modelService.getControl());
             window.location.href = '#pickup';
         }
 
@@ -242,7 +245,7 @@ var DEVICE_PRESENT = false,
 
     router.addRoute('disconnect', function () {
         //todo: the disconnect has a slow effect / would be more interesting to redirect first, than disconnect ?? <- to be tested
-        if (modelService.getModelData('currentUseCase') === 'LogisticianDemoView') {
+        if (modelService.getModelData('currentUseCase') === 'LogisticianDemo') {
             deviceService.stopNotification(boxServiceUuid, parcelStoreUuid, function (p) {
                 //stop notification succeeded
                 if (TRACE) {
@@ -388,9 +391,16 @@ var DEVICE_PRESENT = false,
         views.deviceServicesView.resetModel();
     });
 
-    router.addRoute('reload/:view', function (view) {
+
+    router.addRoute('app/:app', function (app) {
+        //entry handler
+    }, function () {
+        //exit handler
+    });
+
+    router.addRoute('reload/:menuId', function (menuId) {
         //little trick to be able to reload parts of the page with the same url. without reloading the complete page (which causes flickering)
-        window.location.href = '#jump/' + view;
+        window.location.href = '#jump/' + menuId;
     });
     console.log("Router :: initialized");
     router.start();

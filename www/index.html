@@ -69,20 +69,6 @@
             {{/each_when_not}}
             {{/if}}
         </script>
-        <script id="app-list-tpl" type="text/template">
-            {{#if this}}
-            {{#each_when_not this "menu_name" "Home"}}
-                <div class="device-card-square mdl-card mdl-shadow--2dp right">
-                    <a class="mdl-card__title mdl-card--expand mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--colored btn" href="#jump/{{view_name}}">
-                        <h2 class="mdl-card__title-text">{{this.menu_name}}</h2>
-                    </a>
-                    <div class="mdl-card__supporting-text">
-                        {{this.description}}
-                    </div>                    
-                </div>
-            {{/each_when_not}}
-            {{/if}}
-        </script>
         <script id="device-selection-tpl" type="text/template">
             {{#unless this}}{{search}}{{/unless}}
             {{#if this}}
@@ -276,7 +262,7 @@
                     </div>
                     <div class="mdl-layout__header-row">
                         <!-- Title -->
-                        <span class="mdl-layout-title">Delivery and Pickup</span>
+                        <span class="mdl-layout-title">Pickup</span>
                         <!-- Add spacer, to align navigation to the right -->
                         <div class="mdl-layout-spacer"></div>
                         {{#if this}}
@@ -307,7 +293,7 @@
                                 </div>
                                 {{else}}
                                     <span class="right" style="color:red">Program Error: no services are found.</span>
-                                    <a class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect btn ctrlbutton" href="#">
+                                    <a class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect btn ctrlbutton" href="#disconnect">
                                         <i class="material-icons">home</i>
                                     </a>
                                 {{/if}}
@@ -320,8 +306,12 @@
         </script>
 
         <script id="logistician-tpl" type="text/template">
-            <div class="mdl-layout__container">
-            <div id="device_page" class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+            <div id="modal_window" class="mdl-layout__container">
+            {{#if logistician_tabs}}
+            <div id="modal_page" class="mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-tabs">
+            {{else}}
+            <div id="modal_page" class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+            {{/if}}
                 <header class="mdl-layout__header">
                     <div class="mdl-layout__drawer-button">
                         <a class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon btn" href="#disconnect">
@@ -337,37 +327,59 @@
                         <a id='service-notification-badge' href="#events" class="mdl-badge material-icons btn" data-badge="{{notificationQueueSize}}">alarm</a>
                         {{/if}}
                     </div>
+                     {{#if logistician_tabs}}
+                        <div class="mdl-layout__tab-bar mdl-js-ripple-effect">
+                            {{#each logistician_tabs}}
+                            <a href="#{{link}}" class="mdl-layout__tab {{active}}">{{caption}}</a>
+                            {{/each}}
+                        </div>
+                    {{/if}}
                 </header>
                 <main class="mdl-layout__content">
-                    <div class="page-content">
-                        <!-- Your content goes here -->
-                        {{#unless this}}
-                            {{search}}
-                        {{/unless}}
-                        {{#if this}}
-                            {{#if requestingServices}}
-                                {{search}}
-                            {{else}}
-                                {{#if services}}
+                    {{#xif "this.services && this.logistician_tabs"}}
+                        <section class="mdl-layout__tab-panel is-active" id="delivery">
+                            <div class="page-content">
+                                <!-- TAB content goes here -->
                                 <div class="service-card-wide mdl-card mdl-shadow--2dp">
                                     <div class="mdl-card__title">
                                         <h2 class="mdl-card__title-text caption">Actions</h2>
                                     </div>
-                                    <div class="mdl-card__supporting-text">
-                                        <a id="deliver-btn" href="#deliver" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent right btn">
-                                            Deliver
-                                        </a>
-                                    </div>
-                                </div>
-                                {{else}}
-                                    <span class="right" style="color:red">Program Error: no services are found.</span>
-                                    <a class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect btn ctrlbutton" href="#">
-                                        <i class="material-icons">home</i>
+                                <div class="mdl-card__supporting-text">
+                                    <a id="deliver-btn" href="#deliver" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent right btn">
+                                        Deliver
                                     </a>
+                                </div>
+                            </div>
+                        </section>
+                        <section class="mdl-layout__tab-panel" id="service_menu">
+                            <div class="page-content">
+                                <!-- Service Menu TAB content goes here -->
+                                {{#if apps}}
+                                    <div class="mdl-grid">
+                                        {{#each apps}}
+                                            <div class="mdl-cell mdl-cell--1-col">{{menu_icon}}<br>{{caption}}</div>
+                                        {{/each}}
+                                    </div>
+                                {{else}}
+                                    <span class="right" style="color:red">No APPS are available.</span>
                                 {{/if}}
+                            </div>
+                        </section> 
+                    {{else}}
+                        <div class="page-content">
+                            <!-- content here: no tabs need to be loaded -->
+                            {{#unless this}}
+                                {{search}}
+                            {{/unless}}
+                            {{#if requestingServices}}
+                                {{search}}
+                            {{else}}
+                                <span class="right" style="color:red">Program Error: no services are found.</span>
+                                <!-- <a class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect btn ctrlbutton" href="#disconnect">
+                                    <i class="material-icons">home</i>
+                                </a> -->
                             {{/if}}
-                        {{/if}}
-                    </div>
+                    {{/xif}}
                 </main>
             </div>
         </div>
@@ -394,13 +406,14 @@
             Return
             </a>
         </script>
-
+        
         <script>
             function toggle_drawer() {
                 var drawer = document.getElementsByClassName('mdl-layout__drawer')[0];
                 drawer.classList.toggle("is-visible");
             }
         </script>
+        
         <script type="text/javascript" src="cordova.js"></script>
         <script type="text/javascript" src="js/libs/fastclick.js"></script>
         <script type="text/javascript" src="js/libs/handlebars.js/handlebars.min.js"></script>
@@ -409,13 +422,12 @@
         <script type="text/javascript" src="js/libs/Router.js"></script>
         <script type="text/javascript" src="js/libs/toastr.min.js"></script>
         <script type="text/javascript" src="js/core/Domains.js"></script>
-        <script type="text/javascript" src="js/core/ConfigSchema.js"></script>
-        <script type="text/javascript" src="js/core/MenuSchema.js"></script>
         <script type="text/javascript" src="js/views/ViewRepo.js"></script>
         <script type="text/javascript" src="js/services/MenuService.js"></script>
         <script type="text/javascript" src="js/services/DeviceService.js"></script>
         <script type="text/javascript" src="js/services/DataModelService.js"></script>
         <script type="text/javascript" src="js/views/Helpers.js"></script>
+        <script type="text/javascript" src="js/libs/handlebars-helper-x.js"></script>
         <script type="text/javascript" src="js/views/GenericView.js"></script>
         <script type="text/javascript" src="js/services/SimuService.js"></script>
         <script type="text/javascript" src="js/services/ConfigurationService.js"></script>
