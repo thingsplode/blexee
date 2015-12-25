@@ -22,13 +22,13 @@ var ConfigurationService = function me() {
 
     var functionStore = [];
 
-    this.initialize = function () {
-        loadConfiguration();
+    initialize = function () {
         //resetConfiguration();
+        loadConfiguration();
         save();
     };
 
-    self.initialize();
+    initialize();
 
     //initializer: once an element with config-field class is changed, the updateField function is called
     $(document).ready(function () {
@@ -144,7 +144,7 @@ var ConfigurationService = function me() {
     function resetConfiguration() {
         window.localStorage.removeItem(SCHEMA_STORAGE_KEY);
         window.localStorage.clear();
-        console.log('//' + window.localStorage.getItem(SCHEMA_STORAGE_KEY) + '//');
+        console.log('Reset Configuration::: current values -> {' + JSON.stringify(window.localStorage.getItem(SCHEMA_STORAGE_KEY)) + '}');
     }
     ;
 
@@ -156,7 +156,7 @@ var ConfigurationService = function me() {
     function loadConfiguration() {
         var deferred = $.Deferred();
         var storedValues = window.localStorage.getItem(SCHEMA_STORAGE_KEY);
-        if (storedValues) {
+        if (typeof storedValues !== "undefined" && storedValues !== "undefined") {
             cfgSchema = JSON.parse(storedValues);
         }
         deferred.resolve();
@@ -181,13 +181,23 @@ var ConfigurationService = function me() {
         var key = pathArray.pop();
         var schemaPath = pathArray.join('/');
         if (cfgSchema) {
-            return cfgSchema.filter(function (schemaEntry) {
+            var configObject = cfgSchema.filter(function (schemaEntry) {
                 return schemaEntry.path === schemaPath;
-            })[0].keys.filter(function (keyEntry) {
-                return keyEntry.id === key;
-            })[0].value;
+            })[0];
+            if (configObject) {
+                var foundKeys = configObject.keys.filter(function (keyEntry) {
+                    return keyEntry.id === key;
+                });
+                if (foundKeys && foundKeys.length > 0) {
+                    return foundKeys[0].value;
+                } else {
+                    throw 'Configuration key for path [' + path + '] not found';
+                }
+            } else {
+                throw 'Configuration object for path [' + path + '] not found';
+            }
         } else {
-            return null;
+            throw 'Configuration is not prepared.';
         }
     };
 
@@ -296,7 +306,7 @@ var ConfigurationService = function me() {
                     }
                 },
                 {
-                    "id": "system",
+                    "id": "system-service",
                     "caption": "System Monitoring Service",
                     "type": "Object",
                     "value": {"uuid": "5d2ade4e-5f83-4c49-b5c9-8d9e2f9db41a",

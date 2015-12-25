@@ -1,0 +1,134 @@
+<html class="mdl-js"><head>
+        <!--
+        Customize this policy to fit your own app's needs. For more guidance, see:
+            https://github.com/apache/cordova-plugin-whitelist/blob/master/README.md#content-security-policy
+        Some notes:
+            * gap: is required only on iOS (when using UIWebView) and is needed for JS->native communication
+            * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
+            * Disables use of inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
+                * Enable inline JS: add 'unsafe-inline' to default-src
+        -->
+        <meta name="format-detection" content="telephone=no">
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+        <link rel="stylesheet" type="text/css" href="css/mdl/material.min.css">
+        <link rel="stylesheet" type="text/css" href="css/toastr.min.css">
+        <link rel="stylesheet" type="text/css" href="css/blexee.css">
+        <!--        <link rel="stylesheet" type="text/css" href="css/pageslider.css">-->
+        <link rel="stylesheet" href="css/material_icons.css" type="text/css">
+        <link rel="stylesheet" href="css/fonts.css" type="text/css">
+        <script src="css/mdl/material.js"></script>
+        <title>blexee control</title>
+    </head>
+    <body><div id="generic_view">
+            <div id="modal_window" class="mdl-layout__container">
+
+                <div class="mdl-layout__container"><div id="modal_page" class="mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-tabs is-small-screen has-tabs is-upgraded" data-upgraded=",MaterialLayout">
+
+                        <header class="mdl-layout__header is-casting-shadow">
+                            <div class="mdl-layout__drawer-button">
+                                <a class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon btn" href="#disconnect" data-upgraded=",MaterialButton,MaterialRipple">
+                                    <i class="material-icons">navigate_before</i>
+                                    <span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></a>
+                            </div>
+                            <div class="mdl-layout__header-row">
+                                <!-- Title -->
+                                <span class="mdl-layout-title">Delivery and Pickup</span>
+                                <!-- Add spacer, to align navigation to the right -->
+                                <div class="mdl-layout-spacer"></div>
+
+                                <a id="service-notification-badge" href="#events" class="mdl-badge material-icons btn" data-badge="0">alarm</a>
+
+                            </div>
+
+                            <div class="mdl-layout__tab-bar-container"><div class="mdl-layout__tab-bar-button mdl-layout__tab-bar-left-button"><i class="material-icons">chevron_left</i></div><div class="mdl-layout__tab-bar mdl-js-ripple-effect is-casting-shadow mdl-js-ripple-effect--ignore-events" data-upgraded=",MaterialRipple">
+
+                                    <a href="#delivery" class="mdl-layout__tab">Delivery<span class="mdl-layout__tab-ripple-container mdl-js-ripple-effect" data-upgraded=",MaterialRipple"><span class="mdl-ripple"></span></span></a>
+
+                                    <a href="#service_menu" class="mdl-layout__tab is-active">Service Menu<span class="mdl-layout__tab-ripple-container mdl-js-ripple-effect" data-upgraded=",MaterialRipple"><span class="mdl-ripple is-animating" style="width: 372.014px; height: 372.014px; transform: translate(-50%, -50%) translate(72px, 31px);"></span></span></a>
+
+                                </div><div class="mdl-layout__tab-bar-button mdl-layout__tab-bar-right-button"><i class="material-icons">chevron_right</i></div></div>
+
+                        </header>
+                        <main class="mdl-layout__content">
+
+                            <section class="mdl-layout__tab-panel" id="delivery">
+                                <div class="page-content">
+                                    <!-- TAB content goes here -->
+                                    <div class="service-card-wide mdl-card mdl-shadow--2dp">
+                                        <div class="mdl-card__title">
+                                            <h2 class="mdl-card__title-text caption">Actions</h2>
+                                        </div>
+                                        <div class="mdl-card__supporting-text">
+                                            <a id="deliver-btn" href="#deliver" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent right btn" data-upgraded=",MaterialButton,MaterialRipple">
+                                                Deliver
+                                                <span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></a>
+                                        </div>
+                                    </div>
+                                </div></section>
+                            <section class="mdl-layout__tab-panel is-active" id="service_menu">
+                                <div class="page-content">
+                                    <!-- Service Menu TAB content goes here -->
+
+                                    <div class="mdl-grid">
+                                        <div class="mdl-cell mdl-cell--4-col app_grid mdl-shadow--2dp">
+                                            <style>
+                                                .line_fg {
+                                                    fill: none;
+                                                    stroke: #4CAF50;
+                                                    stroke-width: 10;
+                                                }
+                                                .line_bg {fill: none;
+                                                          stroke: #9E9E9E;
+                                                          opacity: 0.15;
+                                                          stroke-width: 10;
+                                                }
+
+                                                .pie_circle {
+                                                    fill: none;
+                                                    stroke: #4CAF50;
+                                                    stroke-width: 5;
+                                                    stroke-dasharray: 251 251; /* stroke-dasharray: 10 {max}; 2π × circle_radius ≈ max */
+                                                }
+                                                .pie_back{fill: none;
+                                                          stroke: #9E9E9E;
+                                                          opacity: 0.15;
+                                                          stroke-width: 10;
+                                                }
+                                            </style>
+                                            <svg viewBox="0 0 200 100" >
+                                            <text x="100" y="50" font-family="Roboto" font-size="12" fill="#888" text-anchor="middle" dy="5">CPU 100<tspan font-size="10" dy="-8">%</tspan></text>
+                                            <circle class="pie_back" r="40" cx="100" cy="50"></circle>
+                                            <circle class="pie_circle" r="40" cx="100" cy="50"></circle>
+                                            </svg>
+                                        </div>
+                                        <div class="mdl-cell mdl-cell--4-col app_grid mdl-shadow--2dp">
+                                            <svg viewBox="0 0 200 40" >
+                                            <text x="5" y="30" 
+                                                  font-family="Roboto"
+                                                  font-size="11" fill="#888" 
+                                                  text-anchor="start" dy="5">Memory 100<tspan font-size="10" dx="2" dy="-3">%</tspan></text>
+                                            <line class="line_bg" x1="5" y1="12" x2="195" y2="12" />
+                                            <line class="line_fg" x1="5" y1="12" x2="100" y2="12" />
+                                            </svg>
+                                        </div>
+                                        <div class="mdl-cell mdl-cell--4-col app_grid mdl-shadow--2dp">
+                                            <svg viewBox="0 0 200 40" >
+                                            <text x="5" y="30" 
+                                                  font-family="Roboto"
+                                                  font-size="11" fill="#888" 
+                                                  text-anchor="start" dy="5">Storage 100<tspan font-size="10" dx="2" dy="-3">%</tspan></text>
+                                            <line class="line_bg" x1="5" y1="12" x2="195" y2="12" />
+                                            <line class="line_fg" x1="5" y1="12" x2="100" y2="12" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <button id="smenu_back_btn" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect ctrlbutton">
+                                        <i class="material-icons">undo</i>
+                                    </button>
+                                </div>
+                            </section> 
+
+                        </main>
+                    </div></div>
+            </div>
+        </div></body></html>

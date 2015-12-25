@@ -75,14 +75,16 @@ var MenuService = function () {
     var internalMenuSchema = {
         'systemMenu': [
             {
-                'id': 'HomeView',
-                'caption': 'Home',
-                'menu_icon': 'home',
-                'view_template_name': '#home-menu-tpl',
-                'description': 'Redirects to the main page'
+                id: 'HomeView',
+                on_start_page: false,
+                caption: 'Home',
+                menu_icon: 'home',
+                view_template_name: '#home-menu-tpl',
+                description: 'Redirects to the main page'
             },
             {
                 "id": "CustomerDemoView",
+                on_start_page: true,
                 "caption": "Customer Demo",
                 "menu_icon": "",
                 "view_template_name": "#customer-tpl",
@@ -90,6 +92,7 @@ var MenuService = function () {
             },
             {
                 "id": "LogisticianDemo",
+                on_start_page: true,
                 "caption": "Logistician Demo",
                 "menu_icon": "",
                 "view_template_name": "#logistician-tpl",
@@ -97,6 +100,7 @@ var MenuService = function () {
             },
             {
                 "id": "DeviceView",
+                on_start_page: true,
                 "caption": "Device Demo",
                 "menu_icon": "",
                 "view_template_name": "#device-selection-tpl",
@@ -104,6 +108,7 @@ var MenuService = function () {
             },
             {
                 "id": "SettingsView",
+                on_start_page: true,
                 "caption": "Settings",
                 "menu_icon": "",
                 "view_template_name": "#settings-tpl",
@@ -113,25 +118,25 @@ var MenuService = function () {
         ],
         "applications": [
             {
-                'id': 'Dashboard',
+                'id': 'dashboard',
                 'caption': 'Dashboard',
                 'menu_icon': 'toys',
                 'view_template_name': '#dashboard-tpl',
-                'description': 'Redirects to the main page'
+                'description': 'Shows various test dashboard items'
             },
             {
-                'id': 'Locker',
+                'id': 'locker',
                 'caption': 'Locker',
                 'menu_icon': 'apps',
                 'view_template_name': '#locker-tpl',
-                'description': 'Redirects to the main page'
+                'description': 'Shows the locker status'
             },
             {
-                'id': 'Storage',
+                'id': 'storage',
                 'caption': 'Storage',
                 'menu_icon': 'sd_storage',
                 'view_template_name': '#storage-tpl',
-                'description': 'Redirects to the main page'
+                'description': 'Presents storage information'
             }
         ]
     };

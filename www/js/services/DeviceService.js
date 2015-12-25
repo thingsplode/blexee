@@ -508,19 +508,28 @@ var DeviceService = function (configService, mdlService) {
     this.startNotification = function (serviceUuid, characteristicUuid, onDataCallback, failedCallback) {
         if (mdlService.getModelData('connected') && mdlService.getModelData('selectedDevice') !== null) {
             if (!configService.getValue('/blexee/simuMode')) {
+                //real use case
                 ble.startNotification(mdlService.getModelData('selectedDevice')['id'], serviceUuid, characteristicUuid, onDataCallback, failedCallback);
             } else {
                 //start notification simulation
-                console.log('SIMU :: Start notifications');
                 boxService = configService.getValue('/services/box-service');
+                systemService = configService.getValue('/services/system-service');
                 if (characteristicUuid === boxService.characteristics['parcel-store']) {
                     console.log('SIMU :: Start notifications for PARCEL STORE');
-                    simuService.setSimulateNotifications(true);
-                    simuService.simulateNotifications(onDataCallback, 0x00);
-                } else {
+                    simuService.setSimulateNotificationsForId('parcel_store', true);
+                    simuService.simulateNotification('parcel_store', onDataCallback);
+                } else if (characteristicUuid === boxService.characteristics['parcel-release']) {
                     console.log('SIMU :: Start notifications for PARCEL RELEASE');
-                    simuService.setSimulateNotifications(true);
-                    simuService.simulateNotifications(onDataCallback, 0x02);
+                    simuService.setSimulateNotificationsForId('parcel_release', true);
+                    simuService.simulateNotification('parcel_release', onDataCallback);
+                } else if (characteristicUuid === systemService.characteristics['memory-percentage']) {
+                    console.log('SIMU :: Start notifications for MEMORY PERCENTAGE');
+                    simuService.setSimulateNotificationsForId('memory_percentage', true);
+                    simuService.simulateNotification('memory_percentage', onDataCallback);
+                } else if (characteristicUuid === systemService.characteristics['cpu-percentage']) {
+                    console.log('SIMU :: Start notifications for CPU PERCENTAGE');
+                    simuService.setSimulateNotificationsForId('cpu_percentage', true);
+                    simuService.simulateNotification('cpu_percentage', onDataCallback);
                 }
 
             }
@@ -538,11 +547,22 @@ var DeviceService = function (configService, mdlService) {
     this.stopNotification = function (serviceUuid, characteristicUuid, successCallback, failedCallback) {
         if (mdlService.getModelData('connected') && mdlService.getModelData('selectedDevice') !== null) {
             if (!configService.getValue('/blexee/simuMode')) {
-                ble.startNotification(mdlService.getModelData('selectedDevice')['id'], serviceUuid, characteristicUuid, successCallback, failedCallback);
+                ble.stopNotification(mdlService.getModelData('selectedDevice')['id'], serviceUuid, characteristicUuid, successCallback, failedCallback);
             } else {
                 //stop notification simulation
                 console.log('SIMU :: Stopping notifications');
-                simuService.setSimulateNotifications(false);
+                boxService = configService.getValue('/services/box-service');
+                systemService = configService.getValue('/services/system-service');
+
+                if (characteristicUuid === boxService.characteristics['parcel-store']) {
+                    simuService.setSimulateNotificationsForId('parcel_store', false);
+                } else if (characteristicUuid === boxService.characteristics['parcel-release']) {
+                    simuService.setSimulateNotificationsForId('parcel_release', false);
+                } else if (characteristicUuid === systemService.characteristics['memory-percentage']) {
+                    simuService.setSimulateNotificationsForId('memory_percentage', false);
+                } else if (characteristicUuid === systemService.characteristics['cpu-percentage']) {
+                    simuService.setSimulateNotificationsForId('cpu_percentage', false);
+                }
             }
         }
     };

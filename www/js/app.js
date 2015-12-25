@@ -13,7 +13,7 @@ var DEVICE_PRESENT = false,
         TRACE = false,
         DEBUG = false;
 
-(function () {
+var App = function () {
     console.log('Initializing Blexee App');
     var oldConsoleHandler;
     //todo: background threading in the deffered: https://github.com/kmalakoff/background
@@ -29,6 +29,11 @@ var DEVICE_PRESENT = false,
             boxServiceUuid = boxService.uuid,
             parcelStoreUuid = boxService.characteristics['parcel-store'],
             parcelReleaseUuid = boxService.characteristics['parcel-release'],
+            systemService = cfgService.getValue('/services/system-service'),
+            systemServiceUuid = systemService.uuid,
+            cpuPercChar = systemService.characteristics['cpu-percentage'],
+            memoryPercChar = systemService.characteristics['memory-percentage'],
+            dashboardModelService = new DataModelService(),
             parcelStoreLastWrite = {'notificationReceived': true, 'barcode': ''},
     parcelReleaseLastWrite = {'notificationReceived': true, 'barcode': ''};
 
@@ -190,11 +195,11 @@ var DEVICE_PRESENT = false,
         } else if (modelService.getModelData('currentUseCase') === 'LogisticianDemo') {
             menuService.getSystemMenuView('LogisticianDemo').displayIn('body');
             menuService.getSystemMenuView('LogisticianDemo').registerModelControl(modelService.getControl(), function () {
-                console.log('calling upgrade all registered on update.');
                 componentHandler.upgradeAllRegistered();
             });
             modelService.setModelData('logistician_tabs', [{'caption': 'Delivery', 'active': 'is-active', 'link': 'delivery'}, {'caption': 'Service Menu', 'active': '', 'link': 'service_menu'}]);
             modelService.setModelData('apps', menuService.getApps());
+
             deviceService.startNotification(boxServiceUuid, parcelStoreUuid, function (buffer) {
                 var data = new Uint8Array(buffer);
                 if (DEBUG) {
@@ -255,6 +260,8 @@ var DEVICE_PRESENT = false,
                 //stop notification failed
                 console.log('ERROR: notification could not be stopped: %s', JSON.stringify(p));
             });
+            //clean up previously possibly saved applist content
+            sessionStorage.removeItem("serviceMenuSection");
         } else if (modelService.getModelData('currentUseCase') === 'CustomerDemoView') {
             deviceService.stopNotification(boxServiceUuid, parcelReleaseUuid, function (p) {
                 //stop notification succeeded
@@ -392,11 +399,53 @@ var DEVICE_PRESENT = false,
     });
 
 
-    router.addRoute('app/:app', function (app) {
+    router.addRoute('app/dashboard', function (app) {
         //entry handler
+        sessionStorage.serviceMenuSection = $('#service_menu_content').html();
+        dashboardModelService.setModelData('cpu', 0);
+        dashboardModelService.setModelData('memory', 0);
+        dashboardModelService.setModelData('storage', 0);
+        views.dashboardView.displayIn('#service_menu_content');
+        views.dashboardView.registerModelControl(dashboardModelService.getControl());
+        deviceService.startNotification(systemServiceUuid, cpuPercChar, function (buffer) {
+            //data received
+            var data = new Uint8Array(buffer);
+            if (DEBUG) {
+                console.log("CPU Percentage Notification received, with first byte: [%s]", data[0]);
+            }
+            dashboardModelService.setModelData('cpu', data[0]);
+            dashboardModelService.updateControl();
+        }, errorWhileStartingNotification);
+
+        deviceService.startNotification(systemServiceUuid, memoryPercChar, function (buffer) {
+            //data received
+            var data = new Uint8Array(buffer);
+            if (DEBUG) {
+                console.log("Memory Percentage Notification received, with first byte: [%s]", data[0]);
+            }
+            dashboardModelService.setModelData('memory', data[0]);
+            dashboardModelService.updateControl();
+        }, errorWhileStartingNotification);
+
     }, function () {
         //exit handler
+        views.dashboardView.unregisterModelControl();
+        deviceService.stopNotification(systemServiceUuid, cpuPercChar, unsubscribeSucceeded, unsubscribeFailed);
+        deviceService.stopNotification(systemServiceUuid, memoryPercChar, unsubscribeSucceeded, unsubscribeFailed);
     });
+
+    function errorWhileStartingNotification() {
+        console.log("ERROR: while starting notification.");
+    }
+
+    function unsubscribeSucceeded() {
+        if (TRACE) {
+            console.log("unsubscribe from notification for a bluetooth service/characteristic succeeded");
+        }
+    }
+    function unsubscribeFailed() {
+        console.log("ERROR: unsubscribe from notifitcaion for a bluetooth service/characteristic did not succeeded.");
+    }
 
     router.addRoute('reload/:menuId', function (menuId) {
         //little trick to be able to reload parts of the page with the same url. without reloading the complete page (which causes flickering)
@@ -404,6 +453,11 @@ var DEVICE_PRESENT = false,
     });
     console.log("Router :: initialized");
     router.start();
+
+    this.reloadSavedApplist = function () {
+        $('#service_menu_content').html(sessionStorage.serviceMenuSection);
+        window.location.href = '#app/';
+    };
 
     //Register event listeners
     $(document).ready(function () {
@@ -515,4 +569,7 @@ var DEVICE_PRESENT = false,
         }
         return dcTime;
     }
-}());
+};
+
+var app = new App();
+

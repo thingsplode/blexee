@@ -25,5 +25,10 @@ var ViewRepo = function (menuService) {
     this.errView = new GenericView('ErrorView', false, Handlebars.compile($('#err-tpl').html()), function (view) {
         return '';
     });
+
+    
+    this.dashboardView = new GenericView('DashboardView', false, Handlebars.compile($('#dashboard-tpl').html()), function (view) {
+        return '';
+    });
 };
 

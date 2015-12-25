@@ -7,10 +7,37 @@ var SimuService = function (configService) {
         'devices_available': true,
         'can_connect': true,
         'services_available': true
-    }, doSimulateNotifications = false;
+    }, notificationSimulatorRegistry = [];
 
-    this.setSimulateNotifications = function (bool) {
-        doSimulateNotifications = bool;
+    /**
+     * 
+     * @param {String} idName
+     * @param {Boolean} boolValue
+     * @returns {undefined}
+     */
+    this.setSimulateNotificationsForId = function (idName, boolValue) {
+        var found = false;
+        if (notificationSimulatorRegistry && notificationSimulatorRegistry.length > 0) {
+            notificationSimulatorRegistry.forEach(function (element, index, array) {
+                if (element.id === idName) {
+                    element.value = boolValue;
+                    found = true;
+                }
+            });
+        }
+        if (!found) {
+            notificationSimulatorRegistry.push({id: idName, value: boolValue});
+        }
+
+    };
+
+    shouldSimulateNotificationForId = function (idName) {
+        returnValue = notificationSimulatorRegistry.some(function (element, index, array) {
+            if (element.id === idName) {
+                return element.value;
+            }
+        });
+        return returnValue ? returnValue : false;
     };
 
     this.getSimuData = function () {
@@ -33,18 +60,29 @@ var SimuService = function (configService) {
         return bigPeripheralObj;
     };
 
-    this.simulateNotifications = function myself(onDataCallback, responseCode) {
+    this.simulateNotification = function myself(characteristicsId, onDataCallback) {
         setTimeout(function () {
-            console.log("SIMU --> :  simulating notification callback with " + responseCode + " 0x19");
+            console.log("SIMU --> :  simulating notification callback for characteristics id: " + characteristicsId);
             ab = new Uint8Array(2);
-            ab[0] = responseCode;
-            ab[1] = 0x19;
+
+            if (characteristicsId === 'parcel_store') {
+                ab[0] = 0x00;
+                ab[1] = 0x19;
+            } else if (characteristicsId === 'parcel_release') {
+                ab[0] = 0x02;
+                ab[1] = 0x19;
+            } else if (characteristicsId === 'memory_percentage') {
+                ab[0] = Math.floor(Math.random() * (100 - 0 + 1)) + 0;
+            } else if (characteristicsId === 'cpu_percentage') {
+                ab[0] = Math.floor(Math.random() * (100 - 0 + 1)) + 0;
+            }
+
             onDataCallback(ab.buffer);
-            if (doSimulateNotifications) {
+            if (shouldSimulateNotificationForId(characteristicsId)) {
                 if (DEBUG) {
                     console.log('RESCHEDULING notifications.');
                 }
-                myself(onDataCallback);
+                myself(characteristicsId, onDataCallback);
             }
         }, 2000);
     };
