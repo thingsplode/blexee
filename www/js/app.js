@@ -261,7 +261,7 @@ var App = function () {
                 console.log('ERROR: notification could not be stopped: %s', JSON.stringify(p));
             });
             //clean up previously possibly saved applist content
-            sessionStorage.removeItem("serviceMenuSection");
+            sessionStorage.clear();
         } else if (modelService.getModelData('currentUseCase') === 'CustomerDemoView') {
             deviceService.stopNotification(boxServiceUuid, parcelReleaseUuid, function (p) {
                 //stop notification succeeded
@@ -402,9 +402,9 @@ var App = function () {
     router.addRoute('app/dashboard', function (app) {
         //entry handler
         sessionStorage.serviceMenuSection = $('#service_menu_content').html();
-        dashboardModelService.setModelData('cpu', 0);
-        dashboardModelService.setModelData('memory', 0);
-        dashboardModelService.setModelData('storage', 0);
+        dashboardModelService.setModelData('cpu', 1);
+        dashboardModelService.setModelData('memory', 1);
+        dashboardModelService.setModelData('storage', 1);
         views.dashboardView.displayIn('#service_menu_content');
         views.dashboardView.registerModelControl(dashboardModelService.getControl());
         deviceService.startNotification(systemServiceUuid, cpuPercChar, function (buffer) {
