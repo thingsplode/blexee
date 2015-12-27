@@ -1,4 +1,4 @@
-/* global TRACE, DEBUG */
+/* global TRACE, DEBUG, slider */
 /**
  * 
  * @param {type} viewName the unique name of the view as text
@@ -12,10 +12,15 @@ var GenericView = function (viewName, reusableModel, template, modelProviderFunc
     var mdl, modelCtrl, configService;
 
     this.initialize = function () {
-        this.$el = $('<div id="generic_view"/>');
+        this.$el = $('<div id="' + viewName + '"/>');
         if (modelProviderFunction) {
             mdl = modelProviderFunction(this);
         }
+        if (!mdl) {
+            mdl = [];
+        }
+        mdl["viewId"] = viewName+'Ctx';
+        
         this.render(mdl);
         console.log(viewName + ' :: initialized');
     };
@@ -33,7 +38,7 @@ var GenericView = function (viewName, reusableModel, template, modelProviderFunc
             view.setModel(data);
             view.render();
             if (updateFunction) {
-                updateFunction();
+                updateFunction(mdl);
             }
         });
     };
@@ -42,6 +47,16 @@ var GenericView = function (viewName, reusableModel, template, modelProviderFunc
         if (typeof modelCtrl !== 'undefined') {
             modelCtrl.off();
         }
+    };
+
+    /**
+     * Extend the current data model with additional variable
+     * @param {type} variable
+     * @param {type} value
+     * @returns {undefined}
+     */
+    this.addModelData = function (variable, value) {
+        mdl[variable] = value;
     };
 
     this.setModel = function (model) {
@@ -59,21 +74,36 @@ var GenericView = function (viewName, reusableModel, template, modelProviderFunc
     /**
      * Renders the view content in a specific dom element
      * @param {type} jquerySelector a dom expression (eg. 'body' or '.myClass' or '#myId'
+     * @param {boolean} skipComponentUpgrade if true, the visual components will not be upgraded
      * @returns {undefined}
      */
-    this.displayIn = function (jquerySelector) {
+    this.displayIn = function (jquerySelector, skipComponentUpgrade) {
         $(jquerySelector).html(this.render().$el);
-        componentHandler.upgradeAllRegistered();
+        if (!skipComponentUpgrade) {
+            componentHandler.upgradeAllRegistered();
+        }
         if (!reusableModel) {
             this.resetModel();
         }
+    };
+
+    this.slideIn = function () {
+        var page = this.render().$el;
+        slider.slidePage(page);
     };
 
     this.display = function (model) {
         if (model) {
             this.setModel(model);
         }
-        this.displayIn('.page-content');
+        
+        if ($('.page-content').length > 1){
+            this.displayIn('.active');
+        } else {
+            this.displayIn('.page-content');
+        }
+        
+        //this.displayIn('#'+viewName+'Ctx .page-content');
     };
 
     this.render = function () {
@@ -88,7 +118,7 @@ var GenericView = function (viewName, reusableModel, template, modelProviderFunc
             if (!err) {
                 err = 'Unknown.';
             }
-            if (this.$el ) {
+            if (this.$el) {
                 this.$el.html(err);
             }
         }

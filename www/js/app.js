@@ -8,10 +8,12 @@
  */
 
 //todo: reset configuration button
+//todo: reset the scripts from the body
 
 var DEVICE_PRESENT = false,
         TRACE = false,
-        DEBUG = false;
+        DEBUG = false,
+        slider = new PageSlider($('#root'));
 
 var App = function () {
     console.log('Initializing Blexee App');
@@ -69,24 +71,12 @@ var App = function () {
     menuService.initialize();
 
     router.addRoute('', function () {
-        views.appContainerView.displayIn('body');
-
-        //$('.page-content').html(menuService.optionsView.render().$el);
+        //views.appContainerView.displayIn('#root');
+        ///views.appContainerView.slideIn('#root');
+        views.appContainerView.slideIn();
         menuService.getSystemMenuView('HomeView').setModel(menuService.getSystemMenu());
         menuService.getSystemMenuView('HomeView').display();
-        //componentHandler.upgradeAllRegistered();
     });
-//    router.addRoute('start', function () {
-//        console.log('View :: OptionsView');
-//        //var frame = menuService.appContainerView.render().$el;
-//        //frame.find('.page-content').html(menuService.optionsView.render().$el);
-//        $('body').html(menuService.appContainerView.render().$el);
-//        //if (typeof slider === 'undefined') {
-//        //    slider = new PageSlider($('.page-content'));
-//        //}
-//        //slider.slidePage(menuService.optionsView.render().$el);
-//        $('.page-content').html(menuService.optionsView.render().$el);
-//    });
 
     router.addRoute('jump/:menuId', function (menuId) {
         console.log('Routing View :: ' + menuId);
@@ -98,6 +88,7 @@ var App = function () {
                 menuId === 'CustomerDemoView') {
             try {
                 //special handling required
+                views.deviceModalView.slideIn();
                 var deviceModel = modelService.getModel();
                 if (TRACE) {
                     console.log(":: check if bluetooth is enabled");
@@ -150,13 +141,11 @@ var App = function () {
                 console.log('ERROR in jump/:view : %s' + error);
                 views.errView.setModel(new ErrorMessage('Program error', error.toString()));
                 //$('body').html(menuService.errView.render().$el);
-                views.errView.displayIn('body');
+                views.errView.slideIn();
             }
         } else if (menuId === 'SettingsView') {
             menuService.getSystemMenuView(menuId).setModel(cfgService.getConfigSchemas());
-            //$('.page-content').html(menuService.getSystemMenuView(view).render().$el);
             menuService.getSystemMenuView(menuId).display();
-            //componentHandler.upgradeAllRegistered();
         } else {
             menuService.getSystemMenuView(menuId).display();
         }
@@ -189,16 +178,21 @@ var App = function () {
     router.addRoute('connected', function () {
         //entry handler
         if (modelService.getModelData('currentUseCase') === 'DeviceView') {
-            views.deviceServicesView.registerModelControl(modelService.getControl());
-            views.deviceServicesView.resetModel();//workaround for being set the model by somebody else
-            views.deviceServicesView.displayIn('body');
+            views.deviceModalView.setModel(modelService.getModel());
+            views.deviceModalView.render();
+            views.bleServicesView.resetModel();//workaround for being set the model by somebody else
+            views.bleServicesView.display(modelService.getModel());
+            views.bleServicesView.registerModelControl(modelService.getControl());
+//            menuService.getSystemMenuView('DeviceView').display(modelService.getModel());
+//            menuService.getSystemMenuView('DeviceView').registerModelControl();
         } else if (modelService.getModelData('currentUseCase') === 'LogisticianDemo') {
-            menuService.getSystemMenuView('LogisticianDemo').displayIn('body');
-            menuService.getSystemMenuView('LogisticianDemo').registerModelControl(modelService.getControl(), function () {
-                componentHandler.upgradeAllRegistered();
-            });
-            modelService.setModelData('logistician_tabs', [{'caption': 'Delivery', 'active': 'is-active', 'link': 'delivery'}, {'caption': 'Service Menu', 'active': '', 'link': 'service_menu'}]);
+            //menuService.getSystemMenuView('LogisticianDemo').displayIn('#root');
+            modelService.setModelData('tabs', [{'caption': 'Delivery', 'active': 'is-active', 'link': 'delivery'}, {'caption': 'Service Menu', 'active': '', 'link': 'service_menu'}]);
             modelService.setModelData('apps', menuService.getApps());
+
+            views.deviceModalView.setModel(modelService.getModel());
+            views.deviceModalView.render();
+            menuService.getSystemMenuView('LogisticianDemo').display(modelService.getModel(), false);
 
             deviceService.startNotification(boxServiceUuid, parcelStoreUuid, function (buffer) {
                 var data = new Uint8Array(buffer);
@@ -207,6 +201,7 @@ var App = function () {
                 }
                 if (!parcelStoreLastWrite.notificationReceived) {
                     if (data[0] === 0x00) {
+                        //views
                         toastr.success('Barcode: ' + parcelStoreLastWrite.barcode, 'Parcel stored!');
                         dispatchService.sendMessage(new ParcelActionRequest(ParcelAction.STORED, parcelStoreLastWrite.barcode, data[0]));
                     } else if (data[0] === 0x01) {
@@ -230,13 +225,13 @@ var App = function () {
         if (modelService.getModelData('currentUseCase') !== 'CustomerDemoView') {
             //todo: this block is only needed above at the end of DeviceView, only some screen rendering trick requires it for the Logistician as well
             deviceService.requestServices().done(function () {
-                //menuService.deviceServicesView.setModel(deviceModel);
-                //$('.page-content').html(menuService.deviceServicesView.render().$el);
-                //slider.slidePage(menuService.deviceServicesView.render().$el);
+                //menuService.deviceModalView.setModel(deviceModel);
+                //$('.page-content').html(menuService.deviceModalView.render().$el);
+                //slider.slidePage(menuService.deviceModalView.render().$el);
             }).fail(function (errMsg) {
                 views.errView.setModel(errMsg);
                 views.errView.display();
-                views.deviceServicesView.unregisterModelControl();
+                views.deviceModalView.unregisterModelControl();
             });
         }
     }, function () {
@@ -244,8 +239,11 @@ var App = function () {
         if (DEBUG) {
             console.log('leaving connected state at use case: {%s}', modelService.getModelData('currentUseCase'));
         }
-        views.deviceServicesView.resetModel();
-        views.deviceServicesView.unregisterModelControl();
+        modelService.deleteModelData('tabs');
+        views.deviceModalView.resetModel();
+        views.deviceModalView.unregisterModelControl();
+        menuService.getSystemMenuView('DeviceView').unregisterModelControl();
+        menuService.getSystemMenuView('LogisticianDemo').unregisterModelControl();
     });
 
     router.addRoute('disconnect', function () {
@@ -290,7 +288,7 @@ var App = function () {
     });
 
     router.addRoute('deliver', function () {
-        views.deviceServicesView.registerModelControl(modelService.getControl());
+        views.deviceModalView.registerModelControl(modelService.getControl());
         deviceService.scanBarcode().done(function (result) {
             //todo: cancelling barcode is not working
             //try: http://plugins.telerik.com/cordova/plugin/barcodescanner
@@ -322,12 +320,12 @@ var App = function () {
 
     }, function () {
         //leaving state
-        views.deviceServicesView.unregisterModelControl();
-        views.deviceServicesView.resetModel();
+        views.deviceModalView.unregisterModelControl();
+        views.deviceModalView.resetModel();
     });
 
     router.addRoute('pickup', function () {
-        views.deviceServicesView.registerModelControl(modelService.getControl());
+        views.deviceModalView.registerModelControl(modelService.getControl());
         var timerActive = false;
         deviceService.startNotification(boxServiceUuid, parcelReleaseUuid, function (buffer) {
             if (!parcelReleaseLastWrite.notificationReceived) {
@@ -394,8 +392,8 @@ var App = function () {
         }
 
     }, function () {
-        views.deviceServicesView.unregisterModelControl();
-        views.deviceServicesView.resetModel();
+        views.deviceModalView.unregisterModelControl();
+        views.deviceModalView.resetModel();
     });
 
 
@@ -569,6 +567,13 @@ var App = function () {
         }
         return dcTime;
     }
+
+    this.toggle_drawer = function () {
+        var drawer = document.getElementsByClassName('mdl-layout__drawer')[0];
+        drawer.classList.toggle("is-visible");
+        var layoutObfuscator = document.getElementsByClassName('mdl-layout__obfuscator')[0];
+        layoutObfuscator.classList.toggle("is-visible");
+    };
 };
 
 var app = new App();

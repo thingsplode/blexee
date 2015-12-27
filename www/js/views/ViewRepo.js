@@ -10,7 +10,11 @@ var ViewRepo = function (menuService) {
         return menuService.getMenuSchema();
     });
     
-    this.deviceServicesView = new GenericView('DeviceServicesView', false, Handlebars.compile($("#device-services-tpl").html()), function (view) {
+    this.deviceModalView = new GenericView('DeviceModalView', false, Handlebars.compile($("#device-modal-tpl").html()), function (view) {
+        return '';
+    });
+    
+    this.bleServicesView = new GenericView('BleServicesView', false, Handlebars.compile($("#ble-services-tpl").html()), function (view) {
         return '';
     });
 

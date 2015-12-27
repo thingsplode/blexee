@@ -1,44 +1,36 @@
-/*#main {
+#root {
     position: absolute;
     width: 100%;
     height: 100%;
     overflow: hidden;
-}*/
+}
 
-.sliderpage {
-    //position: absolute;
+.page {
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    -webkit-transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0px);
     transform: translate3d(0, 0, 0);
-    overflow: hidden;
-/*    
-    text-align: left;*/
 }
 
-.sliderpage.left {
-    -webkit-transform: translate3d(-100%, 0, 0);
+.page.left {
+    -webkit-transform: translate3d(-100%, 0, 0px);
     transform: translate3d(-100%, 0, 0);
 }
 
-.sliderpage.fadein {
-     animation-name: fadeIn;
-}
-
-
-.sliderpage.center {
-    -webkit-transform: translate3d(0, 0, 0);
+.page.center {
+    -webkit-transform: translate3d(0, 0, 0px);
     transform: translate3d(0, 0, 0);
 }
 
-.sliderpage.right {
-    -webkit-transform: translate3d(100%, 0, 0);
+.page.right {
+    -webkit-transform: translate3d(100%, 0, 0px);
     transform: translate3d(100%, 0, 0);
 }
 
-.sliderpage.transition {
-    -webkit-transition-duration: 1.25s;
-    transition-duration: 1.25s;
+.page.transition {
+    -webkit-transition-duration: .25s;
+    transition-duration: .25s;
 }

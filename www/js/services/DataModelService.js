@@ -14,11 +14,15 @@ function DataModelService() {
         return o;
     })($({})));
 
-    this.setModelData = function (variable, value) {
-        model[variable] = value;
+    this.setModelData = function (variableName, value) {
+        model[variableName] = value;
         if (TRACE) {
             console.log('DATA MODEL :: augmented to: %s', JSON.stringify(model));
         }
+    };
+    
+    this.deleteModelData = function (variableName){
+      delete model[variableName];  
     };
 
     this.pushIntoModelArray = function (arrayVariable, arrayElem) {

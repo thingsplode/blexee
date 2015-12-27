@@ -108,7 +108,7 @@ var MenuService = function () {
             },
             {
                 "id": "SettingsView",
-                on_start_page: true,
+                on_start_page: false,
                 "caption": "Settings",
                 "menu_icon": "",
                 "view_template_name": "#settings-tpl",
