@@ -1,4 +1,4 @@
-#/platforms/
-#/plugins/
-#/hooks/
+/platforms/
+/plugins/
+/hooks/
 /nbproject/
