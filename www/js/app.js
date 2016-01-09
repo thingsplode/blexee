@@ -183,8 +183,6 @@ var App = function () {
             views.bleServicesView.resetModel();//workaround for being set the model by somebody else
             views.bleServicesView.display(modelService.getModel());
             views.bleServicesView.registerModelControl(modelService.getControl());
-//            menuService.getSystemMenuView('DeviceView').display(modelService.getModel());
-//            menuService.getSystemMenuView('DeviceView').registerModelControl();
         } else if (modelService.getModelData('currentUseCase') === 'LogisticianDemo') {
             //menuService.getSystemMenuView('LogisticianDemo').displayIn('#root');
             modelService.setModelData('tabs', [{'caption': 'Delivery', 'active': 'is-active', 'link': 'delivery'}, {'caption': 'Service Menu', 'active': '', 'link': 'service_menu'}]);
@@ -407,6 +405,7 @@ var App = function () {
         views.dashboardView.registerModelControl(dashboardModelService.getControl());
         deviceService.startNotification(systemServiceUuid, cpuPercChar, function (buffer) {
             //data received
+            
             var data = new Uint8Array(buffer);
             if (DEBUG) {
                 console.log("CPU Percentage Notification received, with first byte: [%s]", data[0]);
