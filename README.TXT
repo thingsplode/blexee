@@ -13,10 +13,12 @@
         cordova plugin add cordova-plugin-vibration
         cordova plugin add cordova-plugin-media
         cordova plugin add org.apache.cordova.dialogs
-        git add plugins/com.phonegap.plugins.barcodescanner/
+        #git add plugins/com.phonegap.plugins.barcodescanner/
+        cordova plugin add phonegap-plugin-barcodescanner        
         cordova plugin add cordova-plugin-ios-longpress-fix
         cordova plugin add https://github.com/Telerik-Verified-Plugins/Flashlight
-
+        cordova plugin add cordova-plugin-ble-central
+        
         revealing module design pattern
 
         https://github.com/triceam/app-UI

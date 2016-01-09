@@ -32,7 +32,7 @@
    32  ls -al
    33  cordova platforms add ios
    34  cordova plugins add org.apache.cordova.device
-   35  cordova plugins add org.apache.cordova.console
+    35  cordova plugins add org.apache.cordova.console
    36  cordova build uis
    37  cordova build ios
    38  npm install -g ios-sim
