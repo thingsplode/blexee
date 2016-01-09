@@ -29,31 +29,35 @@
         }
         //alert('device ready');
 
-        var tocSoundFile = 'assets/Tock.mp3', tocSound = new Media(tocSoundFile, function () {
-            if (DEBUG) {
-                console.log('MEDIA :: audio success.');
-            }
-        }, function (err) {
-            console.log('ERROR :: %s', JSON.stringify(err));
-        });
-        tocSound.setVolume('1.0');
+        //var soundWorker = new Worker('js/workers/SoundWorker.js');
+        //soundWorker.addEventListener('error', function (e){ console.log('SoundWorker :: Error!!! $s',JSON.stringify(e));}, false);
 
+        //$(document).on('click', '.btn', function () {
+        //    soundWorker.postMessage({});
+        //});
 
-        $(document).on('click', '.btn', function () {
-            if (tocSound) {
-                tocSound.play();
-            } else {
-                console.log('WARNING: tocSound is not defined.');
-            }
-        });
-
+//        var tocSoundFile = 'assets/Tock.mp3', tocSound = new Media(tocSoundFile, function () {
+//            if (DEBUG) {
+//                console.log('MEDIA :: audio success.');
+//            }
+//        }, function (err) {
+//            console.log('ERROR :: %s', JSON.stringify(err));
+//        });
+//        tocSound.setVolume('1.0');
+//        $(document).on('click', '.btn', function () {
+//            if (tocSound) {
+//                tocSound.play();
+//            } else {
+//                console.log('WARNING: tocSound is not defined.');
+//            }
+//        });
 
         if (window.cordova && window.cordova.plugins.Keyboard) {
             cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
         }
 
         document.addEventListener("volumeupbutton", function () {
-            if (DEBUG){
+            if (DEBUG) {
                 console.log('volume up button even received.');
             }
             window.plugins.flashlight.available(

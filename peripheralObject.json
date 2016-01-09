@@ -1,0 +1,84 @@
+{
+    "name": "thing-0",
+    "id": "291C9A2E-CCA3-1EF0-5C5C-E19E29973F16",
+    "advertising": {
+        "kCBAdvDataTxPowerLevel": 8,
+        "kCBAdvDataIsConnectable": true,
+        "kCBAdvDataServiceUUIDs": ["2A56"],
+        "kCBAdvDataServiceData": {
+            "9999": {}
+        },
+        "kCBAdvDataManufacturerData": {}
+    },
+    "services": ["1815", "5D2ADE4E-5F83-4C49-B5C9-8D9E2F9DB41A", "8FAD8BDD-D619-4BD9-B3C1-816129F417CA"],
+    "characteristics": [{
+            "service": "1815",
+            "isNotifying": false,
+            "characteristic": "2A56",
+            "properties": ["Write", "Notify", "ExtendedProperties"]
+        }, {
+            "service": "5D2ADE4E-5F83-4C49-B5C9-8D9E2F9DB41A",
+            "isNotifying": false,
+            "characteristic": "B0CF5F03-E079-4C77-8E1B-7763E734E5F4",
+            "properties": ["Read", "Notify"]
+        }, {
+            "service": "5D2ADE4E-5F83-4C49-B5C9-8D9E2F9DB41A",
+            "isNotifying": false,
+            "characteristic": "B03EEF61-BCE5-4849-AAA3-9CC5F652CF03",
+            "properties": ["Read", "Notify"]
+        }, {
+            "service": "8FAD8BDD-D619-4BD9-B3C1-816129F417CA",
+            "isNotifying": false,
+            "characteristic": "F76E76FC-A36A-49AB-85D3-9AC389B12EF8",
+            "properties": ["Read", "Write", "Notify"]
+        }, {
+            "service": "8FAD8BDD-D619-4BD9-B3C1-816129F417CA",
+            "isNotifying": false,
+            "characteristic": "E8DBD220-6391-4498-A19B-33ADB3543A33",
+            "properties": ["Read", "Write", "Notify"]
+        }],
+    "rssi": 127
+}
+
+
+{
+    "name": "thing-0",
+    "id": "291C9A2E-CCA3-1EF0-5C5C-E19E29973F16",
+    "advertising": {
+        "kCBAdvDataTxPowerLevel": 8,
+        "kCBAdvDataIsConnectable": true,
+        "kCBAdvDataServiceUUIDs": ["2A56"],
+        "kCBAdvDataServiceData": {
+            "9999": {}
+        },
+        "kCBAdvDataManufacturerData": {}
+    },
+    "services": ["1815", "5D2ADE4E-5F83-4C49-B5C9-8D9E2F9DB41A", "8FAD8BDD-D619-4BD9-B3C1-816129F417CA"],
+    "characteristics": [{
+            "service": "1815",
+            "isNotifying": false,
+            "characteristic": "2A56",
+            "properties": ["Write", "Notify", "ExtendedProperties"]
+        }, {
+            "service": "5D2ADE4E-5F83-4C49-B5C9-8D9E2F9DB41A",
+            "isNotifying": false,
+            "characteristic": "B0CF5F03-E079-4C77-8E1B-7763E734E5F4",
+            "properties": ["Read", "Notify"]
+        }, {
+            "service": "5D2ADE4E-5F83-4C49-B5C9-8D9E2F9DB41A",
+            "isNotifying": false,
+            "characteristic": "B03EEF61-BCE5-4849-AAA3-9CC5F652CF03",
+            "properties": ["Read", "Notify"]
+        }, {
+            "service": "8FAD8BDD-D619-4BD9-B3C1-816129F417CA",
+            "isNotifying": false,
+            "characteristic": "F76E76FC-A36A-49AB-85D3-9AC389B12EF8",
+            "properties": ["Read", "Write", "Notify"]
+        }, {
+            "service": "8FAD8BDD-D619-4BD9-B3C1-816129F417CA",
+            "isNotifying": false,
+            "characteristic": "E8DBD220-6391-4498-A19B-33ADB3543A33",
+            "properties": ["Read", "Write", "Notify"]
+        }],
+    "rssi": 127
+}

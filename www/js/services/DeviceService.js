@@ -695,6 +695,10 @@ var DeviceService = function (configService, mdlService) {
      * @returns {Array|DeviceService.getGattServices.gattSrvs}
      */
     var getGattServices = function (peripheralObject) {
+        
+        if (TRACE){
+            console.log('Device Service :: extracting GATT services from peripheral object: ',JSON.stringify(peripheralObject));
+        }
         var gattSrvs = [];
 
         function GattService(id, uuid, characteristics) {

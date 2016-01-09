@@ -156,7 +156,7 @@ var ConfigurationService = function me() {
     function loadConfiguration() {
         var deferred = $.Deferred();
         var storedValues = window.localStorage.getItem(SCHEMA_STORAGE_KEY);
-        if (typeof storedValues !== "undefined" && storedValues !== "undefined") {
+        if (typeof storedValues !== "undefined" && storedValues !== "undefined" && storedValues !== "null") {
             cfgSchema = JSON.parse(storedValues);
         }
         deferred.resolve();
@@ -197,7 +197,8 @@ var ConfigurationService = function me() {
                 throw 'Configuration object for path [' + path + '] not found';
             }
         } else {
-            throw 'Configuration is not prepared.';
+            console.log('Config schema is not found');
+            throw 'Blexee: Config Schema Not Found.';
         }
     };
 

@@ -1,0 +1,46 @@
+2016-01-09 14:36:35.522 blexee[663:390238] HW --> Device found: {"name":"thing-0","id":"291C9A2E-CCA3-1EF0-5C5C-E19E29973F16","advertising":{"kCBAdvDataTxPowerLevel":8,"kCBAdvDataIsConnectable":true,"kCBAdvDataServiceUUIDs":["2A56"],"kCBAdvDataServiceData":{"9999":{}},"kCBAdvDataManufacturerData":{}},"rssi":127}
+
+
+2016-01-09 14:33:34.688 blexee[663:390238] Discovered {
+    advertising =     {
+        kCBAdvDataIsConnectable = 1;
+        kCBAdvDataLocalName = Orbit;
+        kCBAdvDataManufacturerData =         {
+            CDVType = ArrayBuffer;
+            data = "AQDMispr6Mk=";
+        };
+        kCBAdvDataServiceUUIDs =         (
+            "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
+        );
+    };
+    id = "06624943-155A-222A-7588-8B0D9CBAF448";
+    name = Orbit;
+    rssi = "-76";
+}
+
+2016-01-09 14:33:31.841 blexee[663:390238] Discovered {
+    advertising =     {
+        kCBAdvDataIsConnectable = 1;
+        kCBAdvDataManufacturerData =         {
+            CDVType = ArrayBuffer;
+            data = "//8AAQIDBA==";
+        };
+        kCBAdvDataServiceData =         {
+            9999 =             {
+                CDVType = ArrayBuffer;
+                data = "AAECAwQ=";
+            };
+        };
+        kCBAdvDataServiceUUIDs =         (
+            2A56
+        );
+        kCBAdvDataTxPowerLevel = 8;
+    };
+    id = "291C9A2E-CCA3-1EF0-5C5C-E19E29973F16";
+    name = "thing-0";
+    rssi = "-61";
+}
+
+
+==========
+
