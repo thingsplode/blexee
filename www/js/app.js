@@ -324,7 +324,7 @@ var App = function () {
 
     router.addRoute('pickup', function () {
         views.deviceModalView.registerModelControl(modelService.getControl());
-        var timerActive = false;
+        var timerActive = true;
         deviceService.startNotification(boxServiceUuid, parcelReleaseUuid, function (buffer) {
             if (!parcelReleaseLastWrite.notificationReceived) {
                 timerActive = false;
@@ -360,9 +360,9 @@ var App = function () {
             parcelReleaseLastWrite.notificationReceived = false;
             parcelStoreLastWrite.barcode = notification.barcode;
             //$('#pickup-btn').prop('disabled', true);
-            $('#pickup-btn').attr('disabled', true);
-            $('#pickup-btn').bind('click', false);
-            componentHandler.upgradeAllRegistered();
+            //$('#pickup-btn').attr('disabled', true);
+            //$('#pickup-btn').bind('click', false);
+            //componentHandler.upgradeAllRegistered();
             deviceService.writeData(boxServiceUuid, parcelReleaseUuid, prepareBarcodeBuffer(notification.barcode), function () {
                 //data was succesfully written
                 if (DEBUG) {
@@ -376,20 +376,27 @@ var App = function () {
                     window.location.href = '#disconnect';
                 }, getDisconnectWaitTime());
             });
+            
+            //TODO: high prio -> why this creates issues w. delivery for customer
             setTimeout(function () {
                 if (timerActive) {
-                    console.log('WARNING ::: we have time out with the relase! Disconnecting ... ');
+                    timerActive = false;
+                    toastr.warning('Disconnecting...', 'Release event has timed out!');
+                    console.log('WARNING ::: we have time out with the release! Disconnecting ... ');
                     window.location.href = '#disconnect';
                 }
             }, getDisconnectWaitTime());
+            
         } else {
             toastr.warning('Disconnecting...', 'No available parcel!');
-            setTimeout(function () {
-                window.location.href = '#disconnect';
-            }, getDisconnectWaitTime());
+            window.location.href = '#disconnect';
+//            setTimeout(function () {
+//                window.location.href = '#disconnect';
+//            }, getDisconnectWaitTime());
         }
 
     }, function () {
+        //exiting pickup state
         views.deviceModalView.unregisterModelControl();
         views.deviceModalView.resetModel();
     });
@@ -562,7 +569,7 @@ var App = function () {
     function getDisconnectWaitTime() {
         var dcTime = cfgService.getValue('/device/disconnectWait');
         if (!dcTime) {
-            dcTime = 2500;
+            dcTime = 4000;
         }
         return dcTime;
     }

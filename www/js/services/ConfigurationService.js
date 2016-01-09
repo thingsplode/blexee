@@ -343,7 +343,7 @@ var ConfigurationService = function me() {
                     "id": "disconnectWait",
                     "caption": "Wait time before disconnect",
                     "type": "Numeric",
-                    "value": "2500"
+                    "value": "4000"
                 }
             ]
         }

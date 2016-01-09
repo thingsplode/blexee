@@ -759,7 +759,7 @@ var DeviceService = function (configService, mdlService) {
             if (TRACE) {
                 console.log("SIMU --> proximity value: " + x + " [at rssi: ]" + i);
             }
-            deviceModel.selectedDevice.proximity = x;
+            deviceModel.selectedDevice.proximity = x <= 100 ? x : 100;
             modelControl.update(i);
             i++;
             if (i < 0) {
